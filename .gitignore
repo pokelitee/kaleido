@@ -1,0 +1,23 @@
+# ROMs, saves and anything extracted from them are never committed
+orig/
+extract/
+*.nds
+*.gba
+*.gb
+*.gbc
+*.sav
+*.dsv
+
+# Build output, patches and tool caches
+build/
+dist/
+.cache/
+*.xdelta
+
+# Python
+.venv/
+__pycache__/
+
+# Agent-local settings; shared agent config is committed
+.claude/settings.local.json
+.claude/worktrees/

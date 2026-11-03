@@ -1,2 +1,7 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Normalize text to LF in the repository and in working trees, on every platform
+* text=auto eol=lf
+
+*.png binary
+*.glb binary
+*.wav binary
+*.bin binary
