@@ -52,9 +52,9 @@ All **Verified** from upstream's docs and packers unless marked.
 
 | Question | Experiment |
 | --- | --- |
-| Free RAM and heap in DS mode and DSi mode at field, battle, menus | E6 |
-| Free space in overlay regions; how much new code fits | E6 |
-| ROM size headroom and save area headroom | E6 |
+| Free RAM and heap in DS mode and DSi mode at field, battle, menus (static bound known: ≈ 213 KiB of DS-mode arena for added code and static data; 288,256 B of heap 1 left in the field) | E6b |
+| Per-overlay slack on the overlay tree | E6b / Phase 2 |
+| Save area headroom (ROM headroom is ≈ 231 MiB, E6) | E6b |
 | Whether a modified DSi-hybrid ROM boots in DSi mode on each loader and device | E7 |
 | Zone, flag and variable capacity beyond B2W2's counts | E4a, E6 |
 | Cost of species past 649 | E5 |
