@@ -32,7 +32,9 @@ revision for E8; hardware for E7.
 risk), and E9 and E10 are added because save identity and upstream availability are architecture risks.
 
 Done on 2026-11-03 (`docs/research/e0-baseline.md`): E0a, the no-ROM compile of every C file (3,584 of 3,584), and
-E0, the matching build, which reproduced Black 2's SHA1 twice from clean.
+E0, the matching build, which reproduced Black 2's SHA1 twice from clean. E4b (`docs/research/e4b-map-art.md`):
+upstream refuses new map art; a template-append prototype adds a new chunk and texture set to a ROM that builds; the
+in-game check is pending; ADR 0003 proposed.
 
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
