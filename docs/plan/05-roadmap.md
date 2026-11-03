@@ -56,7 +56,8 @@ Deliverables:
   E4a's zone, E8's encounter table).
 - CI on GitHub Actions (no ROMs): lint, unit tests, schema/provenance/cross-reference checks on committed layers,
   `compile_all.py` for each game's define set, ROM-file guard. Actions pinned to commit SHAs, read-only permissions,
-  timeouts, one required check.
+  timeouts, one required check, added to the "Protect main" ruleset once it reports.
+- Dependabot: weekly, grouped updates for `pip` and `github-actions`.
 
 Exit criteria:
 
