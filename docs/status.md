@@ -4,9 +4,9 @@ Last updated: 2026-11-03
 
 ## Current phase
 
-**Planning pass complete, waiting for owner review.** No game content, framework code or engine changes exist yet.
-The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-open-questions.md` and on
-`docs/decisions/0002-engine-integration.md` (Proposed).
+**Planning pass complete; the owner answered Q1–Q10 on 2026-11-03.** No game content, framework code or engine
+changes exist yet. The answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+`docs/architecture.md`. Waiting on the owner's go-ahead for Phase 0 and the Phase 0 prerequisites.
 
 ## Done in this pass
 
@@ -14,7 +14,10 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
   `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c`, 2026-10-31).
 - Wrote the plan: feasibility (`01`), foundation (`02`), architecture (`03`), roadmap (`05`), testing (`06`), open
   questions (`07`), and `docs/risks.md`.
-- ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed.
+- ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed, then accepted by the owner.
+- Owner's answers to Q1–Q10 recorded. Two differ from the recommendations: mechanics where Gen 5 and the original
+  differ (Q6) and B2W2-only systems (Q7) are per-game compile-time switches. There is no hardware yet (Q4), so E7
+  moves out of the Phase 0 gate (`05-roadmap.md`).
 - Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
@@ -39,10 +42,10 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 
 ## Most important findings
 
-1. Upstream's packers can **edit** the original map models and texture sets but can't **add** new ones (R-01). Gen
-   5-style Kanto needs a new-map-art route (Q3, E4b).
-2. A single-source xdelta from B2 necessarily carries the extracted FRLG content, and patches can't go on GitHub
-   under the brief's rules (Q1).
+1. Upstream's packers can **edit** the original map models and texture sets but can't **add** new ones (R-01).
+   Chosen route (Q3): repurpose Unova chunks for the prototype, then an encoder that can add them; E4b confirms.
+2. A single-source xdelta from B2 necessarily carries the extracted FRLG content; the owner accepted that (Q1).
+   Patches still can't go on GitHub under the brief's rules; the channel is chosen before the first release.
 3. B2W2 carts have infrared, a 512 KB FLASH save behind it, and 512 MB of ROM space at most. The game code must stay
    `IREO`. DS Protect must be guarded out in source (R-25).
 4. FRLG's grass, surf and Super Rod odds, crit stages and type chart are identical to B2W2's (verified), so much of
@@ -50,15 +53,17 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 
 ## Next steps
 
-1. Owner reviews the plan and answers Q1–Q10 (at least Q1, Q2 and Q4 before Phase 1).
-2. Owner sets up Phase 0 prerequisites: Black 2 dump in the WSL checkout's `orig/`; `sudo apt install ninja-build
-   clang llvm python3.14-venv` in WSL; a FireRed dump; hardware list.
-3. Phase 0 experiments E0–E10 (`docs/plan/05-roadmap.md`), starting with E0 (baseline build) and E4b (new map art).
+1. Owner gives the go-ahead for Phase 0.
+2. Owner sets up Phase 0 prerequisites: `sudo apt install ninja-build clang llvm python3.14-venv` in WSL; a Black 2
+   (USA/Europe) dump in WSL's own filesystem; a FireRed dump (its revision becomes the first extraction target, Q5).
+3. Phase 0 experiments (`docs/plan/05-roadmap.md`), starting with E0 (baseline build) and E4b (new map art). E7 waits
+   for hardware.
 
 ## Blockers
 
-- Owner approval of the plan (brief, Section 0).
-- Base ROM and hardware are with the owner (E0, E7).
+- Owner's go-ahead for Phase 0 (brief, Section 0).
+- The Black 2 and FireRed dumps and the WSL packages are with the owner (E0, E8).
+- No hardware yet (E7; required by Phase 3.5's exit).
 
 ## Not verified in this pass
 

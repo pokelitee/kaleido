@@ -1,6 +1,6 @@
 # 0002. Integrate pokebw2 as an upstream submodule with a patch series
 
-- Status: Proposed
+- Status: Accepted (by the owner, 2026-11-03)
 - Date: 2026-11-03
 
 ## Context
@@ -44,7 +44,7 @@ and is reproducible.
   at, and by testing whether `res/` can be regenerated from a user's ROM with upstream's own extraction scripts
   (experiment E10).
 
-## Decision (proposed)
+## Decision
 
 Option (c).
 

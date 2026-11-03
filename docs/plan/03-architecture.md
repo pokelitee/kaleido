@@ -60,7 +60,7 @@ Phase 1 creates this skeleton. Only `docs/` and the repo records exist after the
 
 ## 4. Engine integration
 
-Proposed in `docs/decisions/0002-engine-integration.md`: a git submodule pointing at **upstream** pokebw2 (not a fork),
+Accepted in `docs/decisions/0002-engine-integration.md`: a git submodule pointing at **upstream** pokebw2 (not a fork),
 pinned to one commit, plus an ordered **patch series** in `engine/patches/`. The submodule records only a commit ID, so
 our repository holds no Nintendo assets. A GitHub fork would be public by GitHub's rules, and a private mirror would
 put ~140k extracted assets under the owner's account.
@@ -142,7 +142,8 @@ Each layer's `provenance.json` assigns every committed file to exactly one categ
 
 - Extraction recipes reference source tables by ROM offset or pointer-table index for one pinned revision of the
   source ROM. A recipe holds locations and transforms, never the extracted bytes.
-- **Assumption**: offset tables and IDs we assign are not other-game content. Owner question Q1 covers distribution.
+- **Assumption**: offset tables and IDs we assign are not other-game content. Distribution is decided in Q1: patches
+  carry the extracted content they add.
 - A guard (CI and a pre-commit hook in Phase 1) rejects ROM files and any path that a category 2 entry covers.
 
 ## 7. Build pipeline
@@ -211,6 +212,17 @@ A ruleset is a file in `framework/rulesets/`:
   `01-feasibility.md`).
 - Defaults: `gen5` (upstream behavior, used by the baseline), `gen3` (FRLG), `gen1` (RBY, Phase 5). Tier 2/3 rulesets
   are added when those games start, not before.
+- **Per-game switches** (owner's decision, Q6): a ruleset sets each switch's default, and a game's `game.json` may
+  override any switch under `engine.defines`. A mechanic only becomes a switch when some game picks the non-Gen 5
+  side, so there is no speculative variant code. Every distinct define set is compiled in CI (`06-testing.md`).
+
+### B2W2 systems
+
+Each B2W2-only system (C-Gear, Pass Powers, Entralink, Join Avenue, seasons, Hidden Grottoes, PWT, Medal Rally,
+Pokéstar Studios, Memory Link, Unova Pokédex, Wi-Fi and infrared features) is a compile-time switch, and each game's
+config picks (owner's decision, Q7). With a switch off, the system's code and data stay out of the build where the
+engine allows, which recovers RAM and overlay space (R-05, R-15). Phase 1 inventories the systems and their entry
+points; the first switches arrive with the Phase 3 prototype.
 
 ### Save identity
 
@@ -237,11 +249,9 @@ A ruleset is a file in `framework/rulesets/`:
 
 - One xdelta patch per game, from the Black 2 base ROM. Release notes give the base ROM's SHA1
   (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`), the output's SHA1 and the patcher to use.
-- **Open (Q1)**: a single-source patch necessarily carries the extracted FRLG content it adds. If that isn't
-  acceptable, the alternative is a player-side builder that takes both the B2 and the FRLG ROM. That changes the
-  architecture, so it needs a decision before Phase 1.
-- **Open (Q1)**: the brief bans ROM-derived data from GitHub, and patches are ROM-derived. So patches can't go on
-  GitHub Releases unless the owner says otherwise.
+- **Decided (Q1)**: a patch carries the extracted FRLG content it adds; no player-side builder.
+- **Open until the first release (Q1)**: the publishing channel. The brief bans ROM-derived data from GitHub, and
+  patches are ROM-derived, so no GitHub Releases unless the owner changes that rule.
 - **GPL-3.0**: distributing a patch distributes compiled GPL code; recipients must be able to get the corresponding
   source (R-07). The repository is public, so each release tags its exact source commit and links it.
 
@@ -250,7 +260,7 @@ A ruleset is a file in `framework/rulesets/`:
 | Part | License |
 | --- | --- |
 | `engine/patches/`, `framework/` | GPL-3.0 (required: derived from GPL-3.0 pokebw2) |
-| `content/` original files (category 3) | proposed **CC BY-SA 4.0** (`LICENSE-CONTENT`; Q8) |
+| `content/` original files (category 3) | **CC BY-SA 4.0** (`LICENSE-CONTENT`; decided in Q8) |
 | `content/` third-party files (category 4) | as recorded per entry |
 | `docs/` | proposed CC BY-SA 4.0 with the content |
 

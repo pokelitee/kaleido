@@ -1,7 +1,24 @@
 # 07 — Open questions
 
-Status: for the owner (planning pass, 2026-11-03). Ranked by how much each one blocks the architecture. Each question
-gives a recommendation; silence on a question means the recommendation stands once the plan is approved.
+Status: **answered by the owner on 2026-11-03.** The questions below are kept as asked, ranked by how much each one
+blocked the architecture; this table records the answers. Two answers differ from the recommendation (Q6 mechanics,
+Q7).
+
+## Answers
+
+| Q | Decision | As recommended? |
+| --- | --- | --- |
+| Q1 | Patches carry the extracted content they add: one xdelta per game against the B2 ROM. The publishing channel is decided before the first release; until then the brief's "no ROM-derived data on GitHub" rule stands, so no GitHub Releases. | Yes |
+| Q2 | ADR 0002 accepted: pokebw2 as an upstream submodule plus a patch series. | Yes |
+| Q3 | Repurpose Unova chunks for the Phase 3 prototype; build a glTF → Nitro encoder that can add models and texture sets before Phase 4, offered upstream. Provisional until E4b. | Yes |
+| Q4 | No hardware yet: E7 waits for devices. DS mode is the hard limit: every build must fit 4 MB and run on a DS Lite; DSi mode is tested but never required. | Yes |
+| Q5 | Target whichever revision the owner dumps; one revision per game to start; each game builds from its own ROM. | Yes |
+| Q6 (mechanics) | Every mechanic where Gen 5 and the original differ is a **per-game ruleset switch**; each game's config picks. A switch is added only when some game selects the non-Gen 5 side. | **No** (recommended original-by-default) |
+| Q6 (music) | Prototype converting one FRLG song from the builder's ROM in Phase 3, then decide. | Yes |
+| Q7 | Each B2W2-only system is a **per-game compile-time switch**; each game's config picks. | **No** (recommended disabling all) |
+| Q8 | Original art and data: **CC BY-SA 4.0**. | Yes |
+| Q9 | Gen 1 rules on Gen 5 data. | Yes |
+| Q10 | Offer generic engine and tool work upstream; tag each release's source commit. | Yes |
 
 ## Top 10
 

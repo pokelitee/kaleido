@@ -26,5 +26,5 @@ Read [`AGENTS.md`](AGENTS.md) for the rules (never commit ROMs or ROM-derived da
 
 ## License
 
-Engine changes and tooling: GPL-3.0, as required by pokebw2. The license for original art and data is pending
-(see [`docs/plan/07-open-questions.md`](docs/plan/07-open-questions.md), Q8). License files are added in Phase 1.
+Engine changes and tooling: GPL-3.0, as required by pokebw2. Original art and data: CC BY-SA 4.0. License files are
+added in Phase 1.

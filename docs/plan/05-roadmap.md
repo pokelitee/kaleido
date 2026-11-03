@@ -34,17 +34,21 @@ risk), and E9 and E10 are added because save identity and upstream availability 
 Attempted in this planning pass: a no-ROM compile of every C file with upstream's `compile_all.py` (E0a). It
 stopped on setup issues, not compile errors; details in `docs/status.md`. E0a runs again with E0, on a full checkout.
 
+**Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
+gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
+exit Phase 3.5.
+
 Exit criteria:
 
-- E0–E9 recorded; E10 recorded or rescheduled.
-- ADR 0002 (engine integration) accepted or replaced.
-- ADRs for the two choices the experiments force: how new map art gets into the ROM (from E4b) and which modes and
-  devices are supported (from E7).
+- E0–E6 and E8–E9 recorded; E10 recorded or rescheduled; E7 recorded or waiting for hardware.
+- ADR 0002 (engine integration) accepted (done 2026-11-03).
+- An ADR on how new map art gets into the ROM, from E4b (direction already chosen in Q3).
 - `01-feasibility.md` and `docs/risks.md` updated with the results.
 
 ## Phase 1 — Framework skeleton
 
-Depends on: Phase 0 exit; answers to Q1 (distribution) and Q5 (source ROM revisions).
+Depends on: Phase 0 exit; Q1 and Q5 (answered 2026-11-03); the owner's FireRed dump, whose revision becomes the
+first extraction target.
 
 Deliverables:
 
@@ -77,7 +81,7 @@ as a plain version variant.
 
 Exit criteria:
 
-- Both ROMs boot on melonDS and on one hardware device.
+- Both ROMs boot on melonDS in DS mode, and on one hardware device if the owner has one by then.
 - Both patches apply to the B2 base ROM and give the expected SHA1s.
 - The difference is visible in game: title and starting text differ, and crit behavior differs measurably.
 - Each game refuses the other's save (E9's mechanism).
@@ -88,7 +92,8 @@ Depends on: Phase 2; the new-map-art route chosen after E4b.
 
 Scope: Pallet Town, Route 1, Viridian City (Pokémon Center, Mart), Oak's Lab, player's house; NPCs and signs; dialogue
 extracted from FireRed; wild encounters; at least one trainer; Oak's Parcel progression; new-game start in Pallet Town.
-First pass at disabling B2W2 systems that show up on this path (C-Gear, seasons, Pass Powers, Unova Pokédex).
+First per-game switches for the B2W2 systems that show up on this path (C-Gear, seasons, Pass Powers, Unova
+Pokédex), with FireRed's config choosing each (Q7).
 
 Exit criteria:
 
@@ -105,7 +110,8 @@ healing, Mart purchases, a cave (proposal: Mt. Moon 1F, the next cave on the pat
 
 Exit criteria:
 
-- The slice plays through on melonDS and on hardware (each device from E7).
+- The slice plays through on melonDS and on hardware (each device from E7). This is the latest point at which the
+  owner needs a device (Q4).
 - A save made mid-slice loads correctly after a power cycle on hardware.
 - Fidelity of everything in the slice classified (Exact/Approximate/Infeasible) and checked against `01-feasibility.md`.
 - Per-map, per-sprite and per-script effort measured; the full-game estimate updated.
@@ -170,4 +176,5 @@ single-use TMs, a few FRLG key items), and Gen 1 variants. Its sizes come from E
 
 Music deserves its own decision. FRLG's songs are other-game content. Using them means converting the GBA sequence
 format to Nitro SSEQ/SBNK/SWAR at build time (a converter we would have to write). The alternative is original
-arrangements (category 3, heavy art cost) or reusing B2W2 tracks (Approximate). See Q6 and R-24.
+arrangements (category 3, heavy art cost) or reusing B2W2 tracks (Approximate). Decided in Q6: prototype converting
+one FRLG song in Phase 3, then choose. See R-24.
