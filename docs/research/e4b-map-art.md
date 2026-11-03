@@ -151,7 +151,7 @@ scope.
 
 ## 5. Recommendation
 
-Proposed in [ADR 0003](../decisions/0003-new-map-art.md):
+Accepted as [ADR 0003](../decisions/0003-new-map-art.md):
 
 1. Kaleido's engine patch series takes template-append (offered upstream first, per Q10) for Phases 1–3. Unova
    entries stay untouched.

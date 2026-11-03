@@ -34,7 +34,7 @@ risk), and E9 and E10 are added because save identity and upstream availability 
 Done on 2026-11-03 (`docs/research/e0-baseline.md`): E0a, the no-ROM compile of every C file (3,584 of 3,584), and
 E0, the matching build, which reproduced Black 2's SHA1 twice from clean. E4b (`docs/research/e4b-map-art.md`):
 upstream refuses new map art; a template-append prototype adds a new chunk and texture set to a ROM that builds and
-plays normally in melonDS; ADR 0003 proposed.
+plays normally in melonDS; ADR 0003 accepted.
 
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
@@ -44,7 +44,7 @@ Exit criteria:
 
 - E0–E6 and E8–E9 recorded; E10 recorded or rescheduled; E7 recorded or waiting for hardware.
 - ADR 0002 (engine integration) accepted (done 2026-11-03).
-- An ADR on how new map art gets into the ROM, from E4b (direction already chosen in Q3).
+- An ADR on how new map art gets into the ROM, from E4b: ADR 0003, accepted 2026-11-03.
 - `01-feasibility.md` and `docs/risks.md` updated with the results.
 
 ## Phase 1 — Framework skeleton

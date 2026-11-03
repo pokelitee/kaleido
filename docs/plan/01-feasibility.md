@@ -38,7 +38,7 @@ All **Verified** from upstream's docs and packers unless marked.
 
 | Change | Why | Size | Evidence / experiment |
 | --- | --- | --- | --- |
-| Add new map models and texture sets | Packers patch originals only. Template-append (~25 lines) adds entries that keep a template's materials and texture layout; a full encoder is needed beyond that | Small (template-append, prototyped) / Large (encoder) | **Verified**, E4b (`docs/research/e4b-map-art.md`); ADR 0003 (proposed) |
+| Add new map models and texture sets | Packers patch originals only. Template-append (~25 lines) adds entries that keep a template's materials and texture layout; a full encoder is needed beyond that | Small (template-append, prototyped) / Large (encoder) | **Verified**, E4b (`docs/research/e4b-map-art.md`); ADR 0003 |
 | Kaleido defines through `configure.py` | Upstream knows only `--bugfix` and `--shift` | Small | **Verified** (`docs/building.md`); E3 |
 | Guard out DS Protect (anti-piracy) | Loaders fix it by game code + header CRC, which a modified ROM won't match | Small | **Verified** (TWiLight Menu++ source, `hardware-and-rom.md`); E7 |
 | Content overlay into the engine tree | Our layers must land in `res/` and `generated/` | Small (framework, maybe no engine change) | Phase 1 |

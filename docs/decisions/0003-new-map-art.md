@@ -1,6 +1,6 @@
 # 0003. Add new map art by template-append, then a Nitro encoder
 
-- Status: Proposed
+- Status: Accepted (by the owner, 2026-11-03)
 - Date: 2026-11-03
 
 ## Context
@@ -28,7 +28,7 @@ Phase 4.
    (BMD0 and BTX0 writers) before Phase 4, scoped by what Phase 3 couldn't do.
 3. **Encoder first**: the most freedom, but Phase 3 waits for the largest Tier 1 tooling task.
 
-## Decision (proposed)
+## Decision
 
 Option 2.
 
