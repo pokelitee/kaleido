@@ -18,7 +18,7 @@ revision for E8; hardware for E7.
 | E0 | Build pokebw2 at the pin in WSL2 (WSL filesystem) | `build/pokeblack2_us.nds` matches `e51e6dfb…`; build time, disk use and tool versions recorded; a second clean build gives the same hash | R-12, R-18 (part) |
 | E1 | Change text | Edited script message shows in game; a non-ASCII character and a full-width line are tested | R-11 (part) |
 | E2 | Change data through `res/` JSON | Edited trainer party appears in battle | — |
-| E3 | Change battle code | Crit formula changed under a `KALEIDO_` define passed through a minimal `configure.py` patch; `--shift`-style modified build boots and battles; the new rate observed over many trials or by watching RAM. With the define off, the build still matches | R-02 (part), rulesets mechanism |
+| E3 | Change battle code | Crit formula changed under a `KALEIDO_` define passed through a minimal `configure.py` patch; `--shift`-style modified build boots and battles; the new rate observed over many trials or by watching RAM. With the define off, the build still matches. Proves the `KALEIDO_` define path that B2W2-system switches and the DS Protect guard need (the crit change itself is a test, not a planned feature) | R-02 (part), define mechanism |
 | E4a | New zone, existing art | New zone constant, header, events, warps both ways and a script, using an existing map model; works in game | R-17 (part) |
 | E4b | New map art | Try to add a **new** map model from glTF and a **new** texture set. Expected to fail with upstream's packers (`pokebw2.md`); result is a scoped plan (and estimate) for an encoder that can, or proof that repurposing existing chunks is enough | **R-01** |
 | E5 | Species #650 end to end | One new species with data, sprites, icon, cry, Pokédex entry, catchable and saved; every table and limit touched is listed with its cost | R-14 |
@@ -74,16 +74,17 @@ Exit criteria:
 
 Depends on: Phase 1.
 
-**Change**: build **FireRed** and a **Red** stub, not FireRed and LeafGreen. FireRed and LeafGreen use the same
-ruleset, so they can't show the ruleset mechanism. FireRed (`gen3`) and Red (`gen1` crit variant from E3) share the
-Kanto region and differ by family, ruleset and data, which exercises the whole hierarchy. LeafGreen follows in Phase 4
-as a plain version variant.
+**Change**: build **FireRed** and a **Red** stub, not FireRed and LeafGreen. There are no rulesets (every game uses
+Gen 5 mechanics, Q6), so the brief's "ruleset flag" becomes a compile-time B2W2-system switch (Q7). FireRed and Red
+share the Kanto region and differ by family, a switch and data, which exercises the whole hierarchy. LeafGreen
+follows in Phase 4 as a plain version variant.
 
 Exit criteria:
 
 - Both ROMs boot on melonDS in DS mode, and on one hardware device if the owner has one by then.
 - Both patches apply to the B2 base ROM and give the expected SHA1s.
-- The difference is visible in game: title and starting text differ, and crit behavior differs measurably.
+- The difference is visible in game: title and starting text differ, and one B2W2 system (for example the C-Gear)
+  is present in one build and absent from the other.
 - Each game refuses the other's save (E9's mechanism).
 
 ## Phase 3 — Prototype: Pallet Town to Viridian City
@@ -128,9 +129,10 @@ tests on each device; every feature in `01-feasibility.md` has a final classific
 
 ## Phase 5 — Red, Blue and Yellow
 
-Depends on: Phase 4 (Kanto region data), the Gen 1 fidelity scope (Q9).
+Depends on: Phase 4 (Kanto region data).
 
-Scope: RBY family and games over the Kanto region, `gen1` ruleset variants as scoped in `01-feasibility.md`.
+Scope: RBY family and games over the Kanto region, with Gen 5 mechanics (Q6, Q9); Gen 1 content differences from
+FRLG as family and game overrides; Approximations as listed in `01-feasibility.md`.
 
 ## Phase 6+ — Tier 2, then Tier 3
 
@@ -150,7 +152,6 @@ graph LR
   P3 --> P35[Phase 3.5: through Brock]
   P35 --> P4[Phase 4: FRLG complete]
   P4 --> P5[Phase 5: RBY]
-  Q9[Q9 Gen 1 scope] --> P5
   P5 --> P6[Phase 6+: Tier 2/3]
 ```
 
@@ -171,8 +172,8 @@ The brief expects art and content to cost more than engine work. The counts belo
 | Dialogue, parties, encounters, learnsets | all of FRLG | none (extracted, category 2) | — |
 
 Engine work for Tier 1, by contrast, is a bounded list: Kaleido defines and overlay support, new map art support (E4b),
-B2W2 systems to disable, FRLG mechanics without a Gen 5 equivalent (Rock Smash and Old/Good Rod encounters, extra HMs,
-single-use TMs, a few FRLG key items), and Gen 1 variants. Its sizes come from E3, E4b and E6.
+per-game switches for B2W2 systems, the DS Protect guard, a Kanto regional Pokédex, and a few FRLG key items. With Gen
+5 mechanics everywhere (Q6), there are no battle or field variants. Its sizes come from E3, E4b and E6.
 
 Music deserves its own decision. FRLG's songs are other-game content. Using them means converting the GBA sequence
 format to Nitro SSEQ/SBNK/SWAR at build time (a converter we would have to write). The alternative is original

@@ -11,7 +11,7 @@ experiments. See [`docs/status.md`](docs/status.md).
 
 ## Architecture
 
-Engine (pinned pokebw2 + a patch series) → framework (layering, provenance, extraction, rulesets) → region → game
+Engine (pinned pokebw2 + a patch series) → framework (layering, provenance, extraction) → region → game
 family → game. Details in [`docs/plan/03-architecture.md`](docs/plan/03-architecture.md).
 
 ## Documentation
