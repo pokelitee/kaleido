@@ -17,6 +17,9 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 - ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed.
 - Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
+- Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
+  "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). The ruleset has
+  no required CI check yet, because there is no CI; Phase 1 adds both (`05-roadmap.md`).
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
 - E0a, no-ROM compile check of upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04.1, Python 3.14.4):
