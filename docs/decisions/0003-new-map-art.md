@@ -44,4 +44,4 @@ Option 2.
   fit, and reuse their textures. Visual variety is limited until the encoder exists.
 - Unova data stays intact, so the matching baseline and other experiments are unaffected.
 - The encoder becomes a scheduled dependency of Phase 4, not an open risk.
-- The in-game check of the E4b ROM passed in melonDS (console mode not recorded). Both modes on hardware come with E7.
+- The in-game check of the E4b ROM passed in melonDS in DS mode (its default). DSi mode and hardware come with E7.

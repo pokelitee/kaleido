@@ -38,7 +38,7 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   Metrowerks compilers; all five downloaded tools' hashes are recorded for Kaleido's `doctor`.
 - **E4b done** (2026-11-03): upstream's packers refuse new map models and texture sets. A ~25-line template-append
   prototype (`docs/research/e4b-template-append.patch`) built a ROM with a new chunk (#1065) and texture set (#409),
-  with every original unchanged and valid DSi digests. It plays normally in melonDS (owner's check). Found: `AREA_COUNT` caps areas at
+  with every original unchanged and valid DSi digests. It plays normally in melonDS in DS mode (owner's check). Found: `AREA_COUNT` caps areas at
   409; each chunk must fit its map type's buffer (86,020 B for most); recoloring shared texture data can be refused.
   ADR 0003 proposed. Details: `docs/research/e4b-map-art.md`.
 
