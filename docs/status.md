@@ -31,8 +31,11 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   agent-local settings), `.gitattributes` (LF everywhere).
 - **E0a passed** (Phase 0, 2026-11-03): upstream's `compile_all.py` at the pin compiled 3,584 of 3,584 (every C file,
   both versions) with no warnings, in WSL's filesystem with system Python 3.14.4. Three planning-pass attempts had
-  stopped on setup (path rewriting, no venv package, a checkout without `res/`). Upstream doesn't hash-check the
-  Metrowerks compilers or objdiff; their hashes are now recorded. Details: `docs/research/e0-baseline.md`.
+  stopped on setup (path rewriting, no venv package, a checkout without `res/`). Details:
+  `docs/research/e0-baseline.md`.
+- **E0 passed** (2026-11-03): with the owner's Black 2 dump, `configure.py b2_us && ninja` reproduced Black 2's SHA1
+  (`e51e6dfb…`) twice from clean, in about 10–12 minutes each. Upstream doesn't hash-check dsd, objdiff or the
+  Metrowerks compilers; all five downloaded tools' hashes are recorded for Kaleido's `doctor`.
 
 ## Most important findings
 
@@ -47,19 +50,17 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. Owner installs the build packages in WSL: `sudo apt install ninja-build clang llvm python3.14-venv`.
-2. Owner copies the Black 2 (USA/Europe) dump to `~/kaleido-work/pokebw2/orig/baserom_b2_us.nds` in WSL (upstream's
-   `.gitignore` covers it), and a FireRed dump to `~/kaleido-work/roms/` (its revision becomes the first extraction
-   target, Q5).
-3. E0 (baseline build), then E4b (new map art), E6, E1–E5, E8–E10 (`docs/plan/05-roadmap.md`). E7 waits for hardware.
+1. E4b (new map art), then E6 (headroom), then E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`). All run in
+   `~/kaleido-work/pokebw2`, which now has the Black 2 dump and the build packages.
+2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+3. E7 waits for hardware.
 
 ## Blockers
 
-- The WSL packages and the Black 2 and FireRed dumps are with the owner (E0 onward, E8).
+- FireRed dump (E8 only).
 - No hardware yet (E7; required by Phase 3.5's exit).
 
-## Not verified in this pass
+## Not verified yet
 
-- No ROM was built: the base ROM isn't on this machine.
 - Hardware facts come from GBATEK, emulator and loader sources, not from devices.
-- xdelta determinism, the WSL file-system speed and upstream's tool hashes are untested assumptions (see `risks.md`).
+- xdelta determinism, and the determinism of modified builds and Kaleido's own tooling, are untested (see `risks.md`).
