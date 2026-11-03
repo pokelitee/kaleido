@@ -1,0 +1,133 @@
+Kaleido change to dsd: `dsd rom build --allow-stale-secure-area` builds a DSi-hybrid ROM whose ARM9 secure area
+changed since extracting, without the ARM7 BIOS, by keeping the stored (now stale) secure-area values. Against
+fuddlesworth/ds-rom 66e83ef467b1e7a4816e667bf3b86572b1f8072d and fuddlesworth/ds-decomp
+2dc1b27b95fe9191ea9a0c2ea3145baa349125b8 (tag v0.12.1-dsi.10, the dsd pokebw2 pins), checked out side by side as
+ds-rom/ and ds-decomp/. Both projects are MIT-licensed, and so is this patch. The ds-decomp/Cargo.toml hunk only
+points the build at the local ds-rom. Recorded for ADR 0004 and an upstream pull request; see
+docs/research/e4a-new-zone.md. Apply in the directory that holds both checkouts: git apply <path to this file>
+
+diff --git a/ds-rom/lib/src/rom/dsi.rs b/ds-rom/lib/src/rom/dsi.rs
+index 8950130..87b5381 100644
+--- a/ds-rom/lib/src/rom/dsi.rs
++++ b/ds-rom/lib/src/rom/dsi.rs
+@@ -506,7 +506,7 @@ impl<'a> Dsi<'a> {
+     /// # Errors
+     ///
+     /// This function will return an error if the HMAC-SHA1 key is missing, or if the secure area values are needed but
+-    /// missing.
++    /// missing, or if they are stale and `allow_stale_secure_area` is false.
+     #[allow(clippy::too_many_arguments)]
+     pub fn finalize(
+         &self,
+@@ -519,6 +519,7 @@ impl<'a> Dsi<'a> {
+         gamecode: [u8; 4],
+         hmac_sha1: Option<&HmacSha1>,
+         blowfish_key: Option<&BlowfishKey>,
++        allow_stale_secure_area: bool,
+     ) -> Result<DsiHeaderValues, DsiError> {
+         let Some(hmac_sha1) = hmac_sha1 else {
+             return NoHmacSha1KeySnafu {}.fail();
+@@ -544,7 +545,13 @@ impl<'a> Dsi<'a> {
+         if let Some(plaintext_sha1) = stored_secure_area.and_then(|values| values.plaintext_sha1)
+             && secure_area_sha1(arm9_data) != plaintext_sha1
+         {
+-            return SecureAreaChangedSnafu {}.fail();
++            if !allow_stale_secure_area {
++                return SecureAreaChangedSnafu {}.fail();
++            }
++            log::warn!(
++                "the ARM9 secure area changed since extracting; keeping the stale secure area values, so the DSi \
++                 digests and SHA1-HMACs derived from it no longer match the ARM9 program"
++            );
+         }
+ 
+         // --------------------- Digests ---------------------
+diff --git a/ds-rom/lib/src/rom/rom.rs b/ds-rom/lib/src/rom/rom.rs
+index 8b1db60..06e5843 100644
+--- a/ds-rom/lib/src/rom/rom.rs
++++ b/ds-rom/lib/src/rom/rom.rs
+@@ -965,7 +965,21 @@ impl<'a> Rom<'a> {
+     ///
+     /// This function will return an error if an I/O operation fails or a component fails to build, or if a DSi ROM is
+     /// incomplete or lacks its ARM9 HMAC-SHA1 key.
+-    pub fn build(mut self, key: Option<&BlowfishKey>) -> Result<raw::Rom<'a>, RomBuildError> {
++    pub fn build(self, key: Option<&BlowfishKey>) -> Result<raw::Rom<'a>, RomBuildError> {
++        self.build_with(key, false)
++    }
++
++    /// Builds a raw ROM like [`Rom::build`]. If `allow_stale_secure_area` is true, a DSi ROM whose ARM9 secure area
++    /// changed since extracting builds without the Blowfish key, keeping the stale secure area values.
++    ///
++    /// # Errors
++    ///
++    /// See [`Rom::build`].
++    pub fn build_with(
++        mut self,
++        key: Option<&BlowfishKey>,
++        allow_stale_secure_area: bool,
++    ) -> Result<raw::Rom<'a>, RomBuildError> {
+         match (&self.header.dsi, &self.dsi) {
+             (Some(_), None) => return DsiIncompleteSnafu { present: "header's DSi section" }.fail(),
+             (None, Some(_)) => return DsiIncompleteSnafu { present: "DSi area" }.fail(),
+@@ -973,7 +987,7 @@ impl<'a> Rom<'a> {
+             _ => {}
+         }
+ 
+-        let mut context = BuildContext { blowfish_key: key, ..Default::default() };
++        let mut context = BuildContext { blowfish_key: key, allow_stale_secure_area, ..Default::default() };
+ 
+         let mut cursor = Cursor::new(Vec::with_capacity(128 * 1024)); // smallest possible ROM
+ 
+@@ -1129,6 +1143,7 @@ impl<'a> Rom<'a> {
+                 self.header.original.gamecode.0,
+                 self.hmac_sha1.as_ref(),
+                 context.blowfish_key,
++                context.allow_stale_secure_area,
+             )?);
+         }
+ 
+@@ -1274,6 +1289,8 @@ pub struct BuildContext<'a> {
+     pub banner_offset: Option<TableOffset>,
+     /// Blowfish key.
+     pub blowfish_key: Option<&'a BlowfishKey>,
++    /// Whether a changed ARM9 secure area may keep its stale secure area values, see [`Rom::build_with`].
++    pub allow_stale_secure_area: bool,
+     /// ARM9 autoload callback.
+     pub arm9_autoload_callback: Option<u32>,
+     /// ARM7 autoload callback.
+diff --git a/ds-decomp/Cargo.toml b/ds-decomp/Cargo.toml
+index 9ac9910..512cee8 100644
+--- a/ds-decomp/Cargo.toml
++++ b/ds-decomp/Cargo.toml
+@@ -10,4 +10,5 @@ inherits = "release"
+ lto = false
+ 
+ [patch.crates-io]
+-ds-rom = { git = "https://github.com/fuddlesworth/ds-rom", rev = "66e83ef467b1e7a4816e667bf3b86572b1f8072d" }
++ds-rom = { path = "../ds-rom/lib" }
++
+diff --git a/ds-decomp/cli/src/cmd/rom/build.rs b/ds-decomp/cli/src/cmd/rom/build.rs
+index 57f43dd..29d1c6c 100644
+--- a/ds-decomp/cli/src/cmd/rom/build.rs
++++ b/ds-decomp/cli/src/cmd/rom/build.rs
+@@ -18,6 +18,11 @@ pub struct Build {
+     #[arg(long, short = '7')]
+     arm7_bios: Option<PathBuf>,
+ 
++    /// Build a DSi ROM even if the ARM9 secure area changed and no ARM7 BIOS is given, keeping the stale DSi values
++    /// derived from the secure area
++    #[arg(long)]
++    allow_stale_secure_area: bool,
++
+     /// Output ROM
+     #[arg(long, short = 'o')]
+     rom: PathBuf,
+@@ -39,7 +44,7 @@ impl Build {
+             }
+             result => result?,
+         };
+-        let raw_rom = rom.build(key.as_ref())?;
++        let raw_rom = rom.build_with(key.as_ref(), self.allow_stale_secure_area)?;
+         raw_rom.save(&self.rom)?;
+         Ok(())
+     }

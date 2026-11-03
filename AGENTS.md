@@ -58,6 +58,8 @@ None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `valid
   names. Upstream's agent setup (`.claude/` in pokebw2) and its "push to main" workflow are **not** ours.
 - Never assume a mechanic exists in the engine. Prove it with an experiment and record it in `docs/research/`.
 - Respect DS limits: RAM, overlays, ROM and save sizes are measured (E6), not assumed.
+- Tier 1 zones reuse existing zone IDs; don't append zones (ADR 0004). A build that changes ARM9 main code needs
+  `--allow-stale-secure-area` (Kaleido's dsd) or `--arm7-bios`.
 
 ### Research and claims
 
