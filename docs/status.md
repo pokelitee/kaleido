@@ -15,6 +15,8 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 - Wrote the plan: feasibility (`01`), foundation (`02`), architecture (`03`), roadmap (`05`), testing (`06`), open
   questions (`07`), and `docs/risks.md`.
 - ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed.
+- Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
+  unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
 - E0a, no-ROM compile check of upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04.1, Python 3.14.4):

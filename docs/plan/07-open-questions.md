@@ -95,11 +95,11 @@ structure, save and UI.
 
 Two linked choices. (a) Offer generic engine and tool work upstream (public pull requests to pokebw2 from your
 account)? That shrinks our patch series (R-02). (b) When patches ship, the GPL requires the corresponding source to be
-available to recipients (R-07). That means publishing the source, or at least a source snapshot per release, while the
-repo is private.
+available to recipients (R-07). The repository has been public since 2026-11-03, so (b) reduces to naming each
+release's source commit.
 
-- Recommendation: yes to (a) for generic tooling; for (b), publish a source snapshot with each release. Decide by the
-  first release.
+- Recommendation: yes to (a) for generic tooling; for (b), tag the exact source commit of each release and link it in
+  the release notes.
 
 ## Brief defaults marked [CONFIRM]
 
@@ -110,7 +110,7 @@ repo is private.
 | melonDS primary, DeSmuME secondary | Keep. melonDS has real DSi mode (with DSi BIOS, firmware and NAND dumps); DeSmuME doesn't, but is easier to automate headless (py-desmume). Neither has a headless Lua mode on Linux (`docs/research/hardware-and-rom.md`). |
 | Hardware | Needs an answer (Q4). |
 | Solo owner + agents, open to others | Keep. The repo records and `AGENTS.md` are written for that. |
-| Private repo | Keep for now. Releases trigger GPL source obligations (Q10). |
+| Private repo | **Decided 2026-11-03: public.** The owner made the repository public to unblock GitHub features. It holds no ROM or Nintendo content; the rules in `AGENTS.md` keep it that way. |
 
 ## Requirements challenged
 

@@ -12,7 +12,7 @@ Black 2 and White 2. Facts from `docs/research/pokebw2.md` (commit `41f42ca`, 20
 - Upstream moves fast: 13–236 commits a day in late October 2026, with frequent renames of symbols and constants.
 - The build needs the user's base ROM; matching is checked by SHA1.
 - GitHub forks of public repositories are always public ("Public repository forks are public", GitHub Docs, fetched
-  2026-11-03). The owner wants Kaleido private for now.
+  2026-11-03). Kaleido's own repository is public as well (owner's decision, 2026-11-03).
 
 The brief (Section 4) asks for the option that best handles upstream sync cost, keeps Nintendo assets out of our repo,
 and is reproducible.
@@ -21,9 +21,9 @@ and is reproducible.
 
 ### (a) Submodule of our own fork, engine changes on a branch
 
-- A GitHub fork is public, so it would publish upstream's assets under the owner's name and contradict the private
-  decision. A private mirror (push of a clone to a new private repo) avoids that, but then the owner hosts ~140k
-  extracted Nintendo assets in a repo they control.
+- A GitHub fork is public, so it would republish upstream's ~140k extracted Nintendo assets under the owner's account.
+  A private mirror (push of a clone to a new private repo) keeps them out of public view, but the owner still hosts
+  them in a repo they control.
 - Sync: merge or rebase upstream into the branch. Ergonomic for development.
 - Reproducible: yes (submodule commit).
 
