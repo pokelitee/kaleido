@@ -11,7 +11,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [pokebw2.md](pokebw2.md) | The engine: build, completeness, DSi handling, data formats and their limits, battle code, save, reusable art |
 | [peripheral-tools.md](peripheral-tools.md) | White2Upgrade's expansion findings, CTRMap, editors, pret decomps, licensed tooling |
 | [hardware-and-rom.md](hardware-and-rom.md) | DS/DSi limits, the Black 2 cart and ROM, hybrid boot paths, emulators, xdelta, source ROM hashes |
-| [e0-baseline.md](e0-baseline.md) | Phase 0 E0: baseline build. E0a (no-ROM compile) passed; E0 (matching build) waits for the owner's ROM |
+| [e0-baseline.md](e0-baseline.md) | Phase 0 E0: baseline build. E0a (no-ROM compile) and E0 (matching build, twice from clean) both passed |
 
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 

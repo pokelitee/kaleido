@@ -65,18 +65,46 @@ What this settles:
 
 ## E0 — matching build with the Black 2 dump
 
-Not run yet. Needs, from the owner:
+### Method
 
-```bash
-sudo apt install ninja-build clang llvm python3.14-venv
-```
-
-and the Black 2 (USA/Europe) dump at `~/kaleido-work/pokebw2/orig/baserom_b2_us.nds` (SHA1
-`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`). Then:
+The owner installed the build packages (`sudo apt install ninja-build clang llvm python3.14-venv`) and supplied the
+Black 2 (USA/Europe) dump. It was copied to `~/kaleido-work/pokebw2/orig/baserom_b2_us.nds`, and its SHA1 was checked
+both before and after the copy. Then, twice, each time from clean (removing `build/`, `build.ninja` and ninja's state):
 
 ```bash
 cd ~/kaleido-work/pokebw2 && python3 configure.py b2_us && ninja
 ```
 
-Done when `build/pokeblack2_us.nds` matches the SHA1, and a second clean build gives the same hash. Build time, disk
-use and tool versions are recorded here.
+`ninja` extracts and delinks the ROM, compiles, links, rebuilds the ROM and fails unless its SHA1 matches.
+
+### Result (2026-11-03): passed
+
+**Verified** on the owner's machine:
+
+| | Run 1 | Run 2 |
+| --- | --- | --- |
+| `configure.py b2_us` | 77 s | 168 s |
+| `ninja` (7,626 steps) | 497 s | 540 s |
+| Output `build/pokeblack2_us.nds` SHA1 | `e51e6dfb8678a3d19dcd2a10691b96a569ca0abb` | `e51e6dfb8678a3d19dcd2a10691b96a569ca0abb` |
+| `build/` size | 1006 MB | 1006 MB |
+
+- **Both clean builds reproduce Black 2 byte for byte.** A matching build is deterministic by construction, so the
+  second run mainly confirms that nothing depends on leftover state.
+- `ninja progress`: code 3,867,578 / 3,867,578 bytes, functions 43,418 / 43,418, files 1,792 / 1,800 complete. This
+  agrees with ByteMatch (`hardware-and-rom.md`).
+- The whole checkout with one build is 3.1 GB.
+- Tool versions: ninja 1.13.2; Ubuntu clang and LLVM 21.1.8; Python 3.14.4; dsd (`ds-decomp-cli`) 0.12.1, release
+  `v0.12.1-dsi.10`, SHA256 `f344007027f6c86c951c81c70d5e7964ef8e6bb56157fbaefb4fc879a39ff2ac`. Upstream downloads dsd
+  with `urlretrieve` and **no hash check** (`configure.py`, `get_dsd`), like objdiff and the Metrowerks compilers.
+- Run 2's configure took twice as long as run 1's. Both ran on the same machine with nothing else scheduled; the cause
+  wasn't investigated.
+
+### What this settles
+
+- The matching build works on the owner's machine with Python 3.14, against upstream CI's 3.12 (R-18, in part).
+- `kaleido baseline` (`03-architecture.md` §7) is achievable as designed. The patched engine with every define off has
+  a known target: `e51e6dfb…`.
+- A full clean build costs about 10–12 minutes and 1 GB of `build/`. A Phase 1 per-game engine worktree costs about
+  3 GB with one build.
+- Three of upstream's five downloaded tools (dsd, objdiff, the Metrowerks compilers) aren't hash-checked by
+  upstream. Kaleido's `doctor` pins all five (R-12).
