@@ -103,7 +103,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | TM contents | Exact | TM → move table is data | Phase 3 |
 | Single-use TMs | Approximate → Exact with engine variant | Gen 5 TMs are reusable | Phase 3 |
 | HMs (Cut, Fly, Surf, Strength, Flash, Rock Smash, Waterfall) | Approximate | Gen 5's HM set and field moves differ; Flash's field effect exists (`res/field/flash/`) | **Verified** Flash; others Phase 3 |
-| Moves available | Exact | All FRLG moves exist among B2W2's | **Assumption** (Gen 5 superset); E2 |
+| Moves available | Exact | All 354 FRLG moves exist in B2W2 with the same IDs (names differ only in spelling, e.g. Smokescreen) | **Verified** (pokefirered `moves.h` vs pokebw2 `generated/moves.txt`) |
 | Move data (power, accuracy, PP, type) | Exact | Gen 3 values via data overrides | Phase 3 |
 | Move effects whose rules changed by Gen 5 | Approximate → Exact per engine variant | Case by case | Phase 3–4 |
 | Physical/special by type | Exact | Ruleset data transform sets each move's `category` from its type | **Verified** per-move category in data |
