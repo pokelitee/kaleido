@@ -31,8 +31,8 @@ revision for E8; hardware for E7.
 **Change**: E0 is added explicitly, E4 is split (an existing-art zone is cheap and certain, new map art is the real
 risk), and E9 and E10 are added because save identity and upstream availability are architecture risks.
 
-Attempted in this planning pass: a no-ROM compile of every C file with upstream's `compile_all.py` (E0a). It
-stopped on setup issues, not compile errors; details in `docs/status.md`. E0a runs again with E0, on a full checkout.
+E0a, a no-ROM compile of every C file with upstream's `compile_all.py`, passed on 2026-11-03: 3,584 of 3,584
+compiled (`docs/research/e0-baseline.md`).
 
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to

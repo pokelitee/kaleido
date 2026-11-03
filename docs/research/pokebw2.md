@@ -33,8 +33,9 @@ tested).
   wibo `pokebw2-sjis-1` (fork of wibo, SHA256-checked), sjiswrap `v1.2.2-pokebw2.1` (SHA256-checked), objdiff
   `v3.8.1`, dsd `v0.12.1-dsi.10` (from `fuddlesworth/ds-decomp`, a `dsi-hybrid` fork), and the Metrowerks compilers from
   `https://decomp.aetias.com/files/mwccarm.zip`. The Metrowerks tools are Windows programs run through wibo.
-  - Whether `mwccarm.zip` is hash-checked is **Unverified**. It is a proprietary toolchain on a third-party host: a
-    reproducibility risk (see `docs/risks.md`).
+  - **Verified** (E0a, `configure.py` lines 594–611): `mwccarm.zip` and objdiff are downloaded **without** a hash
+    check; wibo and sjiswrap are checked. The compilers are a proprietary toolchain on a third-party host: a
+    reproducibility risk (R-12). Hashes recorded in `e0-baseline.md`.
 - **Verified** (`README.md`): the build **requires the user's base ROM** in `orig/` (`baserom_b2_us.nds`,
   `baserom_w2_us.nds`). `ninja` extracts and delinks each ROM, compiles, links with `mwldarm`, rebuilds the ROM and
   checks the SHA1:

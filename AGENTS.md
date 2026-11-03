@@ -9,9 +9,9 @@ holds the rules sessions get wrong and points into `docs/`.
 
 ## Current phase
 
-Planning is done, and the owner answered the open questions on 2026-11-03. **Do not build regions, gameplay systems or
-framework code until the owner approves the plan.** Phase 0 experiments (`docs/plan/05-roadmap.md`) come next. Read
-`docs/status.md` first.
+**Phase 0** (experiments) since 2026-11-03, when the owner approved the plan. Phase 0 changes only a scratch checkout of
+pokebw2 and writes results to `docs/research/e<N>-<topic>.md`. **No regions, gameplay systems or framework code until
+Phase 1** (`docs/plan/05-roadmap.md`). Read `docs/status.md` first.
 
 ## Where things are
 

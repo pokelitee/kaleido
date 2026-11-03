@@ -4,9 +4,12 @@ Last updated: 2026-11-03
 
 ## Current phase
 
-**Planning pass complete; the owner answered Q1–Q10 on 2026-11-03.** No game content, framework code or engine
-changes exist yet. The answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
-`docs/architecture.md`. Waiting on the owner's go-ahead for Phase 0 and the Phase 0 prerequisites.
+**Phase 0 (experiments), started 2026-11-03** after the owner approved the plan. No game content, framework code or
+engine changes exist yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is
+in `docs/architecture.md`.
+
+Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesystem (on the owner's machine,
+`~/kaleido-work/pokebw2`). Experiment write-ups go in `docs/research/`.
 
 ## Done in this pass
 
@@ -26,20 +29,10 @@ changes exist yet. The answers are in `docs/plan/07-open-questions.md`, and what
   no required CI check yet, because there is no CI; Phase 1 adds both (`05-roadmap.md`).
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
-- E0a, no-ROM compile check of upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04.1, Python 3.14.4):
-  **not completed**. Stopped after three attempts, each failing on setup rather than compilation:
-  1. Git Bash rewrote the `/mnt/c` path passed to `wsl.exe` (now noted in `CLAUDE.md`).
-  2. `python3 -m venv` failed: WSL lacks `python3.14-venv`, which needs `sudo apt install python3.14-venv`.
-  3. With system Python and a sparse checkout (everything except `res/`, plus `res/text/`), `compile_all.py` stopped
-     on a missing `res/abilities/ability.schema.json`. The text banks' `\from{...}` lines read species, move,
-     ability and trainer JSON, so a no-ROM compile needs those `res/` sources.
-
-  What it showed:
-  - A blobless clone of the pin onto `/mnt/c` took ~26 minutes (R-23).
-  - Kaleido's CI compile job needs `res/` JSON from the public submodule, not just code (`06-testing.md`).
-  - WSL needs `python3.14-venv` (Phase 0 prerequisites).
-
-  E0a moves into Phase 0 with E0.
+- **E0a passed** (Phase 0, 2026-11-03): upstream's `compile_all.py` at the pin compiled 3,584 of 3,584 (every C file,
+  both versions) with no warnings, in WSL's filesystem with system Python 3.14.4. Three planning-pass attempts had
+  stopped on setup (path rewriting, no venv package, a checkout without `res/`). Upstream doesn't hash-check the
+  Metrowerks compilers or objdiff; their hashes are now recorded. Details: `docs/research/e0-baseline.md`.
 
 ## Most important findings
 
@@ -54,16 +47,15 @@ changes exist yet. The answers are in `docs/plan/07-open-questions.md`, and what
 
 ## Next steps
 
-1. Owner gives the go-ahead for Phase 0.
-2. Owner sets up Phase 0 prerequisites: `sudo apt install ninja-build clang llvm python3.14-venv` in WSL; a Black 2
-   (USA/Europe) dump in WSL's own filesystem; a FireRed dump (its revision becomes the first extraction target, Q5).
-3. Phase 0 experiments (`docs/plan/05-roadmap.md`), starting with E0 (baseline build) and E4b (new map art). E7 waits
-   for hardware.
+1. Owner installs the build packages in WSL: `sudo apt install ninja-build clang llvm python3.14-venv`.
+2. Owner copies the Black 2 (USA/Europe) dump to `~/kaleido-work/pokebw2/orig/baserom_b2_us.nds` in WSL (upstream's
+   `.gitignore` covers it), and a FireRed dump to `~/kaleido-work/roms/` (its revision becomes the first extraction
+   target, Q5).
+3. E0 (baseline build), then E4b (new map art), E6, E1–E5, E8–E10 (`docs/plan/05-roadmap.md`). E7 waits for hardware.
 
 ## Blockers
 
-- Owner's go-ahead for Phase 0 (brief, Section 0).
-- The Black 2 and FireRed dumps and the WSL packages are with the owner (E0, E8).
+- The WSL packages and the Black 2 and FireRed dumps are with the owner (E0 onward, E8).
 - No hardware yet (E7; required by Phase 3.5's exit).
 
 ## Not verified in this pass
