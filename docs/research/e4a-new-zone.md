@@ -17,6 +17,9 @@ art?
   which changes bytes in ARM9's first 16 KiB. dsd then needs the BIOS's Blowfish key to recompute the DSi secure-area
   values. **This applies to any engine change that moves code in ARM9 main**, not just this one (new risk R-27).
 - Kanto doesn't need more than 615 zones for Tier 1 (FRLG has 425 maps), so appending isn't required yet.
+- **Resolved by ADR 0004** (owner, 2026-11-03): Tier 1 reuses zone IDs, and Kaleido's dsd change
+  `--allow-stale-secure-area` builds without the BIOS. **Verified**: the untouched pin still matches Black 2 with the
+  patched dsd, and E4a's ROM builds (§6).
 
 ## 1. How a zone is wired
 
@@ -99,7 +102,7 @@ So **any engine change that moves code in ARM9 main needs the BIOS at build time
 main that isn't byte-for-byte size-neutral at function level. Changes confined to overlays (E3) or to data (E1, E2,
 E4b) don't.
 
-## 5. Options
+## 5. Options (decided in ADR 0004: B, plus C)
 
 | Option | What it takes | Effect |
 | --- | --- | --- |
@@ -110,9 +113,38 @@ E4b) don't.
 The DS Protect guard (R-25) and the B2W2-system switches (Q7) may also touch ARM9 main, so A or C will be needed
 eventually even if B handles zones.
 
+## 6. Resolution: dsd with `--allow-stale-secure-area`
+
+The change, recorded as [`dsd-allow-stale-secure-area.patch`](dsd-allow-stale-secure-area.patch) (MIT, against
+`fuddlesworth/ds-rom` `66e83ef` and `fuddlesworth/ds-decomp` `2dc1b27`, the commits pokebw2's dsd `v0.12.1-dsi.10`
+uses):
+
+- `Dsi::finalize` takes `allow_stale_secure_area`. When the plaintext secure area changed and no Blowfish key is
+  given, it warns instead of failing and keeps the extracted values.
+- `Rom::build` keeps its signature and calls a new `Rom::build_with(key, allow_stale_secure_area)`.
+- `dsd rom build` gets `--allow-stale-secure-area`.
+- pokebw2's `configure.py` (Kaleido engine patch, in the scratch branch) gets `--allow-stale-secure-area` and
+  `--arm7-bios PATH`, passed to `dsd rom build` and kept on regeneration.
+
+Built with Rust 1.99.1 (rustup, minimal profile, in WSL; first release build 35 minutes). Resulting dsd: version
+0.12.1, SHA256 `d19cbd9a2b85b7e173777de5839bb5d117ee6a74e2a5ede8edb45d6915ec3b37`.
+
+**Verified**:
+
+| Check | Result |
+| --- | --- |
+| Untouched pin, patched dsd, full `ninja` with every matching check | passed; SHA1 `e51e6dfb8678a3d19dcd2a10691b96a569ca0abb` |
+| E4a branch, `--define KALEIDO_EXTRA_ZONES --allow-stale-secure-area`, ROM target | built (316 s); dsd warned that it kept the stale secure-area values |
+| New zone, events and warps read back from the ROM's archives | as in §3 |
+| `verify_dsi_rom.py` | every check it runs passes: 281,228 DS-area and 421 DSi-area sector digests, 8,802 block digests, the ARM7, digest, banner, ARM9i, ARM7i and ARM9-without-secure-area HMACs. It skips the secure area's two sectors and the HMAC covering it, by design |
+| Test ROM SHA1 | `785211b3927f4286386df67b4ee20ecefa9c973a` (`~/kaleido-work/e4a/kaleido-e4a-test.nds`, never committed) |
+
+Stale by construction: the two secure-area sector digests, the ARM9-with-secure-area SHA1-HMAC (header `0x300`),
+and the secure-area CRC (`0x6C`). DS mode doesn't check them. A DSi-mode loader that does would refuse the ROM;
+whether nds-bootstrap or Unlaunch check them is **Unverified** (E7).
+
 ## Not done
 
-- No E4a ROM was produced with the switch on. A build with the switch off but the content in would boot, but zone 615
-  would hit the collisions above. It wasn't built.
-- In-game check (walk through Aspertia's door into the new zone and back, talk to the NPC): deferred to the playtest
-  pass, once a ROM exists.
+- In-game check: walk through Aspertia's door into the new zone and back, and talk to the NPC. Deferred to the
+  playtest pass (`docs/status.md`).
+- The dsd change isn't offered upstream yet. That's a public pull request, sent when the owner says so (Q10).

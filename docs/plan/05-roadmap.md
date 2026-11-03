@@ -45,8 +45,9 @@ experiment (owner's decision). A Phase 0 experiment counts as done on build-leve
 listed in `docs/status.md` ("Deferred to playtesting").
 
 E4a (`docs/research/e4a-new-zone.md`): a new zone's data packs and reads back correctly. Appending zones needs a
-"no zone" sentinel fix in ARM9 main, and any ARM9 main change needs the DS ARM7 BIOS to finish the ROM (R-27);
-how to proceed is the owner's decision.
+"no zone" sentinel fix in ARM9 main, and any ARM9 main change needs the DS ARM7 BIOS to finish the ROM (R-27).
+ADR 0004: Tier 1 reuses zone IDs, and a dsd flag (`--allow-stale-secure-area`) builds without the BIOS. E4a's ROM
+now builds.
 
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to

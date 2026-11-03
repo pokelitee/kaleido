@@ -103,7 +103,8 @@ files and that layer's extracted files are merged together. A path that both pro
 | `generated/<list>.txt` | Appends constants to upstream's list. Duplicates are an error. Upstream constants are never renamed or removed, because engine code refers to them. |
 
 - Content that replaces B2W2 behavior repurposes existing IDs by overriding their files (the new game's start zone, its
-  title screen), or adds new IDs. Unova content stays in the ROM, unreferenced, unless ROM space requires pruning
+  title screen), or adds new IDs. Tier 1 zones always reuse existing zone IDs, recorded in the region's mapping
+  (ADR 0004). Unova content stays in the ROM, unreferenced, unless ROM space requires pruning
   (measured by E6).
 - The merge writes into a per-game engine worktree (§7) and rewrites only files whose bytes changed, so ninja's
   incremental build still works.
@@ -176,7 +177,8 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
   140k-file build much slower; measured in E0.
 - **Tool cache**: upstream's downloaded tools (wibo, sjiswrap, objdiff, dsd, mwccarm) are cached once under
   `.cache/tools/` with recorded hashes. `doctor` checks them, because the Metrowerks package comes from a third-party
-  host (R-12).
+  host (R-12). dsd is the exception: until upstream takes Kaleido's change, bootstrap builds it with Rust from
+  `ds-decomp` and `ds-rom` at pinned commits plus `--allow-stale-secure-area` (ADR 0004).
 
 ## 8. Configuration
 
