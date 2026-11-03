@@ -15,6 +15,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [e4b-map-art.md](e4b-map-art.md) | Phase 0 E4b: new map art. Upstream refuses it; a template-append prototype ([patch](e4b-template-append.patch)) builds and plays normally in melonDS; chunk size budgets |
 | [e6-headroom.md](e6-headroom.md) | Phase 0 E6: ROM ≈ 231 MiB free; ARM9 far under the DSi limit; DS-mode RAM ≈ 213 KiB for added code and static data; E6b (runtime) defined |
 | [e1-e3.md](e1-e3.md) | Phase 0 E1–E3: text, trainer data and a battle code switch (`--define`, [patch](e3-define.patch)); built-ROM checks pass; in-game rival battle pending |
+| [e4a-new-zone.md](e4a-new-zone.md) | Phase 0 E4a: a new zone's data packs ([patch](e4a-extra-zones.patch) for the "no zone" collisions); ARM9 main changes need the DS ARM7 BIOS (R-27) |
 
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 

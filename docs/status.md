@@ -50,6 +50,11 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   the compiled crit roll is always TRUE and 15 overlays move. E2: the rival's first party unpacks from the built ROM as
   Pikachu Lv 5. E1: the new intro text shows in game (owner). Pending: E1 glyph and line-width details; the rival
   battle in game (E2, E3). Details: `docs/research/e1-e3.md`.
+- **E4a partly done** (2026-11-03): a new zone (header, events, warps both ways, script, text) packs and reads
+  back from the built archives. Appending zones collides with three hard-coded "no zone" values of 615; a
+  `KALEIDO_EXTRA_ZONES` switch fixes them, and with it off the build still matches. With it on, the ROM can't be
+  finished without the DS ARM7 BIOS, because any change to ARM9 main code changes its secure area (R-27). Details:
+  `docs/research/e4a-new-zone.md`.
 
 ## Most important findings
 
@@ -65,16 +70,19 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E4a, E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b and E1–E3 prototypes are on
-   branches `e4b-template-append` and `phase0-e1-e3`). E6b (runtime memory, save use) when an emulator harness or a
+1. Owner decides how to handle R-27 (ARM9 main changes need the DS ARM7 BIOS): supply a BIOS dump, repurpose zone
+   IDs for now, or change dsd (`docs/research/e4a-new-zone.md` §5).
+2. E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3 and E4a prototypes are on
+   branches `e4b-template-append`, `phase0-e1-e3` and `phase0-e4a`). E6b (runtime memory, save use) when an emulator harness or a
    melonDS GDB session is available.
-2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
-3. E7 waits for hardware.
-4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
+3. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+4. E7 waits for hardware.
+5. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
    under "Deferred to playtesting" below.
 
 ## Blockers
 
+- Owner decision on R-27 (E4a's ROM; any engine change in ARM9 main).
 - FireRed dump (E8 only).
 - No hardware yet (E7; required by Phase 3.5's exit).
 
