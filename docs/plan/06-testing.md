@@ -53,6 +53,10 @@ CI hygiene follows the owner's standard: actions pinned to full commit SHAs with
 
 ## Layer 3: emulator tests
 
+Manual in-game checks are batched into a playtest pass at the end, not run after each change (owner's decision,
+2026-11-03). Pending ones are listed in `docs/status.md`. Automated emulator tests, once the harness exists, run as
+part of the local checks.
+
 melonDS is the primary emulator, DeSmuME secondary (brief). Neither has a headless scripting mode on Linux
 (`docs/research/hardware-and-rom.md`). Phase 1 includes a short spike to pick the harness:
 
