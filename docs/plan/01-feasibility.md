@@ -10,11 +10,12 @@ experiment or phase confirms them. Evidence tags: **Verified** (source named, wi
 Tier 1 is feasible on pokebw2, on three conditions:
 
 1. **A route for new map art** (R-01). Upstream's packers can edit the original 1,065 map models and 409 texture sets
-   but can't add any. Either we build a glTF → Nitro encoder that can (offered upstream), or Kanto is built by
-   repurposing Unova chunks within their limits. E4b decides.
-2. **A distribution decision** (Q1). A single-source xdelta carries the FireRed content it adds.
-3. **A bounded Gen 1 scope** (Q9). Several Gen 1 behaviors need engine variants; some data-model differences stay
-   Approximate.
+   but can't add any. Direction chosen in Q3: repurpose Unova chunks for the Phase 3 prototype, then build a glTF →
+   Nitro encoder that can add models and texture sets (offered upstream) before Phase 4. E4b confirms.
+2. **A distribution decision** (Q1, decided 2026-11-03): a single-source xdelta carries the FireRed content it adds,
+   and that is accepted.
+3. **A bounded Gen 1 scope** (Q9, decided: Gen 1 rules on Gen 5 data). Several Gen 1 behaviors need engine variants;
+   some data-model differences stay Approximate.
 
 Everything else in Tier 1 is either possible with upstream's formats today or a bounded engine change.
 
@@ -42,7 +43,7 @@ All **Verified** from upstream's docs and packers unless marked.
 | Guard out DS Protect (anti-piracy) | Loaders fix it by game code + header CRC, which a modified ROM won't match | Small | **Verified** (TWiLight Menu++ source, `hardware-and-rom.md`); E7 |
 | Content overlay into the engine tree | Our layers must land in `res/` and `generated/` | Small (framework, maybe no engine change) | Phase 1 |
 | New-game start in Pallet Town; title, intro, Professor | B2W2's opening is code and scripts | Medium | Phase 3 |
-| Disable B2W2-only systems | C-Gear, Pass Powers, seasons, Join Avenue, PWT, … | Medium, spread over overlays | Phase 1 inventory, Q7 |
+| Per-game switches for B2W2-only systems | C-Gear, Pass Powers, seasons, Join Avenue, PWT, …; each game's config turns each on or off (Q7) | Medium, spread over overlays | Phase 1 inventory, Q7 |
 | Old/Good Rod and Rock Smash encounters | Gen 5 has one fishing kind and no Rock Smash kind (**Verified**, `enc_pokeset.h`) | Medium | Phase 3 |
 | Single-use TMs, FRLG's HM set | Gen 5 TMs are reusable; HM count differs (**Assumption**) | Small–Medium | Phase 3 |
 | Kanto regional Pokédex (151) | Regional dex length looks like a code constant (White2Upgrade had to patch it) | Small | **Assumption**; E5 |
@@ -121,7 +122,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Trading between two Kaleido carts | Approximate | Gen 5 wireless stack may work between two Kaleido ROMs | **Unverified** |
 | Help system, Union Room, Teachy TV screen | Approximate | Simplified or omitted Gen 3-specific UI | Phase 4 |
 
-## Fidelity: Red, Blue and Yellow (scope proposal; owner decides in Q9)
+## Fidelity: Red, Blue and Yellow (scope accepted in Q9: Gen 1 rules on Gen 5 data)
 
 | Feature | Class | What differs and why | Evidence / confirmed by |
 | --- | --- | --- | --- |
