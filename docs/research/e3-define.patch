@@ -1,0 +1,81 @@
+E3 prototype for fuddlesworth/pokebw2 at 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c: a configure.py --define option for
+Kaleido's preprocessor switches, and a KALEIDO_E3_ALWAYS_CRIT switch in the battle code. Modifies GPL-3.0 code, so this
+patch is GPL-3.0. Recorded for Phase 1 (docs/research/e1-e3.md); no build applies it.
+Check: git apply --check docs/research/e3-define.patch (in a pokebw2 checkout at the commit above).
+
+diff --git a/configure.py b/configure.py
+index b30848fae..50e597f91 100644
+--- a/configure.py
++++ b/configure.py
+@@ -638,10 +638,11 @@ def get_dsd(tools_dir: Path, from_source: bool) -> Path:
+     return dsd
+ 
+ 
+-def add_version(n: Writer, version: str, dsd: Path, bugfix: bool, shift: int) -> tuple[list[Path], list[str]]:
++def add_version(n: Writer, version: str, dsd: Path, bugfix: bool, shift: int,
++                extra_defines: list[str]) -> tuple[list[Path], list[str]]:
+     """Adds the build steps of one version. Returns its check targets and dsd config files. A build with the bugs fixed
+     or with its code shifted does not match, so its only targets are the ROM and its archives."""
+-    matching = not bugfix and not shift
++    matching = not bugfix and not shift and not extra_defines
+     baserom = Path("orig") / f"baserom_{version}.nds"
+     extract_dir = Path("extract") / version
+     config_dir = Path("config") / version
+@@ -691,7 +692,7 @@ def add_version(n: Writer, version: str, dsd: Path, bugfix: bool, shift: int) ->
+     # Source files are listed in delinks.txt by their path. Complete files are linked from the compiled object, and
+     # incomplete ones are still compiled so objdiff can compare them. A file in config/deadstrip.toml is compiled to an
+     # object under unstripped/, which the strip turns into the one at the usual path.
+-    version_defines = VERSIONS[version]["defines"] + (["BUGFIX"] if bugfix else [])
++    version_defines = VERSIONS[version]["defines"] + (["BUGFIX"] if bugfix else []) + extra_defines
+     defines = " ".join(f"-d {define}" for define in version_defines)
+     as_defines = " ".join(f"-D{define}" for define in version_defines)
+     objects = []
+@@ -903,6 +904,9 @@ def main():
+     parser.add_argument("--shift", type=lambda s: int(s, 0), default=0, metavar="BYTES",
+                         help="pad the code so that it and everything after it moves, to test that a mod can change "
+                              "code sizes; the ROMs no longer match. A multiple of 32, such as 0x100")
++    parser.add_argument("--define", action="append", default=[], metavar="NAME[=VALUE]",
++                        help="define a preprocessor macro for the game's code and scripts; the ROMs no longer "
++                             "match")
+     parser.add_argument("--bugfix", action="store_true",
+                         help="fix the game's bugs that are marked with BUGFIX in the source; the ROMs no longer match")
+     args = parser.parse_args()
+@@ -1011,6 +1015,7 @@ def main():
+     n.rule("progress", "$python tools/build/progress.py $in", "Progress")
+     # A regeneration keeps the options that chose the tools, so that a build with another dsd keeps it
+     configure_args = [*args.versions, *(["--bugfix"] if args.bugfix else []),
++                      *(f"--define {shlex.quote(define)}" for define in args.define),
+                       *([f"--shift {args.shift:#x}"] if args.shift else []),
+                       *([f"--dsd {shlex.quote(str(args.dsd.resolve()))}"] if args.dsd else []),
+                       *(["--dsd-from-source"] if args.dsd_from_source else []),
+@@ -1073,7 +1078,7 @@ def main():
+ 
+     checks, configs = [], []
+     for version in versions:
+-        version_checks, version_configs = add_version(n, version, dsd, args.bugfix, args.shift)
++        version_checks, version_configs = add_version(n, version, dsd, args.bugfix, args.shift, args.define)
+         checks += version_checks
+         configs += version_configs
+ 
+diff --git a/src/ov167/btl_calc.c b/src/ov167/btl_calc.c
+index a2216bb49..05c90776d 100644
+--- a/src/ov167/btl_calc.c
++++ b/src/ov167/btl_calc.c
+@@ -116,12 +116,17 @@ u8 BtlCalc_ApplyAccuracyStage(u32 value, u32 stage) {
+ }
+ 
+ BOOL BtlCalc_RollCritical(u8 critStage) {
++#ifdef KALEIDO_E3_ALWAYS_CRIT
++    // Kaleido Phase 0 experiment E3: every hit that can be a critical hit is one
++    return TRUE;
++#else
+     u8 roll = BattleRandom(CRITICAL_HIT_CHANCES[critStage]);
+ 
+     if (roll == 0) {
+         return TRUE;
+     }
+     return FALSE;
++#endif
+ }
+ 
+ u32 GetTypeEffectiveness(u8 attackType, u8 defenseType) {

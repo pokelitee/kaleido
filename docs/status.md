@@ -45,6 +45,11 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   RAM is the constraint**: the heaps are fixed and the arena starts where the last overlay ends, so all added code and
   static data must fit in ≈ 213 KiB. Heap 1 has 288,256 B left in the field. E6b (runtime free memory, save use) is
   defined but not run. Details: `docs/research/e6-headroom.md`.
+- **E1–E3 built, in-game checks partly pending** (2026-11-03). E3: `configure.py --define` plus a
+  `KALEIDO_E3_ALWAYS_CRIT` switch. With the switch off, the build still matches Black 2 with every check; with it on,
+  the compiled crit roll is always TRUE and 15 overlays move. E2: the rival's first party unpacks from the built ROM as
+  Pikachu Lv 5. E1: the new intro text shows in game (owner). Pending: E1 glyph and line-width details; the rival
+  battle in game (E2, E3). Details: `docs/research/e1-e3.md`.
 
 ## Most important findings
 
@@ -60,11 +65,13 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin; the E4b prototype
-   is on its `e4b-template-append` branch). E6b (runtime memory, save use) when an emulator harness or a melonDS GDB
-   session is available.
-2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
-3. E7 waits for hardware.
+1. Finish E1–E3's in-game checks: the rival battle at the Aspertia lookout (owner, or an emulator harness), and E1's
+   glyph and line-width details. Test ROM: `~/kaleido-work/e1-e3/kaleido-e1-e3-test.nds`.
+2. E4a, E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b and E1–E3 prototypes are on
+   branches `e4b-template-append` and `phase0-e1-e3`). E6b (runtime memory, save use) when an emulator harness or a
+   melonDS GDB session is available.
+3. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+4. E7 waits for hardware.
 
 ## Blockers
 
