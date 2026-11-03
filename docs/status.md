@@ -1,0 +1,53 @@
+# Status
+
+Last updated: 2026-11-03
+
+## Current phase
+
+**Planning pass complete, waiting for owner review.** No game content, framework code or engine changes exist yet.
+The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-open-questions.md` and on
+`docs/decisions/0002-engine-integration.md` (Proposed).
+
+## Done in this pass
+
+- Researched the foundation and verified the brief's Section 3 baseline: `docs/research/` (pokebw2 pinned at
+  `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c`, 2026-10-31).
+- Wrote the plan: feasibility (`01`), foundation (`02`), architecture (`03`), roadmap (`05`), testing (`06`), open
+  questions (`07`), and `docs/risks.md`.
+- ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed.
+- Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
+  agent-local settings), `.gitattributes` (LF everywhere).
+- E0a, no-ROM compile check: upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04, Python 3.14). **Status:
+  started, not finished when this file was written.** Script:
+  `wsl.exe -d Ubuntu -- bash <scratchpad>/scripts/e0_compile_all.sh <dir>`. It clones the pin sparsely (no `res/`
+  except `res/text/`), creates a venv and runs `compile_all.py -j 10`. Rerun it in Phase 0 if no result is recorded
+  here.
+
+## Most important findings
+
+1. Upstream's packers can **edit** the original map models and texture sets but can't **add** new ones (R-01). Gen
+   5-style Kanto needs a new-map-art route (Q3, E4b).
+2. A single-source xdelta from B2 necessarily carries the extracted FRLG content, and patches can't go on GitHub
+   under the brief's rules (Q1).
+3. B2W2 carts have infrared, a 512 KB FLASH save behind it, and 512 MB of ROM space at most. The game code must stay
+   `IREO`. DS Protect must be guarded out in source (R-25).
+4. FRLG's grass, surf and Super Rod odds, crit stages and type chart are identical to B2W2's (verified), so much of
+   Gen 3 is data-exact.
+
+## Next steps
+
+1. Owner reviews the plan and answers Q1–Q10 (at least Q1, Q2 and Q4 before Phase 1).
+2. Owner sets up Phase 0 prerequisites: Black 2 dump in the WSL checkout's `orig/`; `sudo apt install ninja-build
+   clang llvm` in WSL; a FireRed dump; hardware list.
+3. Phase 0 experiments E0–E10 (`docs/plan/05-roadmap.md`), starting with E0 (baseline build) and E4b (new map art).
+
+## Blockers
+
+- Owner approval of the plan (brief, Section 0).
+- Base ROM and hardware are with the owner (E0, E7).
+
+## Not verified in this pass
+
+- No ROM was built: the base ROM isn't on this machine.
+- Hardware facts come from GBATEK, emulator and loader sources, not from devices.
+- xdelta determinism, the WSL file-system speed and upstream's tool hashes are untested assumptions (see `risks.md`).
