@@ -243,7 +243,7 @@ A ruleset is a file in `framework/rulesets/`:
 - **Open (Q1)**: the brief bans ROM-derived data from GitHub, and patches are ROM-derived. So patches can't go on
   GitHub Releases unless the owner says otherwise.
 - **GPL-3.0**: distributing a patch distributes compiled GPL code; recipients must be able to get the corresponding
-  source (R-07).
+  source (R-07). The repository is public, so each release tags its exact source commit and links it.
 
 ## 11. Licensing boundaries
 
