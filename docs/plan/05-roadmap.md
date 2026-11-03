@@ -9,9 +9,9 @@ Goal: prove on the owner's machine that pokebw2 can be built, changed and booted
 measure the limits. Each experiment is recorded in `docs/research/e<N>-<topic>.md` with commands, the pokebw2 commit,
 results and the risk it retires.
 
-Prerequisites (owner): Black 2 (USA/Europe) dump in the WSL checkout's `orig/`; `ninja-build`, `clang` and `llvm`
-installed in WSL (`sudo apt install ninja-build clang llvm`); a FireRed dump of the chosen revision for E8; hardware for
-E7.
+Prerequisites (owner): Black 2 (USA/Europe) dump in the WSL checkout's `orig/`; build tools in WSL (`sudo apt install
+ninja-build clang llvm python3.14-venv`; Ubuntu 26.04's Python lacks `venv` without it); a FireRed dump of the chosen
+revision for E8; hardware for E7.
 
 | ID | Experiment | Done when | Retires |
 | --- | --- | --- | --- |
@@ -31,8 +31,8 @@ E7.
 **Change**: E0 is added explicitly, E4 is split (an existing-art zone is cheap and certain, new map art is the real
 risk), and E9 and E10 are added because save identity and upstream availability are architecture risks.
 
-Already done in this planning pass: no-ROM compile of every C file with upstream's `compile_all.py` (E0a; result in
-`docs/status.md`).
+Attempted in this planning pass: a no-ROM compile of every C file with upstream's `compile_all.py` (E0a). It
+stopped on setup issues, not compile errors; details in `docs/status.md`. E0a runs again with E0, on a full checkout.
 
 Exit criteria:
 

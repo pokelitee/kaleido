@@ -36,7 +36,7 @@ Last reviewed: 2026-11-03 (planning pass). Review at the end of each phase and w
 | R-20 | **Continuity**: solo owner plus agents on several machines. | Medium | Medium | Repo records discipline (`AGENTS.md`, `docs/status.md`, ADRs). | Ongoing control |
 | R-21 | **Hardware coverage unknown**: the owner hasn't listed devices or flashcarts. | Medium | Medium | Q4; melonDS in DS and DSi modes meanwhile. | Q4 + E7 |
 | R-22 | **3D rendering budget**: Gen 5-style Kanto maps must fit the DS GPU's per-frame polygon, vertex and texture memory limits. | Medium | Medium | Measure B2W2's densest maps as the reference budget; validator warns past it. | E4b |
-| R-23 | **WSL file-system speed**: building a 140k-file tree from `/mnt/c` may be very slow. | Low | Medium | Build in WSL's own filesystem. | E0 |
+| R-23 | **WSL file-system speed**: building a 140k-file tree from `/mnt/c` may be very slow. A blobless clone of pokebw2 onto `/mnt/c` already took ~26 minutes (planning pass). | Low | High | Build in WSL's own filesystem. | E0 |
 | R-24 | **Music pipeline**: FRLG songs need a GBA sequence → Nitro SSEQ/SBNK/SWAR converter, or original arrangements; neither exists. | Medium | High | Decide the approach (Q6); prototype one song in Phase 3. | Q6 + Phase 3 |
 
 ## Retired risks

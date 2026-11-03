@@ -28,7 +28,7 @@ One required check, `CI`, running these jobs:
 | Provenance | Every committed path covered exactly once; no category 2 path in git; category 4 entries carry a license | — |
 | Cross-references | Run on committed layers plus upstream `res/`, with extracted IDs taken from recipes (the IDs are declared there, the content isn't) | Catches broken warps, unknown constants and missing text IDs without ROM data |
 | ROM-content guard | Reject ROM and save files by extension and by magic bytes, files over a size limit, and anything under `orig/`, `extract/` or `build/` | Also a pre-commit hook |
-| Engine compile | Apply the patch series, then run upstream's `compile_all.py` once per distinct define set (baseline, each game) | Needs no ROM: ROM blobs compile as zeros (upstream's own CI does this). Downloads the Metrowerks tools; cached by `actions/cache` |
+| Engine compile | Apply the patch series, then run upstream's `compile_all.py` once per distinct define set (baseline, each game) | Needs no ROM: ROM blobs compile as zeros (upstream's own CI does this). Needs upstream's `res/` JSON, because text banks pull lines from it (found in E0a), so the job checks out the public submodule with `res/`. Downloads the Metrowerks tools; cached by `actions/cache` |
 | Docs | Links between `docs/` files resolve | Cheap; keeps the records usable |
 
 CI hygiene follows the owner's standard: actions pinned to full commit SHAs with a version comment, read-only

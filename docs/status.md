@@ -17,11 +17,20 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 - ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed.
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
-- E0a, no-ROM compile check: upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04, Python 3.14). **Status:
-  started, not finished when this file was written.** Script:
-  `wsl.exe -d Ubuntu -- bash <scratchpad>/scripts/e0_compile_all.sh <dir>`. It clones the pin sparsely (no `res/`
-  except `res/text/`), creates a venv and runs `compile_all.py -j 10`. Rerun it in Phase 0 if no result is recorded
-  here.
+- E0a, no-ROM compile check of upstream's `compile_all.py` at the pin, in WSL2 (Ubuntu 26.04.1, Python 3.14.4):
+  **not completed**. Stopped after three attempts, each failing on setup rather than compilation:
+  1. Git Bash rewrote the `/mnt/c` path passed to `wsl.exe` (now noted in `CLAUDE.md`).
+  2. `python3 -m venv` failed: WSL lacks `python3.14-venv`, which needs `sudo apt install python3.14-venv`.
+  3. With system Python and a sparse checkout (everything except `res/`, plus `res/text/`), `compile_all.py` stopped
+     on a missing `res/abilities/ability.schema.json`. The text banks' `\from{...}` lines read species, move,
+     ability and trainer JSON, so a no-ROM compile needs those `res/` sources.
+
+  What it showed:
+  - A blobless clone of the pin onto `/mnt/c` took ~26 minutes (R-23).
+  - Kaleido's CI compile job needs `res/` JSON from the public submodule, not just code (`06-testing.md`).
+  - WSL needs `python3.14-venv` (Phase 0 prerequisites).
+
+  E0a moves into Phase 0 with E0.
 
 ## Most important findings
 
@@ -38,7 +47,7 @@ The plan is in `docs/plan/`; the owner's decisions are needed on `docs/plan/07-o
 
 1. Owner reviews the plan and answers Q1–Q10 (at least Q1, Q2 and Q4 before Phase 1).
 2. Owner sets up Phase 0 prerequisites: Black 2 dump in the WSL checkout's `orig/`; `sudo apt install ninja-build
-   clang llvm` in WSL; a FireRed dump; hardware list.
+   clang llvm python3.14-venv` in WSL; a FireRed dump; hardware list.
 3. Phase 0 experiments E0–E10 (`docs/plan/05-roadmap.md`), starting with E0 (baseline build) and E4b (new map art).
 
 ## Blockers
