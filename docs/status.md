@@ -41,6 +41,10 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   with every original unchanged and valid DSi digests. It plays normally in melonDS in DS mode (owner's check). Found: `AREA_COUNT` caps areas at
   409; each chunk must fit its map type's buffer (86,020 B for most); recoloring shared texture data can be refused.
   ADR 0003 accepted. Details: `docs/research/e4b-map-art.md`.
+- **E6a done** (2026-11-03, static): ROM ≈ 231 MiB free of 512 MiB; ARM9 binary far under the DSi's 2.5 MB. **DS-mode
+  RAM is the constraint**: the heaps are fixed and the arena starts where the last overlay ends, so all added code and
+  static data must fit in ≈ 213 KiB. Heap 1 has 288,256 B left in the field. E6b (runtime free memory, save use) is
+  defined but not run. Details: `docs/research/e6-headroom.md`.
 
 ## Most important findings
 
@@ -56,8 +60,9 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E6 (headroom), then E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin;
-   the E4b prototype is on its `e4b-template-append` branch).
+1. E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin; the E4b prototype
+   is on its `e4b-template-append` branch). E6b (runtime memory, save use) when an emulator harness or a melonDS GDB
+   session is available.
 2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
 3. E7 waits for hardware.
 

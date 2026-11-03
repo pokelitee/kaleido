@@ -241,7 +241,9 @@ points; the first switches arrive with the Phase 3 prototype.
 - **Provenance**: every committed path is covered exactly once; category 2 paths are absent from git; category 4 has
   a license record.
 - **ROM**: header and digests (`tools/build/verify_dsi_rom.py`); ROM ≤ 512 MB and ARM9 ≤ 2.5 MB
-  (`hardware-and-rom.md`); limits found by E6; overlay table sanity.
+  (`hardware-and-rom.md`); overlay table sanity.
+- **RAM (DS mode)**: `0x023e0000` minus the build's `OV290_BSS_END` must cover the fixed root heaps and the extra heap
+  plus a margin (`docs/research/e6-headroom.md`), so overgrowth fails the build instead of the boot.
 
 ## 10. Distribution
 

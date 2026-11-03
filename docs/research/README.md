@@ -13,6 +13,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [hardware-and-rom.md](hardware-and-rom.md) | DS/DSi limits, the Black 2 cart and ROM, hybrid boot paths, emulators, xdelta, source ROM hashes |
 | [e0-baseline.md](e0-baseline.md) | Phase 0 E0: baseline build. E0a (no-ROM compile) and E0 (matching build, twice from clean) both passed |
 | [e4b-map-art.md](e4b-map-art.md) | Phase 0 E4b: new map art. Upstream refuses it; a template-append prototype ([patch](e4b-template-append.patch)) builds and plays normally in melonDS; chunk size budgets |
+| [e6-headroom.md](e6-headroom.md) | Phase 0 E6: ROM ≈ 231 MiB free; ARM9 far under the DSi limit; DS-mode RAM ≈ 213 KiB for added code and static data; E6b (runtime) defined |
 
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 
