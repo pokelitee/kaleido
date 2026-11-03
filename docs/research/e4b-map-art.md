@@ -103,8 +103,11 @@ must fail. Results, **Verified**:
 committed) in melonDS, and it "runs like normal Black 2". The game starts in Aspertia City, where cell (22, 1) loads
 chunk #1065 and every area record loads set #409. If appended IDs had failed, that cell would be empty or untextured,
 or the game would crash there. The copies are identical to their templates, so this proves the IDs load. It doesn't
-prove anything about edited geometry or textures, which the Phase 3 prototype will exercise. Not checked: DSi mode
-and hardware (E7).
+prove anything about edited geometry or textures, which the Phase 3 prototype will exercise.
+
+The owner used melonDS's default settings, which are DS mode with direct boot: `ConsoleType` 0 (DS; 1 is DSi) and
+`DirectBoot` 1. **Verified** in melonDS `src/frontend/qt_sdl/Config.cpp` and `src/NDS.h` at `1e654443e4c0`. Not
+checked: DSi mode and hardware (E7).
 
 ### The recolor that failed
 
