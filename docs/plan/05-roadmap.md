@@ -36,7 +36,9 @@ E0, the matching build, which reproduced Black 2's SHA1 twice from clean. E4b (`
 upstream refuses new map art; a template-append prototype adds a new chunk and texture set to a ROM that builds and
 plays normally in melonDS; ADR 0003 accepted. E6a (`docs/research/e6-headroom.md`): ROM ≈ 231 MiB free; ARM9 far
 under the DSi limit; DS-mode RAM is the constraint, at ≈ 213 KiB for all added code and static data. E6b (runtime
-free memory, save use) is defined and still to do.
+free memory, save use) is defined and still to do. E1–E3 (`docs/research/e1-e3.md`): `--define` and a crit switch;
+switch off still matches; edits verified in the built ROM; E1's text shows in game; the rival battle (E2, E3) is
+still to be checked in game.
 
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
