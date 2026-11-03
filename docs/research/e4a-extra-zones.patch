@@ -1,0 +1,58 @@
+E4a prototype for fuddlesworth/pokebw2 at 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c: with KALEIDO_EXTRA_ZONES, the values
+that mean "no zone" (ZONE_MAX, the zone header cache's start value, the initial place-name zone) move from 615 to
+0xffff, so zones can be added past Pledge Grove. Needs E3's --define to switch it on. Modifies GPL-3.0 code, so this
+patch is GPL-3.0. Recorded for Phase 1 (docs/research/e4a-new-zone.md); no build applies it. It changes ARM9 main,
+so a ROM built with it on needs the DS ARM7 BIOS (see the write-up).
+Check: git apply --check docs/research/e4a-extra-zones.patch (in a pokebw2 checkout at the commit above).
+
+diff --git a/include/field/zone.h b/include/field/zone.h
+index fda33b14b..384e25f4b 100644
+--- a/include/field/zone.h
++++ b/include/field/zone.h
+@@ -9,7 +9,12 @@
+ #include "struct_decls.h"
+ 
+ // The number of zones, one past the last, which code also uses for no zone
++#ifdef KALEIDO_EXTRA_ZONES
++// Kaleido adds zones past Pledge Grove, so the value that means no zone moves out of their range
++#define ZONE_MAX 0xffff
++#else
+ #define ZONE_MAX 615
++#endif
+ 
+ struct RailPosition {
+     u16 componentId;
+diff --git a/src/system/player_savedata.c b/src/system/player_savedata.c
+index 166079f23..cbf653eec 100644
+--- a/src/system/player_savedata.c
++++ b/src/system/player_savedata.c
+@@ -20,7 +20,12 @@ void PlayerSave_Init(PlayerSave *playerSave) {
+     MI_CpuFill8(playerSave, 0, sizeof(PlayerSave));
+     playerSave->stepCounter = STEP_COUNTER_NONE;
+     // The zone whose place name a new game starts with
++#ifdef KALEIDO_EXTRA_ZONES
++    // No place name shown yet; 0x267 is a real zone once Kaleido adds zones
++    playerSave->placeNameZoneId = 0xffff;
++#else
+     playerSave->placeNameZoneId = 0x267;
++#endif
+ }
+ 
+ ZoneSpawnInfo *PlayerSave_GetNowSpawnZone(PlayerSave *playerSave) {
+diff --git a/src/system/zonedata.c b/src/system/zonedata.c
+index 46537c58e..b0646e389 100644
+--- a/src/system/zonedata.c
++++ b/src/system/zonedata.c
+@@ -225,7 +225,12 @@ void InitZoneDataSystem(HeapID heapId) {
+     g_ZoneDataSystem->lightCount = size / sizeof(ZoneValue);
+     g_ZoneDataSystem->flashTable = GFL_ArcSysReadHeapNewLZGetLen(ARCID_MAPEFF_SKILL_TBL, 0, FALSE, heapId, &flashSize);
+     g_ZoneDataSystem->flashCount = flashSize / sizeof(ZoneValue);
++#ifdef KALEIDO_EXTRA_ZONES
++    // No header is cached yet; ZONE_COUNT is a real zone once Kaleido adds zones
++    g_ZoneDataSystem->headerZoneId = 0xffff;
++#else
+     g_ZoneDataSystem->headerZoneId = ZONE_COUNT;
++#endif
+ 
+ #ifdef WHITE2
+     SetAllowVersionSpecificZone(0, TRUE);
