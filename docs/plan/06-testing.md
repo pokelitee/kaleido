@@ -71,13 +71,14 @@ Tests the harness runs, from scripted input and RAM reads:
 | Save/load round trip | Save, reset, load: position, party, flags, bag match |
 | Foreign save | A B2 save and another Kaleido game's save are refused (E9) |
 | Warp graph | Walk each warp in a zone list; arrive at the declared warp |
-| Scripted battle | With a fixed RNG seed: damage, crits and turn order match values computed from the ruleset |
+| Scripted battle | With a fixed RNG seed: damage, crits and turn order match the unmodified B2W2 engine's, so Kaleido's changes haven't altered Gen 5 mechanics |
 | Encounter odds | Many forced encounters: slot frequencies within tolerance of the table |
 | Anti-piracy | Play past known checks: no anti-piracy effects |
 
-**Host-compiled battle math**: pokebw2's C is natural, portable C. Pure functions such as `CalcBaseDamage` and the crit
-and type-effectiveness helpers in `src/ov167/btl_calc.c` can be compiled with the host compiler and unit-tested in CI
-for each ruleset's defines. That needs no ROM. Feasibility (headers, SDK types) is checked in Phase 2.
+**Host-compiled battle math** (optional): pokebw2's C is natural, portable C. If a Kaleido patch ever touches battle
+code, pure functions such as `CalcBaseDamage` and the crit and type-effectiveness helpers in `src/ov167/btl_calc.c`
+can be compiled with the host compiler and unit-tested in CI, with no ROM. With Gen 5 mechanics unchanged (Q6), this is
+not planned work.
 
 ## Layer 4: hardware
 

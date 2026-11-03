@@ -26,7 +26,6 @@
 | NARC | Nitro archive: numbered files under `files/a/…` in the ROM. |
 | Nitro (NSBMD, NSBTX, …) | Nintendo's DS 3D model and texture formats. |
 | Overlay | Code loaded into a fixed memory region on demand; Black 2 has 344. |
-| Ruleset | A per-game choice of compile-time engine variants and merge-time data transforms (`gen3`, `gen1`). |
 | Region | Shared geography and location IDs used by several families (Kanto). |
 | `res/` | pokebw2's editable game data: JSON, glTF, PNG, WAV, assembly scripts. |
 | Shift build | A pokebw2 build with code padded (`--shift`) to prove that size changes don't break pointers. |

@@ -12,20 +12,21 @@ experiment that tests it is named (E-numbers are defined in `05-roadmap.md`).
 2. **No Nintendo bytes in anything we host.** Upstream B2W2 content reaches a build through the pinned engine. Other-game
    content is extracted on the builder's machine from their own ROMs. Our repo holds code, original content and
    manifests.
-3. **Compile time over run time.** Rulesets and game differences are preprocessor defines and data, not runtime
-   switches.
-4. **The matching build stays reproducible.** With every Kaleido flag off and no content layers, the patched engine
+3. **Compile time over run time.** Game differences are preprocessor defines and data, not runtime switches.
+4. **Gen 5 mechanics everywhere.** Every game plays by B2W2's rules (owner's decision, Q6); only content comes from the
+   original game. This replaces the brief's generation rulesets.
+5. **The matching build stays reproducible.** With every Kaleido flag off and no content layers, the patched engine
    must still rebuild Black 2 byte for byte. That is the regression baseline for every engine change and upstream sync.
-5. **Smallest thing that works for Tier 1.** No plugin system, no runtime scripting layer, no Tier 3 abstractions.
+6. **Smallest thing that works for Tier 1.** No plugin system, no runtime scripting layer, no Tier 3 abstractions.
 
 ## 2. Hierarchy
 
 ```
 Engine     pokebw2 at a pinned commit + Kaleido's engine patch series (GPL-3.0)
-  └ Framework   build tooling, layering, provenance, schemas, extractors, rulesets (GPL-3.0)
+  └ Framework   build tooling, layering, provenance, schemas, extractors (GPL-3.0)
       └ Region      shared geography: location IDs, place names, town map, map art shared by every game set there
           └ Family     a set of games with one story: maps, NPCs, events, scripts, progression (FRLG, RBY)
-              └ Game      one ROM: version exclusives, title, save identity, ruleset choice (FireRed, LeafGreen)
+              └ Game      one ROM: version exclusives, title, save identity, B2W2-system switches (FireRed, LeafGreen)
 ```
 
 - Region `kanto` holds what FRLG and RBY share. RBY's family overrides where Gen 1 Kanto differs from FRLG's. A later
@@ -44,8 +45,7 @@ kaleido/
 │   └── engine.toml           upstream URL, optional mirror URL, notes on the pin
 ├── framework/
 │   ├── kaleido/              Python package and CLI: doctor, bootstrap, extract, merge, validate, build, patch, test
-│   ├── schemas/              Kaleido's schemas (game, layer, provenance, ruleset) and extensions of upstream's
-│   ├── rulesets/             one file per ruleset: engine defines + data transforms
+│   ├── schemas/              Kaleido's schemas (game, layer, provenance) and extensions of upstream's
 │   ├── extractors/           readers for source-game formats (GBA Gen 3, GB Gen 1): code only, no game data
 │   └── tests/                host-side unit tests with synthetic fixtures
 ├── content/
@@ -188,8 +188,7 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
   "id": "firered",
   "title": "Kaleido FireRed",
   "layers": ["regions/kanto", "families/frlg", "games/firered"],
-  "ruleset": "gen3",
-  "engine": { "base_rom": "b2_us", "defines": {} },
+  "engine": { "base_rom": "b2_us", "defines": { "KALEIDO_CGEAR": 0 } },
   "sources": [{ "id": "firered", "format": "gba", "sha1": ["<one pinned revision>"] }],
   "save": { "signature": "KLD-FR" },
   "outputs": { "rom": "kaleido-firered.nds", "patch": "kaleido-firered.xdelta" }
@@ -201,23 +200,19 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
 - The framework stays versionless while there is one game. Once a second game is release-bound, games pin a framework
   version and schemas get migrations (brief, Section 6).
 
-### Rulesets
+### Mechanics
 
-A ruleset is a file in `framework/rulesets/`:
+Every game uses Gen 5 mechanics, unchanged from B2W2 (owner's decision, Q6 and Q9). That replaces the brief's
+generation rulesets (Sections 4 and 5): there is no ruleset file, data transform or mechanic variant.
 
-- **Engine defines**: compile-time variants such as `KALEIDO_CRIT=KALEIDO_CRIT_GEN1`, `KALEIDO_TYPE_CHART=GEN1`,
-  `KALEIDO_TM_SINGLE_USE=1`. Each define exists only after an experiment proves the variant (E3 for the first one).
-- **Data transforms** applied at merge time: for example, Gen 3's type-based physical/special split sets every move's
-  `category` from its type. That is data, so no engine change, except for moves whose type changes in battle (see
-  `01-feasibility.md`).
-- Defaults: `gen5` (upstream behavior, used by the baseline), `gen3` (FRLG), `gen1` (RBY, Phase 5). Tier 2/3 rulesets
-  are added when those games start, not before.
-- **Per-game switches** (owner's decision, Q6): a ruleset sets each switch's default, and a game's `game.json` may
-  override any switch under `engine.defines`. A mechanic only becomes a switch when some game picks the non-Gen 5
-  side, so there is no speculative variant code. Every distinct define set is compiled in CI (`06-testing.md`).
-- The `gen3` ruleset defaults every switch to **Gen 3 behavior** (owner's decision, 2026-11-03), so FireRed and
-  LeafGreen aim for the original mechanics; a mechanic is Gen 5 only until its Gen 3 variant exists. The `gen1`
-  ruleset does the same for Gen 1 rules (Q9).
+- **Gen 5 decides how things work**: battle and field rules, move data (power, accuracy, PP, type, category), species
+  stats, types and abilities, as `res/` has them.
+- **The original game decides what is in it**: story, dialogue, maps, trainers and parties, wild encounters, items,
+  learnsets and TM contents. These are extracted or authored per layer.
+- Where an original game relies on something Gen 5 lacks (FRLG's Old and Good Rods, Rock Smash encounters, a field
+  move B2W2 doesn't have), the content is adapted and the feasibility tables mark it Approximate.
+- If a later game ever needs a different mechanic, the variant is added then: a `KALEIDO_*` define chosen in that game's
+  `game.json`, the same way B2W2 systems are switched.
 
 ### B2W2 systems
 
@@ -238,7 +233,7 @@ points; the first switches arrive with the Phase 3 prototype.
 ## 9. Validation
 
 - **Schemas**: upstream's JSON Schemas for every `res/` file. Kaleido extends them with `allOf` wrappers instead of
-  editing them. Kaleido's own files (`game.json`, `layer.json`, `provenance.json`, rulesets, recipes) have schemas.
+  editing them. Kaleido's own files (`game.json`, `layer.json`, `provenance.json`, recipes) have schemas.
 - **Cross-references** on the merged tree, naming the file and field of each error: warps point to existing zones and
   warp indices; zone headers name existing scripts, text banks, encounter tables, matrices and areas; scripts use
   defined text IDs and flags; encounters, trainers and learnsets use species, moves and items that exist; trainer

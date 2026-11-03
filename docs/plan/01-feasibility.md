@@ -7,17 +7,17 @@ experiment or phase confirms them. Evidence tags: **Verified** (source named, wi
 
 ## Verdict
 
-Tier 1 is feasible on pokebw2, on three conditions:
+Tier 1 is feasible on pokebw2, on two conditions:
 
 1. **A route for new map art** (R-01). Upstream's packers can edit the original 1,065 map models and 409 texture sets
    but can't add any. Direction chosen in Q3: repurpose Unova chunks for the Phase 3 prototype, then build a glTF →
    Nitro encoder that can add models and texture sets (offered upstream) before Phase 4. E4b confirms.
 2. **A distribution decision** (Q1, decided 2026-11-03): a single-source xdelta carries the FireRed content it adds,
    and that is accepted.
-3. **A bounded Gen 1 scope** (Q9, decided: Gen 1 rules on Gen 5 data). Several Gen 1 behaviors need engine variants;
-   some data-model differences stay Approximate.
 
-Everything else in Tier 1 is either possible with upstream's formats today or a bounded engine change.
+**Mechanics are Gen 5 for every game** (owner's decision, Q6 and Q9, 2026-11-03), so no generation-specific battle or
+field variants are needed. Original-game mechanics that Gen 5 lacks are Approximate by decision, and the content is
+adapted to fit. Everything else in Tier 1 is either possible with upstream's formats today or a bounded engine change.
 
 ## Possible now (upstream formats, no engine change)
 
@@ -31,8 +31,8 @@ All **Verified** from upstream's docs and packers unless marked.
 - Edits to existing map geometry, UVs, materials and textures, and to terrain (collision) within a chunk's grid.
 - Battle code changes in C under preprocessor guards (`#ifdef BUGFIX` is the upstream pattern); size changes are
   shift-safe per upstream's audit (**Assumption** until E3 shows it on a real change).
-- Gen 3 data that already matches Gen 5: grass, surf and Super Rod slot odds; crit stage table; type chart (all 289
-  cells identical). See the tables below.
+- Places where Gen 5 already matches Gen 3, so FRLG keeps the original behavior under Gen 5 mechanics: grass, surf and
+  Super Rod slot odds; crit stage table; type chart (all 289 cells identical). See the tables below.
 
 ## Needs engine or tool changes
 
@@ -44,11 +44,8 @@ All **Verified** from upstream's docs and packers unless marked.
 | Content overlay into the engine tree | Our layers must land in `res/` and `generated/` | Small (framework, maybe no engine change) | Phase 1 |
 | New-game start in Pallet Town; title, intro, Professor | B2W2's opening is code and scripts | Medium | Phase 3 |
 | Per-game switches for B2W2-only systems | C-Gear, Pass Powers, seasons, Join Avenue, PWT, …; each game's config turns each on or off (Q7) | Medium, spread over overlays | Phase 1 inventory, Q7 |
-| Old/Good Rod and Rock Smash encounters | Gen 5 has one fishing kind and no Rock Smash kind (**Verified**, `enc_pokeset.h`) | Medium | Phase 3 |
-| Single-use TMs, FRLG's HM set | Gen 5 TMs are reusable; HM count differs (**Assumption**) | Small–Medium | Phase 3 |
 | Kanto regional Pokédex (151) | Regional dex length looks like a code constant (White2Upgrade had to patch it) | Small | **Assumption**; E5 |
-| Gen 3 experience and encounter-rate rules | Gen 5's step-based rate climbs per step (**Verified**, `EncountRateConfig`); Gen 5 EXP formula differs (**Assumption**) | Small each | Phase 3 |
-| Gen 1 battle variants | Speed-based crit, Special stat, 15-type chart, quirks | Medium–Large | Phase 5 |
+| FRLG-only key items' behavior (where kept) | New item entries are data; their screens and logic are code | Small each | Phase 3–4 |
 | Music from FRLG | GBA sequence → Nitro SSEQ/SBNK/SWAR converter | Medium–Large | Q6, R-24 |
 
 ## Uncertain until measured
@@ -56,7 +53,7 @@ All **Verified** from upstream's docs and packers unless marked.
 | Question | Experiment |
 | --- | --- |
 | Free RAM and heap in DS mode and DSi mode at field, battle, menus | E6 |
-| Free space in overlay regions; how much code a ruleset may add | E6 |
+| Free space in overlay regions; how much new code fits | E6 |
 | ROM size headroom and save area headroom | E6 |
 | Whether a modified DSi-hybrid ROM boots in DSi mode on each loader and device | E7 |
 | Zone, flag and variable capacity beyond B2W2's counts | E4a, E6 |
@@ -79,8 +76,8 @@ From `docs/research/hardware-and-rom.md` (GBATEK and melonDS, **Verified** unles
 
 ## Fidelity: FireRed and LeafGreen
 
-Target: Gen 3 behavior wherever it differs from Gen 5 (owner's decision, 2026-11-03). Rows marked "Approximate →
-Exact with engine variant" are planned variants; each is Gen 5 until its variant is built.
+Mechanics are Gen 5 (owner's decision, Q6, 2026-11-03): where they differ from Gen 3, the row is Approximate "by
+decision". Content (story, dialogue, maps, trainers, encounters, items, learnsets) is FireRed's or LeafGreen's.
 
 Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate** = differs, with the reason;
 **Infeasible** = can't be done here, with the reason.
@@ -95,28 +92,27 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Grass encounters: slots and odds | Exact | Both 12 slots, `20,20,10,10,10,10,5,5,4,4,1,1` | **Verified** both sources |
 | Surf encounters | Exact | Both 5 slots, `60,30,5,4,1` | **Verified** |
 | Super Rod | Exact | FRLG Super Rod `40,40,15,4,1` = Gen 5 fishing | **Verified** |
-| Old Rod, Good Rod | Approximate → Exact with engine change | Gen 5 has one rod's table; FRLG has three (2, 3 and 5 slots) | **Verified**; Phase 3 |
-| Rock Smash encounters | Approximate → Exact with engine change | No Gen 5 encounter kind | **Verified**; Phase 3 |
-| Encounter rate per map | Approximate | Gen 5's per-step climbing rate model differs from Gen 3's | **Verified** Gen 5 side; Phase 3 |
+| Old Rod, Good Rod | Approximate (by decision) | Gen 5 has one fishing table; FRLG has three (2, 3 and 5 slots). The Old and Good Rod tables are folded into the one table or dropped (content choice in Phase 3) | **Verified** slot counts |
+| Rock Smash encounters | Approximate (by decision) | No Gen 5 encounter kind; dropped or moved to another table | **Verified** |
+| Encounter rate per map | Approximate (by decision) | Gen 5's per-step climbing rate model | **Verified** Gen 5 side |
 | Trainers' parties, items, money | Exact | Data, extracted | E2, E8 |
 | Trainer AI | Approximate | Gen 5 AI scripts (grown from Gen 4's) replace FRLG's; can be tuned in assembly | **Verified** upstream `docs/scripts.md` |
 | Gyms, Elite Four, Champion | Exact | Data + scripts | Phase 3.5–4 |
 | VS Seeker rematches | Approximate initially | Needs an item and its logic | Phase 4 |
 | Items shared with Gen 5 | Exact | Existing entries | — |
 | FRLG-only key items (e.g. Tea, Teachy TV, Fame Checker) | Approximate | New entries are easy; their screens and logic are new work, simplified where needed | **Assumption**; inventory in Phase 3 |
-| TM contents | Exact | TM → move table is data | Phase 3 |
-| Single-use TMs | Approximate → Exact with engine variant | Gen 5 TMs are reusable | Phase 3 |
-| HMs (Cut, Fly, Surf, Strength, Flash, Rock Smash, Waterfall) | Approximate | Gen 5's HM set and field moves differ; Flash's field effect exists (`res/field/flash/`) | **Verified** Flash; others Phase 3 |
+| TM contents | Exact | Which move each TM teaches is content | Phase 3 |
+| TM reuse | Approximate (by decision) | TMs are reusable, as in Gen 5 | — |
+| HMs and field moves (Cut, Fly, Surf, Strength, Flash, Rock Smash, Waterfall) | Approximate (by decision) | Gen 5's HM set and field moves; Flash's field effect exists (`res/field/flash/`). Where FRLG gates progress on a field move B2W2 lacks, the map or script is adapted | **Verified** Flash; others Phase 3 |
 | Moves available | Exact | All 354 FRLG moves exist in B2W2 with the same IDs (names differ only in spelling, e.g. Smokescreen) | **Verified** (pokefirered `moves.h` vs pokebw2 `generated/moves.txt`) |
-| Move data (power, accuracy, PP, type) | Exact | Gen 3 values via data overrides | Phase 3 |
-| Move effects whose rules changed by Gen 5 | Approximate → Exact per engine variant | Case by case | Phase 3–4 |
-| Physical/special by type | Exact | Ruleset data transform sets each move's `category` from its type | **Verified** per-move category in data |
-| Hidden Power and other moves typed in battle | Approximate → Exact with engine variant | Category must follow the computed type | Phase 4 |
+| Move data (power, accuracy, PP, type) and effects | Approximate (by decision) | B2W2's values and behavior, where they differ from Gen 3's | — |
+| Physical/special split | Approximate (by decision) | Gen 5 decides per move; Gen 3 decided by type | **Verified** per-move category in data |
 | Type chart | Exact | All 289 cells equal | **Verified** (comparison script, 2026-11-03) |
 | Critical hit chance stages | Exact | Both `{16, 8, 4, 3, 2}` | **Verified** both sources |
-| Damage formula details, EXP formula | Approximate → Exact with variants | Modifier order and EXP scaling differ | **Assumption**; Phase 3 |
-| Abilities (Gen 3 set) | Approximate | Exist in Gen 5; some changed behavior; hidden abilities disabled | Phase 4 |
-| Base stats, learnsets, evolutions | Exact | Extracted data; post-Gen 3 evolutions removed by data | E8 |
+| Damage formula details, EXP formula | Approximate (by decision) | Gen 5's modifier order and EXP scaling | — |
+| Abilities | Approximate (by decision) | Gen 5 behavior. Hidden abilities exist but appear only if content hands them out | — |
+| Base stats and species types | Exact | Gen 5 data; **Assumption**: no Gen 1–3 species' stats or types changed between Gen 3 and Gen 5 | Phase 3 data check |
+| Learnsets and evolutions | Exact | Learnsets extracted from the game; evolutions limited to species in the game's Pokédex | E8 |
 | Pokédex: Kanto (151) and National (386) | Exact with engine change | Regional length; Gen 5 UI | E5 |
 | Version exclusives | Exact | Game layers | Phase 4 |
 | Sevii Islands postgame | Exact | Content volume, not feasibility | Phase 4 |
@@ -125,19 +121,21 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Trading between two Kaleido carts | Approximate | Gen 5 wireless stack may work between two Kaleido ROMs | **Unverified** |
 | Help system, Union Room, Teachy TV screen | Approximate | Simplified or omitted Gen 3-specific UI | Phase 4 |
 
-## Fidelity: Red, Blue and Yellow (scope accepted in Q9: Gen 1 rules on Gen 5 data)
+## Fidelity: Red, Blue and Yellow
+
+Mechanics are Gen 5 here too (owner's decision, Q6 and Q9, 2026-11-03), so most battle rows are Approximate by
+decision. The game plays like a Gen 5 game set in Gen 1's story.
 
 | Feature | Class | What differs and why | Evidence / confirmed by |
 | --- | --- | --- | --- |
 | Story, dialogue, progression | Exact (wording) / Approximate (layout) | As FRLG | Phase 5 |
-| Single Special stat | Exact for battle with engine variant; Approximate in UI | Gen 1 base data has one Special (**Verified** pokered base stats); mapped to SpA = SpD, with stage changes applied to both | Phase 5 |
-| DVs (0–15) and Stat Exp | Approximate | Gen 5 stores IVs and EVs; a Gen 1 stat formula variant can approximate | Phase 5 |
-| 15-type chart | Exact with chart variant | Compile-time table; Dark and Steel unused | **Verified** pokered type list |
-| Speed-based crits | Exact with engine variant | Gen 1 uses base Speed / 2 | **Verified** pokered `CriticalHitTest` |
-| 1/256 miss and other battle quirks (partial trapping, Hyper Beam, freeze, Focus Energy) | Approximate → Exact per variant | One variant per quirk; scoped by Q9 | **Assumption**; Phase 5 |
-| No abilities, held items, natures, genders, shinies | Exact in rules; Approximate in UI | Disabled by data and rules; Gen 5 screens still have the fields unless hidden | Phase 5 |
-| Gen 1 move data and effects | Exact (data) / Approximate (effects) | As FRLG | Phase 5 |
-| Gen 1 encounter slots and odds | Approximate → Exact with slot-odds variant | Gen 1 tables differ from Gen 5's 12 slots | **Assumption**; Phase 5 |
+| Stats: one Special, DVs, Stat Exp | Approximate (by decision) | Gen 5's split Special Attack/Defense, IVs and EVs, with Gen 5 base stats; Gen 1 had one Special (**Verified** pokered base stats) | — |
+| Type chart and species typing | Approximate (by decision) | Gen 5's 17-type chart and typing; Gen 1 had 15 types (**Verified** pokered type list), and e.g. Magnemite was pure Electric (Electric/Steel in B2W2) | **Verified** both sources |
+| Crits | Approximate (by decision) | Gen 5 stage table; Gen 1 used base Speed / 2 | **Verified** pokered `CriticalHitTest` |
+| Gen 1 battle quirks (1/256 miss, partial trapping, Hyper Beam, freeze, Focus Energy) | Approximate (by decision) | Absent: Gen 5 behavior | — |
+| Move data | Approximate (by decision) | B2W2's values; e.g. Bite is Dark-type (Normal in Gen 1) | **Verified** pokered `moves.asm`, pokebw2 `res/moves/bite/` |
+| Abilities, held items, natures, genders, shinies | Approximate (by decision) | Present, as in Gen 5; Gen 1 had none | — |
+| Encounter slots and odds | Approximate | Gen 1 tables mapped onto Gen 5's 12 grass slots and odds | **Assumption** on Gen 1 table shape; Phase 5 |
 | Yellow: Pikachu following | Approximate | B2W2 has walking-Pokémon actors but no following partner | Phase 5 |
 | Glitches (MissingNo., item duplication, the Mew glitch) | Infeasible / out of scope | Depend on Gen 1 memory layout | — |
 | Time Capsule and Game Boy link | Infeasible | Different hardware | — |
@@ -152,5 +150,6 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 - **Abilities past 255**: ability IDs are u8 in personal data (**Verified** via White2Upgrade).
 - Mega Evolution, Z-Moves, Dynamax, Terastallization: new battle state, UI and data. Gen 5-style reinterpretations
   only (brief). No design work until Tier 3.
-- Gen 2 (GSC): split Special, held items, no abilities, day/night, phone. Gen 4 (DPPt, HGSS): Gen 4 rules, following
-  Pokémon (HGSS). Gen 3 (RSE): shares the `gen3` ruleset with FRLG; contests and secret bases are large. BW: native.
+- Tier 2 games use Gen 5 mechanics too unless the owner decides otherwise (Q6), so what remains is features: GSC's
+  day/night and phone, HGSS's following Pokémon, RSE's contests and secret bases (large), DPPt's Underground. BW is
+  native.

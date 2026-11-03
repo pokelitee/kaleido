@@ -1,8 +1,9 @@
 # 07 — Open questions
 
 Status: **answered by the owner on 2026-11-03.** The questions below are kept as asked, ranked by how much each one
-blocked the architecture; this table records the answers. Q7 differs from the recommendation; Q6 (mechanics)
-differs in form but keeps the recommended default.
+blocked the architecture; this table records the answers. Q6 (mechanics), Q7 and Q9 differ from the
+recommendations. The final mechanics decision (Gen 5 for every game) also replaces the brief's ruleset requirement
+(Sections 4 and 5).
 
 ## Answers
 
@@ -13,11 +14,11 @@ differs in form but keeps the recommended default.
 | Q3 | Repurpose Unova chunks for the Phase 3 prototype; build a glTF → Nitro encoder that can add models and texture sets before Phase 4, offered upstream. Provisional until E4b. | Yes |
 | Q4 | No hardware yet: E7 waits for devices. DS mode is the hard limit: every build must fit 4 MB and run on a DS Lite; DSi mode is tested but never required. | Yes |
 | Q5 | Target whichever revision the owner dumps; one revision per game to start; each game builds from its own ROM. | Yes |
-| Q6 (mechanics) | Every mechanic where Gen 5 and the original differ is a **per-game ruleset switch**; each game's config picks. A switch is added only when some game selects the non-Gen 5 side. Follow-up the same day: FireRed and LeafGreen (the `gen3` ruleset) **default to Gen 3 behavior** on every switch; a mechanic stays Gen 5 only until its Gen 3 variant is built. | Partly: switches as asked, original behavior by default as recommended |
+| Q6 (mechanics) | **Every game uses Gen 5 mechanics**, with B2W2's move data as is. The ruleset mechanism is dropped until some game needs a variant. Gen 5 decides how things work (battle and field rules, move data, species stats, types and abilities); the original game decides what is in it (story, dialogue, maps, trainers, encounters, items, learnsets and TM contents). Replaces two earlier answers the same day: per-game mechanic switches, then a Gen 3 default for FRLG. | **No** (recommended original mechanics) |
 | Q6 (music) | Prototype converting one FRLG song from the builder's ROM in Phase 3, then decide. | Yes |
 | Q7 | Each B2W2-only system is a **per-game compile-time switch**; each game's config picks. | **No** (recommended disabling all) |
 | Q8 | Original art and data: **CC BY-SA 4.0**. | Yes |
-| Q9 | Gen 1 rules on Gen 5 data. | Yes |
+| Q9 | Superseded by Q6: Red, Blue and Yellow use Gen 5 mechanics too (Gen 5 type chart, stats, crits and species typing). First answered "Gen 1 rules on Gen 5 data". | **No** |
 | Q10 | Offer generic engine and tool work upstream; tag each release's source commit. | Yes |
 
 ## Top 10
@@ -134,7 +135,8 @@ release's source commit.
 - **"Never include other-game content in patches beyond what is unavoidable"** and **xdelta distribution** pull against
   each other (Q1).
 - **"Never put ROM-derived data in GitHub"** also covers patches, so it rules out GitHub Releases (Q1).
-- **Exact Gen 1 quirks**: most clash with Gen 5 data structures; recommended scope in Q9.
-- **Phase 2 with two builds differing by ruleset**: FireRed and LeafGreen share a ruleset, so Phase 2 uses FireRed and
-  a Red stub instead (`05-roadmap.md`).
+- **Generation rulesets and exact Gen 1 quirks**: most clash with Gen 5 data structures. The owner dropped them: every
+  game uses Gen 5 mechanics (Q6, 2026-11-03).
+- **Phase 2 with two builds differing by ruleset**: with no rulesets, Phase 2's two builds (FireRed and a Red stub)
+  differ by a compile-time B2W2-system switch and data instead (`05-roadmap.md`).
 - **"Gen 5-style Kanto tilesets"**: blocked by R-01 until a new-map-art route exists (Q3).

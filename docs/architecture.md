@@ -15,8 +15,7 @@ Nothing yet: the repository holds documentation only. Phase 1 (`docs/plan/05-roa
 | pokebw2 is a git submodule pointing at upstream, pinned to one commit; Kaleido's engine changes are a patch series in `engine/patches/`, each behind a `KALEIDO_*` define; with every define off the engine rebuilds Black 2 byte for byte | ADR 0002 |
 | Patches carry the extracted content they add (one xdelta per game against the B2 ROM) | `07-open-questions.md`, Q1 |
 | Every build fits DS mode (4 MB, DS Lite); DSi mode is never required | Q4 |
-| Mechanics that differ between Gen 5 and an original game, and B2W2-only systems, are per-game compile-time switches chosen in each game's config | Q6, Q7 |
-| FireRed and LeafGreen default to Gen 3 behavior on every mechanic switch; Gen 5 remains only where a Gen 3 variant isn't built yet | Q6 follow-up |
+| Every game uses Gen 5 mechanics and B2W2's move data. Gen 5 decides how things work (battle and field rules, move data, species stats, types, abilities); the original game decides what is in it (story, dialogue, maps, trainers, encounters, items, learnsets, TM contents). No ruleset mechanism until a game needs a variant | Q6, Q9 (replace the brief's rulesets, Sections 4–5) |
+| B2W2-only systems are per-game compile-time switches chosen in each game's config | Q7 |
 | Original art and data are CC BY-SA 4.0; engine changes and tooling are GPL-3.0 | Q8; brief |
-| Gen 1 games use Gen 1 rules on Gen 5 data structures | Q9 |
 | Generic engine and tool work is offered upstream | Q10 |
