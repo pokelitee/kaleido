@@ -1,8 +1,8 @@
 # 07 — Open questions
 
 Status: **answered by the owner on 2026-11-03.** The questions below are kept as asked, ranked by how much each one
-blocked the architecture; this table records the answers. Two answers differ from the recommendation (Q6 mechanics,
-Q7).
+blocked the architecture; this table records the answers. Q7 differs from the recommendation; Q6 (mechanics)
+differs in form but keeps the recommended default.
 
 ## Answers
 
@@ -13,7 +13,7 @@ Q7).
 | Q3 | Repurpose Unova chunks for the Phase 3 prototype; build a glTF → Nitro encoder that can add models and texture sets before Phase 4, offered upstream. Provisional until E4b. | Yes |
 | Q4 | No hardware yet: E7 waits for devices. DS mode is the hard limit: every build must fit 4 MB and run on a DS Lite; DSi mode is tested but never required. | Yes |
 | Q5 | Target whichever revision the owner dumps; one revision per game to start; each game builds from its own ROM. | Yes |
-| Q6 (mechanics) | Every mechanic where Gen 5 and the original differ is a **per-game ruleset switch**; each game's config picks. A switch is added only when some game selects the non-Gen 5 side. | **No** (recommended original-by-default) |
+| Q6 (mechanics) | Every mechanic where Gen 5 and the original differ is a **per-game ruleset switch**; each game's config picks. A switch is added only when some game selects the non-Gen 5 side. Follow-up the same day: FireRed and LeafGreen (the `gen3` ruleset) **default to Gen 3 behavior** on every switch; a mechanic stays Gen 5 only until its Gen 3 variant is built. | Partly: switches as asked, original behavior by default as recommended |
 | Q6 (music) | Prototype converting one FRLG song from the builder's ROM in Phase 3, then decide. | Yes |
 | Q7 | Each B2W2-only system is a **per-game compile-time switch**; each game's config picks. | **No** (recommended disabling all) |
 | Q8 | Original art and data: **CC BY-SA 4.0**. | Yes |

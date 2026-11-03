@@ -15,9 +15,9 @@ changes exist yet. The answers are in `docs/plan/07-open-questions.md`, and what
 - Wrote the plan: feasibility (`01`), foundation (`02`), architecture (`03`), roadmap (`05`), testing (`06`), open
   questions (`07`), and `docs/risks.md`.
 - ADR 0001 (record decisions) accepted; ADR 0002 (engine integration) proposed, then accepted by the owner.
-- Owner's answers to Q1–Q10 recorded. Two differ from the recommendations: mechanics where Gen 5 and the original
-  differ (Q6) and B2W2-only systems (Q7) are per-game compile-time switches. There is no hardware yet (Q4), so E7
-  moves out of the Phase 0 gate (`05-roadmap.md`).
+- Owner's answers to Q1–Q10 recorded. Mechanics where Gen 5 and the original differ (Q6) and B2W2-only systems (Q7)
+  are per-game compile-time switches. FireRed and LeafGreen default to Gen 3 behavior on every mechanic switch (Q6
+  follow-up). There is no hardware yet (Q4), so E7 moves out of the Phase 0 gate (`05-roadmap.md`).
 - Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
