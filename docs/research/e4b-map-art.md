@@ -9,7 +9,8 @@ sets get into the ROM, which Gen 5-style Kanto needs (R-01)? And if not as thing
 - **As upstream stands, no.** Adding a map model or a texture set stops the build. **Verified**.
 - **A ~25-line change to upstream's two packers makes it possible** for entries that start from an existing one (a
   "template"). A test ROM with a new map model (#1065) and a new texture set (#409) builds, the original entries stay
-  byte-identical, and the DSi digests check out. **Verified** structurally; the in-game check is still to do.
+  byte-identical, and the DSi digests check out. **Verified** structurally, and in game: the owner ran it in melonDS
+  and it played like normal Black 2.
 - **The engine has room for more**: map chunk IDs are `u32`, texture set IDs `u16`. Area records are capped at 409
   by a constant (`AREA_COUNT`). **Verified** in source.
 - **Every map chunk has a hard size budget**: the map type's `chunkBufferSize`, 86,020 bytes for most types.
@@ -98,10 +99,12 @@ must fail. Results, **Verified**:
 | DSi digests and HMACs (`tools/build/verify_dsi_rom.py`) | all OK, "dump is intact" |
 | ROM | SHA1 `09d7213d3b474d2e2a144247e6e5d05cb4bd30a9`; header used size `0x118ec400` (~282 MiB of 512 MiB, with the DSi area) |
 
-**Not verified**: that the game loads chunk #1065 and set #409 correctly. The copies are identical to their
-templates, so Aspertia City should look and play exactly as normal. If appended IDs failed, the cell would be empty
-or untextured, or the game would crash on entering Aspertia. This needs a run in melonDS (the test ROM is
-`~/kaleido-work/e4b/kaleido-e4b-test.nds`; never committed).
+**In-game check, passed (2026-11-03)**: the owner ran the test ROM (`~/kaleido-work/e4b/kaleido-e4b-test.nds`, never
+committed) in melonDS, and it "runs like normal Black 2". The game starts in Aspertia City, where cell (22, 1) loads
+chunk #1065 and every area record loads set #409. If appended IDs had failed, that cell would be empty or untextured,
+or the game would crash there. The copies are identical to their templates, so this proves the IDs load. It doesn't
+prove anything about edited geometry or textures, which the Phase 3 prototype will exercise. Not checked: DSi mode
+and hardware (E7).
 
 ### The recolor that failed
 

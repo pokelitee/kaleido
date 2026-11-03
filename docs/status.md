@@ -36,9 +36,9 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 - **E0 passed** (2026-11-03): with the owner's Black 2 dump, `configure.py b2_us && ninja` reproduced Black 2's SHA1
   (`e51e6dfb…`) twice from clean, in about 10–12 minutes each. Upstream doesn't hash-check dsd, objdiff or the
   Metrowerks compilers; all five downloaded tools' hashes are recorded for Kaleido's `doctor`.
-- **E4b done, in-game check pending** (2026-11-03): upstream's packers refuse new map models and texture sets. A
-  ~25-line template-append prototype (`docs/research/e4b-template-append.patch`) built a ROM with a new chunk (#1065)
-  and texture set (#409), with every original unchanged and valid DSi digests. Found: `AREA_COUNT` caps areas at
+- **E4b done** (2026-11-03): upstream's packers refuse new map models and texture sets. A ~25-line template-append
+  prototype (`docs/research/e4b-template-append.patch`) built a ROM with a new chunk (#1065) and texture set (#409),
+  with every original unchanged and valid DSi digests. It plays normally in melonDS (owner's check). Found: `AREA_COUNT` caps areas at
   409; each chunk must fit its map type's buffer (86,020 B for most); recoloring shared texture data can be refused.
   ADR 0003 proposed. Details: `docs/research/e4b-map-art.md`.
 
@@ -56,8 +56,7 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. In-game check of the E4b test ROM (`~/kaleido-work/e4b/kaleido-e4b-test.nds`) in melonDS: Aspertia City should
-   look and play normally. Then the owner accepts or revises ADR 0003 (new map art).
+1. Owner accepts or revises ADR 0003 (new map art); its in-game check passed.
 2. E6 (headroom), then E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin;
    the E4b prototype is on its `e4b-template-append` branch).
 3. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).

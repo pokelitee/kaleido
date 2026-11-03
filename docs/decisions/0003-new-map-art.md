@@ -10,8 +10,8 @@ found, at pokebw2 `41f42ca`:
 
 - Upstream's packers refuse any map model or texture set the original archives don't have.
 - A ~25-line change lets a new entry start from an existing one (a template) and be appended. A test ROM with a new
-  chunk (#1065) and texture set (#409) builds with all originals byte-identical and valid DSi digests. The in-game
-  check is pending.
+  chunk (#1065) and texture set (#409) builds with all originals byte-identical and valid DSi digests, and plays
+  normally in melonDS (owner's check, 2026-11-03).
 - The engine addresses chunks with `u32` and texture sets with `u16` IDs. Area records are capped at 409
   (`AREA_COUNT`). Each chunk must fit its map type's `chunkBufferSize` (86,020 bytes for most types).
 - An entry built from a template keeps the template's material slots, draw calls, texture names, sizes and formats.
@@ -44,4 +44,4 @@ Option 2.
   fit, and reuse their textures. Visual variety is limited until the encoder exists.
 - Unova data stays intact, so the matching baseline and other experiments are unaffected.
 - The encoder becomes a scheduled dependency of Phase 4, not an open risk.
-- If the in-game check of the E4b ROM fails, this ADR is revisited before it is accepted.
+- The in-game check of the E4b ROM passed in melonDS (console mode not recorded). Both modes on hardware come with E7.
