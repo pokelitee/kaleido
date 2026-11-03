@@ -1,0 +1,96 @@
+E4b prototype for fuddlesworth/pokebw2 at 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c: let the map model and map texture
+packers append entries that start from an existing ("template") entry. Modifies GPL-3.0 code, so this patch is
+GPL-3.0. Recorded for Phase 1 and a possible upstream pull request (docs/research/e4b-map-art.md); no build applies it.
+Check: git apply --check docs/research/e4b-template-append.patch (in a pokebw2 checkout at the commit above).
+
+diff --git a/res/field/maps/models/map_model.schema.json b/res/field/maps/models/map_model.schema.json
+--- a/res/field/maps/models/map_model.schema.json
++++ b/res/field/maps/models/map_model.schema.json
+@@ -18,6 +18,10 @@
+         "transformed": {
+             "enum": [ true ],
+             "description": "Set when the GLB's positions went through the model's node transforms on export, which the packer reverses"
+-        }
++        },
++        "template": {
++            "type": "string", "pattern": "^MAP_MODEL_",
++            "description": "For a map model the original archive doesn't have: the model whose Nitro resource it starts from. It keeps the template's materials and draw calls, and its GLB edits apply as they do to any model"
++        }
+     }
+ }
+diff --git a/tools/data/map_model_data.py b/tools/data/map_model_data.py
+--- a/tools/data/map_model_data.py
++++ b/tools/data/map_model_data.py
+@@ -58,10 +58,14 @@ def u32(data, offset):
+ def models(directory, count):
+     """Returns the map models' directories, in archive order, and their data, which name their texture sets."""
+     folders = directories("a/0/0/8", directory)
+-    if len(folders) != count:
+-        raise ValueError(f"a/0/0/8 has {count} map models and map_models.txt {len(folders)}")
++    if len(folders) < count:
++        raise ValueError(f"a/0/0/8 has {count} map models and map_models.txt only {len(folders)}")
+     schema = load_schema(ROOT / "res/field/maps/models/map_model.schema.json")
+-    return [(folder, load(folder / "data.json", schema)) for folder in folders]
++    result = [(folder, load(folder / "data.json", schema)) for folder in folders]
++    for folder, data in result[count:]:
++        if "template" not in data:
++            raise ValueError(f"{folder}: a map model the original archive doesn't have needs a template")
++    return result
+
+
+ def texture_set(data, where):
+@@ -1231,8 +1235,13 @@ def pack(directory, game, output):
+     archive = read_narc(source.read_bytes())
+     texture_archive = read_narc((ROOT / "extract" / version / "files/a/0/1/4").read_bytes())
+     texture_dirs = directories("a/0/1/4")
+-    for chunk_id, (model_dir, data) in enumerate(models(directory, len(archive))):
+-        original = archive[chunk_id]
++    original_count = len(archive)
++    for chunk_id, (model_dir, data) in enumerate(models(directory, original_count)):
++        if chunk_id < original_count:
++            original = archive[chunk_id]
++        else:
++            original = archive[value(data["template"], str(model_dir))]
++            archive.append(original)
+         name = model_name(model_bytes(original))
+         mapping = {"direct": not data.get("transformed", False)}
+         doc, primitives, binary = mesh_primitives(model_dir, name)
+diff --git a/tools/data/map_texture_data.py b/tools/data/map_texture_data.py
+--- a/tools/data/map_texture_data.py
++++ b/tools/data/map_texture_data.py
+@@ -8,13 +8,14 @@ ARCHIVE is a/0/1/4, the map texture sets (the default), or a/1/7/4 or a/1/7/5, t
+ textures. Each texture set is a directory of PNGs named after its constant in the archive's list (graphics_paths.py).
+ """
+
++import json
+ import struct
+ import sys
+ import zlib
+ from pathlib import Path
+
+ from narc import read_narc, write_narc
+-from graphics_paths import directories
++from graphics_paths import ARCHIVES, directories
+
+
+ ROOT = Path(__file__).resolve().parents[2]
+@@ -388,10 +389,17 @@ def pack(directory, game, output):
+         raise ValueError(f"output {output} names no field texture archive")
+     archive = read_narc((ROOT / "extract" / version / "files" / archive_name).read_bytes())
+     folders = directories(archive_name, directory)
+-    if len(folders) != len(archive):
+-        raise ValueError(f"{archive_name} has {len(archive)} texture sets and its list {len(folders)}")
++    if len(folders) < len(archive):
++        raise ValueError(f"{archive_name} has {len(archive)} texture sets and its list only {len(folders)}")
+     result = [pack_textures(original, folder, f"texture set {set_id}")
+               for set_id, (original, folder) in enumerate(zip(archive, folders))]
++    # A set the original archive doesn't have starts from the set its template.json names
++    names = [folder.name for folder in folders]
++    prefix = ARCHIVES[archive_name][1]
++    for set_id, folder in enumerate(folders[len(archive):], len(archive)):
++        template = json.loads((folder / "template.json").read_text())["template"]
++        result.append(pack_textures(archive[names.index(template[len(prefix):].lower())], folder,
++                                    f"texture set {set_id}"))
+     destination = Path(output)
+     destination.parent.mkdir(parents=True, exist_ok=True)
+     destination.unlink(missing_ok=True)

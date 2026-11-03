@@ -12,6 +12,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [peripheral-tools.md](peripheral-tools.md) | White2Upgrade's expansion findings, CTRMap, editors, pret decomps, licensed tooling |
 | [hardware-and-rom.md](hardware-and-rom.md) | DS/DSi limits, the Black 2 cart and ROM, hybrid boot paths, emulators, xdelta, source ROM hashes |
 | [e0-baseline.md](e0-baseline.md) | Phase 0 E0: baseline build. E0a (no-ROM compile) and E0 (matching build, twice from clean) both passed |
+| [e4b-map-art.md](e4b-map-art.md) | Phase 0 E4b: new map art. Upstream refuses it; a template-append prototype ([patch](e4b-template-append.patch)) builds; chunk size budgets; in-game check pending |
 
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 
