@@ -40,6 +40,10 @@ free memory, save use) is defined and still to do. E1–E3 (`docs/research/e1-e3
 switch off still matches; edits verified in the built ROM; E1's text shows in game; the rival battle (E2, E3) is
 still to be checked in game.
 
+**Change (2026-11-03)**: manual in-game checks are batched into a playtest pass at the end, not done after each
+experiment (owner's decision). A Phase 0 experiment counts as done on build-level verification, with its in-game check
+listed in `docs/status.md` ("Deferred to playtesting").
+
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
 exit Phase 3.5.

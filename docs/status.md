@@ -65,13 +65,13 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. Finish E1–E3's in-game checks: the rival battle at the Aspertia lookout (owner, or an emulator harness), and E1's
-   glyph and line-width details. Test ROM: `~/kaleido-work/e1-e3/kaleido-e1-e3-test.nds`.
-2. E4a, E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b and E1–E3 prototypes are on
+1. E4a, E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b and E1–E3 prototypes are on
    branches `e4b-template-append` and `phase0-e1-e3`). E6b (runtime memory, save use) when an emulator harness or a
    melonDS GDB session is available.
-3. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
-4. E7 waits for hardware.
+2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+3. E7 waits for hardware.
+4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
+   under "Deferred to playtesting" below.
 
 ## Blockers
 
@@ -82,3 +82,17 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 - Hardware facts come from GBATEK, emulator and loader sources, not from devices.
 - xdelta determinism, and the determinism of modified builds and Kaleido's own tooling, are untested (see `risks.md`).
+
+## Deferred to playtesting
+
+Manual in-game checks are batched into one playtest pass at the end, not done after each experiment (owner's
+decision, 2026-11-03). Experiments proceed on build-level verification. Until then:
+
+| From | Check | Test ROM (never committed) |
+| --- | --- | --- |
+| E1 | Whether é ♂ ♀ ★ ♪ … all draw as glyphs, and how the over-long second line behaves (the new text itself shows) | `~/kaleido-work/e1-e3/kaleido-e1-e3-test.nds` |
+| E2 | The rival at the Aspertia lookout sends out a level 5 Pikachu | same |
+| E3 | Every damaging hit in that battle is "A critical hit!", with no crash, although 15 overlays moved | same |
+
+Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
+harness (R-16) could run these checks automatically.
