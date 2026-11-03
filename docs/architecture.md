@@ -16,6 +16,7 @@ Nothing yet: the repository holds documentation only. Phase 1 (`docs/plan/05-roa
 | Patches carry the extracted content they add (one xdelta per game against the B2 ROM) | `07-open-questions.md`, Q1 |
 | Every build fits DS mode (4 MB, DS Lite); DSi mode is never required | Q4 |
 | Mechanics that differ between Gen 5 and an original game, and B2W2-only systems, are per-game compile-time switches chosen in each game's config | Q6, Q7 |
+| FireRed and LeafGreen default to Gen 3 behavior on every mechanic switch; Gen 5 remains only where a Gen 3 variant isn't built yet | Q6 follow-up |
 | Original art and data are CC BY-SA 4.0; engine changes and tooling are GPL-3.0 | Q8; brief |
 | Gen 1 games use Gen 1 rules on Gen 5 data structures | Q9 |
 | Generic engine and tool work is offered upstream | Q10 |

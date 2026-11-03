@@ -79,6 +79,9 @@ From `docs/research/hardware-and-rom.md` (GBATEK and melonDS, **Verified** unles
 
 ## Fidelity: FireRed and LeafGreen
 
+Target: Gen 3 behavior wherever it differs from Gen 5 (owner's decision, 2026-11-03). Rows marked "Approximate →
+Exact with engine variant" are planned variants; each is Gen 5 until its variant is built.
+
 Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate** = differs, with the reason;
 **Infeasible** = can't be done here, with the reason.
 

@@ -215,6 +215,9 @@ A ruleset is a file in `framework/rulesets/`:
 - **Per-game switches** (owner's decision, Q6): a ruleset sets each switch's default, and a game's `game.json` may
   override any switch under `engine.defines`. A mechanic only becomes a switch when some game picks the non-Gen 5
   side, so there is no speculative variant code. Every distinct define set is compiled in CI (`06-testing.md`).
+- The `gen3` ruleset defaults every switch to **Gen 3 behavior** (owner's decision, 2026-11-03), so FireRed and
+  LeafGreen aim for the original mechanics; a mechanic is Gen 5 only until its Gen 3 variant exists. The `gen1`
+  ruleset does the same for Gen 1 rules (Q9).
 
 ### B2W2 systems
 
