@@ -40,13 +40,13 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   prototype (`docs/research/e4b-template-append.patch`) built a ROM with a new chunk (#1065) and texture set (#409),
   with every original unchanged and valid DSi digests. It plays normally in melonDS in DS mode (owner's check). Found: `AREA_COUNT` caps areas at
   409; each chunk must fit its map type's buffer (86,020 B for most); recoloring shared texture data can be refused.
-  ADR 0003 proposed. Details: `docs/research/e4b-map-art.md`.
+  ADR 0003 accepted. Details: `docs/research/e4b-map-art.md`.
 
 ## Most important findings
 
 1. Upstream's packers can **edit** the original map models and texture sets but can't **add** new ones (R-01).
    Template-append adds them while keeping a template's materials and textures (E4b); a full encoder is needed
-   before Phase 4 (ADR 0003, proposed).
+   before Phase 4 (ADR 0003).
 2. A single-source xdelta from B2 necessarily carries the extracted FRLG content; the owner accepted that (Q1).
    Patches still can't go on GitHub under the brief's rules; the channel is chosen before the first release.
 3. B2W2 carts have infrared, a 512 KB FLASH save behind it, and 512 MB of ROM space at most. The game code must stay
@@ -56,11 +56,10 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. Owner accepts or revises ADR 0003 (new map art); its in-game check passed.
-2. E6 (headroom), then E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin;
+1. E6 (headroom), then E1–E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (reset to the pin;
    the E4b prototype is on its `e4b-template-append` branch).
-3. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
-4. E7 waits for hardware.
+2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+3. E7 waits for hardware.
 
 ## Blockers
 
