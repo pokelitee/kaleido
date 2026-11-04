@@ -5,8 +5,8 @@ Last updated: 2026-11-04
 ## Current phase
 
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
-emulator harness spike (`docs/plan/05-roadmap.md`). No framework code, engine patches or game content are committed
-yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
+(2026-11-04); no framework code, engine patches or game content yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -108,8 +108,8 @@ in `docs/research/`. The playtest checks it deferred are listed at the end of th
 
 Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
 
-1. Repo layout (`03-architecture.md` §3), `LICENSE`, `LICENSE-CONTENT`, `CONTRIBUTING.md`, `docs/building.md`,
-   `docs/engine-sync.md`.
+1. ~~Repo layout, `LICENSE`, `LICENSE-CONTENT`, `CONTRIBUTING.md`, `docs/building.md`, `docs/engine-sync.md`~~: done
+   2026-11-04.
 2. The engine submodule at the pin and the first patches in `engine/patches/`, from Phase 0's prototypes:
    `configure.py --define` (E3), the dsd flags (E4a), `KALEIDO_SAVE_MAGIC` (E9), the species-count derivation (E5),
    template-append for map art (E4b).

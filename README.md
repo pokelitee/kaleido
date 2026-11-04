@@ -6,13 +6,16 @@ as an xdelta patch against the player's own Black 2 dump. No ROMs or game data a
 
 ## Getting started
 
-Nothing is buildable yet. The project has finished planning and is waiting for approval before Phase 0
-experiments. See [`docs/status.md`](docs/status.md).
+Nothing is playable yet. Phase 0's experiments are done, and Phase 1 is building the framework skeleton; see
+[`docs/status.md`](docs/status.md). Until the `kaleido` commands exist, [`docs/building.md`](docs/building.md)
+describes how to build the engine by hand.
 
 ## Architecture
 
-Engine (pinned pokebw2 + a patch series) → framework (layering, provenance, extraction) → region → game
-family → game. Details in [`docs/plan/03-architecture.md`](docs/plan/03-architecture.md).
+Engine (pinned pokebw2 + a patch series) → framework (layering, provenance, extraction) → region → game family →
+game. The repository has `engine/`, `framework/`, `content/` and `docs/`. Details in
+[`docs/plan/03-architecture.md`](docs/plan/03-architecture.md); what is built so far in
+[`docs/architecture.md`](docs/architecture.md).
 
 ## Documentation
 
@@ -21,10 +24,10 @@ Start with [`AGENTS.md`](AGENTS.md), which maps the docs. Plans are in [`docs/pl
 
 ## Contributing
 
-Read [`AGENTS.md`](AGENTS.md) for the rules (never commit ROMs or ROM-derived data; never copy unlicensed code).
-`CONTRIBUTING.md` arrives in Phase 1.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Above all: never commit ROMs or anything extracted from them, and never copy
+code from unlicensed projects.
 
 ## License
 
-Engine changes and tooling: GPL-3.0, as required by pokebw2. Original art and data: CC BY-SA 4.0. License files are
-added in Phase 1.
+Code (the framework, engine patches and tools): GNU GPL v3.0, [`LICENSE`](LICENSE), as pokebw2 is. Original art and
+data: CC BY-SA 4.0, [`LICENSE-CONTENT`](LICENSE-CONTENT).
