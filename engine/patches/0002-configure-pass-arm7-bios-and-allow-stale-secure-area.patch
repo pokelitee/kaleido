@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH 2/3] configure: pass --arm7-bios and --allow-stale-secure-area
+ to dsd
+
+When the first 16 KiB of ARM9 main change, dsd rom build needs the DS ARM7 BIOS's
+Blowfish key to compute the DSi values derived from the encrypted secure area, and
+refuses to build without it. Any change to ARM9 main can do that, code or data: the
+ROM stores ARM9 compressed and records its compressed end in that area.
+
+--arm7-bios PATH passes a BIOS, and every value is then correct.
+--allow-stale-secure-area builds without one, keeping the stale values, which DS
+mode doesn't check; it needs a dsd with that option (Kaleido's, offered upstream as
+fuddlesworth/ds-rom#1 and fuddlesworth/ds-decomp#2). Both are kept when build.ninja
+regenerates.
+---
+ configure.py | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/configure.py b/configure.py
+index 50e597f91..54caa06b7 100644
+--- a/configure.py
++++ b/configure.py
+@@ -907,6 +907,12 @@ def main():
+     parser.add_argument("--define", action="append", default=[], metavar="NAME[=VALUE]",
+                         help="define a preprocessor macro for the game's code and scripts; the ROMs no longer "
+                              "match")
++    parser.add_argument("--arm7-bios", type=Path, metavar="PATH",
++                        help="the Nintendo DS ARM7 BIOS, whose Blowfish key lets dsd compute the DSi values of "
++                             "a changed ARM9 secure area")
++    parser.add_argument("--allow-stale-secure-area", action="store_true",
++                        help="build even if the ARM9 secure area changed and no ARM7 BIOS is given, keeping the "
++                             "stale DSi values derived from it")
+     parser.add_argument("--bugfix", action="store_true",
+                         help="fix the game's bugs that are marked with BUGFIX in the source; the ROMs no longer match")
+     args = parser.parse_args()
+@@ -1000,7 +1006,9 @@ def main():
+     # needs a backup suffix after -i, which GNU sed also takes
+     n.rule("rom_config", "$dsd rom config --elf $in --config $config && sed -i.bak "
+            "'s|^files_dir: .*|files_dir: ../files|' $out && rm $out.bak", "Configuring ROM for $config")
+-    n.rule("rom_build", "$dsd rom build --config $in --rom $out", "Building $out")
++    rom_flags = [*([f"--arm7-bios {shlex.quote(str(args.arm7_bios.resolve()))}"] if args.arm7_bios else []),
++                 *(["--allow-stale-secure-area"] if args.allow_stale_secure_area else [])]
++    n.rule("rom_build", " ".join(["$dsd rom build --config $in --rom $out", *rom_flags]), "Building $out")
+     n.rule("check_modules", "$dsd check modules --config-path $config --fail && touch $out", "Checking modules")
+     n.rule("sha1", "sha1sum --quiet -c $in && touch $out", "Checking $rom")
+     # The context stays UTF-8, for decomp.me
+@@ -1016,6 +1024,8 @@ def main():
+     # A regeneration keeps the options that chose the tools, so that a build with another dsd keeps it
+     configure_args = [*args.versions, *(["--bugfix"] if args.bugfix else []),
+                       *(f"--define {shlex.quote(define)}" for define in args.define),
++                      *([f"--arm7-bios {shlex.quote(str(args.arm7_bios.resolve()))}"] if args.arm7_bios else []),
++                      *(["--allow-stale-secure-area"] if args.allow_stale_secure_area else []),
+                       *([f"--shift {args.shift:#x}"] if args.shift else []),
+                       *([f"--dsd {shlex.quote(str(args.dsd.resolve()))}"] if args.dsd else []),
+                       *(["--dsd-from-source"] if args.dsd_from_source else []),

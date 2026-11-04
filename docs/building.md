@@ -1,8 +1,8 @@
 # Building
 
 Phase 1 is writing `kaleido doctor`, `bootstrap` and `build` (`docs/plan/03-architecture.md` §7). Until they exist,
-this is the manual procedure Phase 0 used. Every step below was run on the owner's machine (`docs/research/e0-baseline.md`,
-`e4a-new-zone.md`).
+this is the manual procedure. Its steps were run on the owner's machine in Phase 0 and Phase 1
+(`docs/research/e0-baseline.md`, `e4a-new-zone.md`, `docs/status.md`).
 
 ## Requirements
 
@@ -18,32 +18,37 @@ this is the manual procedure Phase 0 used. Every step below was run on the owner
 
 Disk: about 3 GB for one checkout with one build (E0), plus Rust's build directory for dsd.
 
-## 1. pokebw2 at the pin
+## 1. Kaleido and the engine
+
+Clone Kaleido in WSL's filesystem, fetch the engine at the pin, and apply Kaleido's patch series:
 
 ```bash
-mkdir -p ~/kaleido-work/pokebw2 && cd ~/kaleido-work/pokebw2
-git init -q && git remote add origin https://github.com/fuddlesworth/pokebw2.git
-git fetch --depth 1 origin 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c && git checkout FETCH_HEAD
+cd ~ && git clone https://github.com/pokelitee/kaleido.git && cd kaleido
+git submodule update --init
+cd engine/pokebw2
+git switch -c kaleido
+git am ../patches/*.patch
 cp /path/to/your/black2.nds orig/baserom_b2_us.nds
 sha1sum orig/baserom_b2_us.nds
 ```
 
-The fetch takes about 2 minutes. `engine/pokebw2` replaces this checkout once the submodule is in.
+The submodule is shallow (`.gitmodules`), so the fetch is one commit, about 2 minutes. `git am` needs a git identity
+(`user.name`, `user.email`).
 
 ## 2. Kaleido's dsd
 
 pokebw2's dsd refuses to finish a ROM whose ARM9 main changed, unless it has the DS ARM7 BIOS (R-27). Kaleido's dsd adds
-`--allow-stale-secure-area` (`docs/research/dsd-allow-stale-secure-area.patch`, offered upstream as
-fuddlesworth/ds-rom#1 and fuddlesworth/ds-decomp#2).
+`--allow-stale-secure-area` (`engine/dsd/allow-stale-secure-area.patch`, offered upstream as fuddlesworth/ds-rom#1 and
+fuddlesworth/ds-decomp#2). `engine/engine.toml` names the commits it builds on.
 
 ```bash
-mkdir -p ~/kaleido-work/dsd-src && cd ~/kaleido-work/dsd-src
+mkdir -p ~/kaleido/.cache/dsd && cd ~/kaleido/.cache/dsd
 for repo in ds-rom:66e83ef467b1e7a4816e667bf3b86572b1f8072d ds-decomp:2dc1b27b95fe9191ea9a0c2ea3145baa349125b8; do
   name=${repo%%:*}; commit=${repo#*:}
   git init -q "$name" && git -C "$name" remote add origin "https://github.com/fuddlesworth/$name.git"
   git -C "$name" fetch -q --depth 1 origin "$commit" && git -C "$name" checkout -q FETCH_HEAD
 done
-git apply /path/to/kaleido/docs/research/dsd-allow-stale-secure-area.patch
+git apply ~/kaleido/engine/dsd/allow-stale-secure-area.patch
 cd ds-decomp && cargo build --release --bin dsd
 ```
 
@@ -53,8 +58,8 @@ The first build takes about 35 minutes. The result, `ds-decomp/target/release/ds
 ## 3. The matching baseline
 
 ```bash
-cd ~/kaleido-work/pokebw2
-python3 configure.py b2_us --dsd ~/kaleido-work/dsd-src/ds-decomp/target/release/dsd
+cd ~/kaleido/engine/pokebw2
+python3 configure.py b2_us --dsd ~/kaleido/.cache/dsd/ds-decomp/target/release/dsd
 ninja
 sha1sum build/pokeblack2_us.nds    # e51e6dfb8678a3d19dcd2a10691b96a569ca0abb
 ```
@@ -64,8 +69,7 @@ fails unless every matching check passes. A clean build takes 10–12 minutes.
 
 ## 4. Modified builds
 
-Kaleido's defines and dsd flags come with the first engine patches (`engine/patches/`, next in Phase 1). With them,
-`configure.py` takes:
+With Kaleido's patch series applied, `configure.py` also takes:
 
 | Option | What |
 | --- | --- |
@@ -73,7 +77,7 @@ Kaleido's defines and dsd flags come with the first engine patches (`engine/patc
 | `--allow-stale-secure-area` | Needed whenever ARM9 main changes, code or data (R-27). DS mode ignores the stale values |
 | `--arm7-bios PATH` | Instead of the flag above, if you have a DS ARM7 BIOS dump: every DSi value is then correct |
 
-Phase 0's versions of these patches are in `docs/research/`.
+The defines the series knows so far are listed in [`engine/README.md`](../engine/README.md).
 
 ## Checks and pitfalls
 

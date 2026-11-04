@@ -5,13 +5,23 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 
 | Path | What |
 | --- | --- |
-| `pokebw2/` | git submodule pointing at upstream at the pin. It records only a commit ID; no Nintendo data is in this repository |
-| `patches/` | Kaleido's engine changes, `NNNN-topic.patch`, applied in order on top of the pin |
-| `engine.toml` | upstream URL, optional mirror URL, notes on the pin |
+| `pokebw2/` | git submodule pointing at upstream at the pin (`41f42ca`, 2026-10-31). It records only a commit ID; no Nintendo data is in this repository. `git submodule update --init` fetches it, shallow |
+| `patches/` | Kaleido's engine changes, `NNNN-topic.patch`, applied in order with `git am` |
+| `engine.toml` | upstream URL, optional mirror URL, the Black 2 baseline SHA1, and how Kaleido's dsd is built |
+| `dsd/` | Kaleido's change to dsd (MIT, as dsd is), until upstream takes it |
 
-- Every behavior change in a patch sits behind a `KALEIDO_*` define. With all defines off, the patched engine must
-  still rebuild Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).
-- Changes that upstream would want are offered upstream first, which shrinks the series.
+## The series
+
+| Patch | What | Prototype |
+| --- | --- | --- |
+| `0001` | `configure.py --define NAME[=VALUE]`: a macro for the code and scripts | E3 |
+| `0002` | `configure.py --arm7-bios PATH` and `--allow-stale-secure-area`, passed to `dsd rom build` | E4a, ADR 0004 |
+| `0003` | `KALEIDO_SAVE_MAGIC`: each game's own save magic | E9 |
+
+- Every behavior change sits behind a `KALEIDO_*` define. With all defines off, the patched engine must still rebuild
+  Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).
+- Patches come from `git format-patch --zero-commit --no-signature` with fixed dates, so exporting an unchanged series
+  gives the same files.
+- Changes that upstream would want are offered upstream first, which shrinks the series. `0001` and `0002` are
+  candidates.
 - Moving the pin: [`docs/engine-sync.md`](../docs/engine-sync.md).
-
-The submodule and the first patches, from Phase 0's prototypes in `docs/research/`, come next in Phase 1.

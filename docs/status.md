@@ -6,7 +6,7 @@ Last updated: 2026-11-04
 
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
-(2026-11-04); no framework code, engine patches or game content yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+(2026-11-04), and so are the engine submodule and its first three patches. No framework code or game content yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -110,9 +110,13 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
 
 1. ~~Repo layout, `LICENSE`, `LICENSE-CONTENT`, `CONTRIBUTING.md`, `docs/building.md`, `docs/engine-sync.md`~~: done
    2026-11-04.
-2. The engine submodule at the pin and the first patches in `engine/patches/`, from Phase 0's prototypes:
-   `configure.py --define` (E3), the dsd flags (E4a), `KALEIDO_SAVE_MAGIC` (E9), the species-count derivation (E5),
-   template-append for map art (E4b).
+2. ~~The engine submodule and the first patches~~: done 2026-11-04. `engine/patches/` holds `--define` (E3), the dsd
+   flags (E4a) and `KALEIDO_SAVE_MAGIC` (E9). Verified:
+   - with every define off, the patched engine passes every matching check (`e51e6dfb…`);
+   - with `KALEIDO_SAVE_MAGIC`, the ROM equals E9's prototype byte for byte;
+   - two exports of the series are identical.
+   Left out on purpose: E5's species-count patch (no species-expansion scaffolding, `03-architecture.md` §12) and E4b's
+   template-append, which joins when Phase 3 adds map art (ADR 0003).
 3. `kaleido doctor` and `bootstrap`: tool hashes, the patched dsd built from pinned commits (until upstream takes it),
    and ninja run until nothing compiles (R-28, until upstream takes #807).
 4. `extract`, `merge`, `validate`, `build`, `patch`, `baseline`, and the `firered` config with its tiny layer (E1's
