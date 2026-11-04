@@ -1,6 +1,7 @@
-# ROMs, saves and anything extracted from them are never committed
+# ROMs, saves and anything extracted from them are never committed. extract/ is anchored: a layer's extract/ holds
+# recipes, which are committed
 orig/
-extract/
+/extract/
 *.nds
 *.gba
 *.gb

@@ -67,6 +67,13 @@ copied. The extractor:
 - Species past 251 need the ROM's own national-order table.
 - The writer should use pokebw2's JSON formatting, so that extracted files diff cleanly against upstream's.
 
+## Later
+
+- Phase 1 turned the prototype into `framework/extractors/gba_gen3.py`. Its unit tests found a flaw in the header
+  scan, which the prototype has too. After a run of header-shaped entries without the terminator, the scan went on
+  from the run's end. That can skip a real table starting inside the false run. On the owner's ROM the scan still
+  found the right table, so the results above stand. The framework's version goes on from the next word instead.
+
 ## Not done
 
 - In-game check: walk Route 19's grass in the test ROM and meet FireRed Route 1's species at its levels. Deferred to

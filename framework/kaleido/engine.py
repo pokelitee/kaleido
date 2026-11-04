@@ -144,15 +144,16 @@ def link_base_rom(paths: Paths, engine_dir: Path | None = None) -> str:
 
 def worktree(paths: Paths, directory: Path, tools: list[str]) -> str:
     """A git worktree of the engine at branch kaleido's commit, detached (the branch stays checked out in
-    engine/pokebw2), with the base ROM and engine/pokebw2's downloaded tools linked in. Returns its commit."""
+    engine/pokebw2), with the base ROM and engine/pokebw2's downloaded tools linked in. Returns its commit.
+
+    The worktree is Kaleido's: kaleido merge writes the layers into it. When the series moves, it is checked out again
+    over any changes, and the next merge writes the layers again; nobody edits it by hand."""
     head = run(["git", "rev-parse", BRANCH], cwd=paths.engine).strip()
     if not (directory / ".git").exists():
         directory.parent.mkdir(parents=True, exist_ok=True)
         run(["git", "worktree", "add", "--quiet", "--detach", str(directory), head], cwd=paths.engine)
     elif run(["git", "rev-parse", "HEAD"], cwd=directory).strip() != head:
-        if run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=directory).strip():
-            raise EngineError(f"{directory} has changes to tracked files; remove the directory to start it again")
-        run(["git", "checkout", "-q", "--detach", head], cwd=directory)
+        run(["git", "checkout", "-q", "--force", "--detach", head], cwd=directory)
     link_base_rom(paths, directory)
     for name in tools:
         shared = paths.engine / "tools" / name

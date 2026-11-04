@@ -1,13 +1,14 @@
 """Games: content/games/<game>/game.json, each one ROM (03-architecture.md §2).
 
-A game's config has its name and the KALEIDO_* defines it builds with. Its layers and their merge come with
-kaleido merge; until then a game is Black 2's content with the game's defines."""
+A game's config has its name, its layers (lowest first), the source ROMs its layers extract from, and the KALEIDO_*
+defines it builds with."""
 import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from kaleido.config import ConfigError, Paths
+from kaleido.roms import SOURCES
 
 SAVE_MAGIC = "KALEIDO_SAVE_MAGIC"
 # A game's save magic must not be Black 2's footer or outside-data magic, nor what a zeroed or erased card holds (E9)
@@ -22,6 +23,10 @@ class Game:
     id: str
     name: str
     defines: dict[str, str]
+    # Layer IDs under content/, lowest first
+    layers: tuple[str, ...] = ()
+    # The source ROMs its recipes read, by the name of their file in orig/ without its extension
+    sources: tuple[str, ...] = ()
 
 
 def directory(paths: Paths) -> Path:
@@ -47,7 +52,15 @@ def _load(path: Path) -> Game:
             raise ConfigError(f"{where}: define {define!r} isn't a KALEIDO_* name")
         if not isinstance(value, str):
             raise ConfigError(f"{where}: define {define} must be a string, \"\" for one without a value")
-    return Game(game_id, name, dict(defines))
+    layers, sources = data.get("layers", []), data.get("sources", [])
+    for key, value in (("layers", layers), ("sources", sources)):
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            raise ConfigError(f"{where}: '{key}' must be a list of strings")
+    known = {Path(spec.file).stem for spec in SOURCES}
+    for source in sources:
+        if source not in known:
+            raise ConfigError(f"{where}: source {source!r} isn't a ROM Kaleido knows ({', '.join(sorted(known))})")
+    return Game(game_id, name, dict(defines), tuple(layers), tuple(sources))
 
 
 def load_all(paths: Paths) -> list[Game]:

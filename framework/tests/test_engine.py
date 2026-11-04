@@ -122,13 +122,13 @@ class WorktreeTest(unittest.TestCase):
         engine.worktree(self.paths, self.directory, [])
         self.assertEqual((self.directory / "two.txt").read_text(), "2\n")
 
-    def test_refuses_to_discard_tracked_changes(self) -> None:
+    def test_a_new_series_replaces_earlier_merged_changes(self) -> None:
         engine.worktree(self.paths, self.directory, [])
         self.fixture.make_patch("two", "2\n")
         engine.apply_series(self.paths)
-        (self.directory / "one.txt").write_text("edited\n")
-        with self.assertRaisesRegex(engine.EngineError, "has changes"):
-            engine.worktree(self.paths, self.directory, [])
+        (self.directory / "one.txt").write_text("merged\n")
+        engine.worktree(self.paths, self.directory, [])
+        self.assertEqual((self.directory / "one.txt").read_text(), "1\n")
 
 
 @unittest.skipIf(os.name == "nt", "symbolic links need Linux, where Kaleido builds")

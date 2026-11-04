@@ -43,11 +43,13 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | `./kaleido bootstrap` | engine at the pin, the patch series on branch `kaleido`, the base ROM linked, Kaleido's dsd built |
 | `./kaleido doctor` | checks the machine, engine, dsd, ROMs and downloaded tools; exits 1 on a failure |
 | `./kaleido baseline` | the patched engine, every define off, must rebuild Black 2 byte for byte |
-| `./kaleido build <game>` | a game's ROM, `build/<game>/kaleido-<game>.nds`, from `content/games/<game>/game.json` |
+| `./kaleido extract <game>` | the game's layers' recipes, run on your source ROMs, into `build/<game>/extracted/` |
+| `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
+| `./kaleido build <game>` | extracts, merges and builds the ROM: `build/<game>/kaleido-<game>.nds` |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
 
-`extract`, `merge`, `validate` and `patch` follow in Phase 1 (`docs/plan/03-architecture.md` §7). Details:
-`docs/building.md`.
+`validate` and `patch` follow in Phase 1 (`docs/plan/03-architecture.md` §7). Details: `docs/building.md`; layers
+and their rules: `content/README.md`.
 
 ## Rules
 

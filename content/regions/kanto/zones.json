@@ -1,0 +1,6 @@
+{
+    "notes": "Which existing zone holds each Kanto location (ADR 0004). Phase 1's test mapping: Route 1 takes Route 19, Aspertia's first route, which has grass. Phase 3 sets the real mapping.",
+    "locations": {
+        "route_1": "ZONE_ROUTE_19"
+    }
+}
