@@ -18,11 +18,12 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 | `0002` | `configure.py --arm7-bios PATH` and `--allow-stale-secure-area`, passed to `dsd rom build` | E4a, ADR 0004 |
 | `0003` | `KALEIDO_SAVE_MAGIC`: each game's own save magic | E9 |
 | `0004` | `compile_all.py --define NAME[=VALUE]`, so CI compiles each game's defines without a ROM | Phase 1 CI |
+| `0005` | `configure.py --banner-title TEXT`: the DS menu's title, in every language | Phase 2 |
 
 - Every behavior change sits behind a `KALEIDO_*` define. With all defines off, the patched engine must still rebuild
   Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).
 - Patches come from `git format-patch --zero-commit --no-signature --no-numbered` with fixed dates, so exporting an
   unchanged series gives the same files, and adding a patch leaves the others' files as they were.
-- Changes that upstream would want are offered upstream first, which shrinks the series. `0001`, `0002` and `0004` are
-  candidates.
+- Changes that upstream would want are offered upstream first, which shrinks the series. `0001`, `0002`, `0004` and
+  `0005` are candidates.
 - Moving the pin: [`docs/engine-sync.md`](../docs/engine-sync.md).
