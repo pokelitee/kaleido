@@ -22,7 +22,7 @@ def main(paths: Paths, force: bool = False, skip_dsd: bool = False) -> int:
         say("dsd: skipped")
     else:
         if not dsd.is_current(paths, config):
-            say("dsd: building Kaleido's dsd (about 35 minutes the first time)")
+            say("dsd: building Kaleido's dsd (a few minutes; up to 35 with no Rust crates downloaded yet)")
         say(f"dsd: {'built' if dsd.build(paths, config) else 'already built'}, {dsd.binary(paths)}")
     say("Next: ./kaleido doctor")
     return 0

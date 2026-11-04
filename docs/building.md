@@ -39,7 +39,8 @@ For extraction, also `orig/firered.gba`. Nothing needs installing: `./kaleido` r
    given `--force`.
 3. Links `engine/pokebw2/orig/baserom_b2_us.nds` to `orig/black2.nds`.
 4. Builds Kaleido's dsd into `.cache/dsd/`: ds-rom and ds-decomp at the commits in `engine/engine.toml`, plus
-   `engine/dsd/allow-stale-secure-area.patch` (R-27, ADR 0004). The first build takes about 35 minutes. `--skip-dsd`
+   `engine/dsd/allow-stale-secure-area.patch` (R-27, ADR 0004). The first build took about 35 minutes on a machine
+   with no Rust crates downloaded, and about 3 minutes in a second clone once cargo had them. `--skip-dsd`
    leaves it out.
 
 `doctor` checks the platform, Python, the commands upstream's build calls, disk space, the engine, dsd, the ROMs'

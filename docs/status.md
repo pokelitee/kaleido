@@ -166,7 +166,16 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    This step is done.
    Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
    (only after doing it by hand three times).
-7. Left for Phase 1's exit: a clean clone on a second machine must build the same ROM and patch SHA1s.
+7. Reproducibility. A clean clone of `main` (`6c98934`) in a new WSL directory on the owner's machine, built from
+   nothing (2026-11-04), matched the first clone. **Verified**:
+   - bootstrap gave the same engine commit (`e66725f1c361…`);
+   - doctor passed with no warnings, and the freshly downloaded tools match `engine.toml`'s hashes;
+   - `baseline` matches Black 2 (`e51e6dfb…`);
+   - `build firered` gives `f64d9a56…`;
+   - `patch firered` gives the same 420,320-byte patch (`7c4e38f87441bd45fa220041529639bbf1faf94e`).
+
+   Kaleido's dsd binary differs between the two directories, but its ROMs don't. **Assumption**: Rust embeds the build
+   path. Left for Phase 1's exit: the same SHA1s from a clean clone on a **second machine** (`docs/building.md`).
 
 Outside Phase 1:
 
@@ -187,8 +196,8 @@ FireRed dump is `~/kaleido-work/roms/firered.gba`. The harness's virtual environ
 ## Not verified yet
 
 - Hardware facts come from GBATEK, emulator and loader sources, not from devices.
-- Determinism on a second machine: same ROM and patch SHA1s from a clean clone (Phase 1's exit). On one machine,
-  rebuilds and patches are already byte-identical (2026-11-04).
+- Determinism on a second machine: same ROM and patch SHA1s from a clean clone (Phase 1's exit). On the owner's
+  machine, rebuilds, patches and a second clean clone are byte-identical (2026-11-04).
 
 ## Deferred to playtesting
 
