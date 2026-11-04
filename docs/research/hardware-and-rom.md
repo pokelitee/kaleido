@@ -128,8 +128,10 @@ All rows **Verified** unless marked.
 
 - B2W2 issues on record: melonDS #2651 (DS-mode crash, low-confidence report from an Android fork), #2658 (DSi-mode
   crash after about two hours), #1530 (graphics glitches). Retail B2W2 boots from DSi firmware in melonDS (#2789).
-- **Assumption**: the most practical automated harness is either py-desmume (headless and scriptable, DS mode only) or
-  a small melonDS-core harness of our own (DS and DSi). Phase 1 spike (R-16).
+- **Verified** (Phase 1 spike, 2026-11-04, `harness-spike.md`): py-desmume 0.0.9 installs from PyPI on Linux with
+  DeSmuME 0.9.12's core bundled, and runs Black 2 headless with no BIOS or firmware files. It booted the hybrid in DS
+  mode, and scripted buttons drove the game to the first battle. ADR 0005 proposes it as Kaleido's DS-mode harness,
+  with a melonDS-core harness as the fallback for DSi mode.
 
 ## xdelta3 and patch formats
 

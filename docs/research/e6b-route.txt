@@ -1,0 +1,52 @@
+# E6b's route through Black 2 (USA) from power-on, for e6b-harness.py (--steps-file). Found by hand on 2026-11-04,
+# one savestate at a time; each line below is one of those runs. The detours (a house, the Trainers' School door) are
+# kept, because later presses only line up with the frames as they were. Name entry and the rival's name take
+# whatever the presses type ("A", "HughAAA"); the starter is the default (Tepig).
+
+wait 900, START/120, START/240, measure title, save title                 # title screen
+A/240, A/180, A*15/60, A*15/60                                              # New Game, Juniper's intro
+A*6/60, A*6/60                                                              # name entry
+START/30, A/180, A*10/60, A*10/60
+A*10/60, A*10/60, A*10/60                                                   # flyover
+wait 600, A*10/60, A*10/60                                                  # Aspertia City, opening event
+measure field-event, A*8/60, wait 120
+A*12/60, A*12/60, save room                                                 # the player's room
+
+wait 120, measure field-room, X/90, A/180, wait 60, A/240, wait 60, measure bag    # the bag, then back to the room
+load room
+
+hold LEFT 48, wait 20, hold DOWN 32, wait 20, hold LEFT 48, wait 20        # out of the room
+hold DOWN 48, wait 20, hold LEFT 64, wait 30
+A*25/45                                                                     # Mom
+A*40/30
+hold DOWN 16, wait 4, hold LEFT 96, wait 10, hold DOWN 32, wait 120
+hold RIGHT 32, wait 6, hold DOWN 48, wait 150                               # outside
+hold LEFT 48, wait 4, hold UP 96, wait 4, hold UP 96, wait 4
+A*30/30, hold UP 128, wait 4                                                # Hugh
+A*40/30, A*40/30
+hold UP 160, wait 4, hold UP 160, wait 4                                    # into a house by mistake
+hold DOWN 24, wait 120, hold DOWN 16, hold LEFT 96, wait 4, hold UP 128, wait 4
+hold UP 64, wait 4, hold LEFT 48, wait 4, hold UP 96, wait 4
+A*30/30
+hold UP 64, wait 120, A*10/30                                               # the Trainers' School door
+hold RIGHT 96, wait 4, hold UP 160, wait 4
+hold DOWN 32, hold RIGHT 160, wait 4, hold UP 192, wait 4                   # around the Pokémon Center
+hold LEFT 24, hold UP 192, wait 4, hold UP 128, wait 4
+hold UP 160, wait 4, A*6/40, hold UP 160, wait 4                            # the gate north, Hugh
+A*30/30
+hold DOWN 176, wait 24, hold LEFT 64, wait 24, hold LEFT 64, wait 24       # back to z 724
+hold DOWN 12, wait 24, hold LEFT 12, wait 24, hold LEFT 12, wait 24, hold LEFT 12, wait 24, hold LEFT 12, wait 24
+hold LEFT 96, wait 24, hold UP 96, wait 24                                  # the lookout's stairs
+hold UP 96, wait 24, A*20/30
+wait 1200, A/240, A/240, A/240
+wait 60, measure field-city, hold UP 160, wait 24                           # the lookout
+hold UP 12, wait 30, A/120, A*10/120                                        # Bianca
+A*20/120, A*20/120                                                          # the starter
+A*20/120, A*20/120
+wait 600, hold DOWN 12, wait 60, hold DOWN 48, wait 60
+A*20/120, A*10/120                                                          # Hugh
+A*25/120, A*25/120
+A*15/120, A*15/120
+wait 120, A/90, hold DOWN 12, wait 30, hold RIGHT 4, wait 30, A/120, A*10/120    # talk to Hugh: the battle
+wait 300, A/120, wait 240, measure battle, save battle                      # the command menu
+A/120, A/30, wait 360, A/60, wait 90, measure battle-attack                 # Tackle

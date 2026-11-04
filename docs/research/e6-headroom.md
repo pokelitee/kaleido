@@ -7,8 +7,8 @@ and save space does Kanto have to work with?
 E6 has two parts:
 
 - **E6a (static), done here.** Everything readable from the ROM's header and configs and from the source's constants.
-- **E6b (runtime), not done.** Free memory while the game runs, and the save's actual use. It needs an emulator
-  harness or a debugger session (see the end).
+- **E6b (runtime), done in Phase 1 (2026-11-04).** Free memory while the game runs, and the save's actual use, read from
+  RAM in the emulator harness (§5). It corrected two of E6a's assumptions.
 
 ## Summary
 
@@ -16,17 +16,19 @@ E6 has two parts:
 | --- | --- | --- | --- | --- |
 | ROM | 512 MiB (header capacity byte `0x0C`; the largest cart) | 294,568,960 B with the DSi area (header `0x210`) | **≈ 231 MiB** | **Verified**, original ROM header |
 | ARM9 binary | 2.5 MB on a DSi, even in DS mode (GBATEK) | 472,740 B in ROM (compressed, header `0x2C`); 628,544 B code and data in RAM | **≈ 1.9 MB** | **Verified**, header and `arm9.yaml` |
-| **Main RAM, DS mode** | arena `0x021fd080`–`0x023e0000` | fixed root heaps 1,744,384 B + extra heap 16,128 B | **≈ 213 KiB** for added code and static data, before heap-manager and OS overhead | **Verified** constants; overhead **Unverified** |
-| Main RAM, DSi mode | arena `0x0276dde0`–`0x02f80000` | root heaps 4,787,712 B | ≈ 3.5 MiB | **Verified** constants |
-| Field memory, DS mode | heap 1 = 1,719,808 B | field heap 1,271,808 B + child heap 7 159,744 B | 288,256 B for everything else in heap 1 while in the field | **Verified** constants; actual use **Unverified** (E6b) |
-| Save | 0x26000 B per copy (main at 0, backup at 0x26000) of a 512 KiB chip | **Unverified** (E6b) | **Unverified** | **Verified** layout constants |
+| **Main RAM, DS mode** | arena `0x021fd080`–`0x023e0000` | root heaps 1,744,384 B + 7,236 B of setup | **226,620 B** (`0x023a8ac4`–`0x023e0000`) for added code and static data | **Verified**, E6b (RAM, every state) |
+| Main RAM, DSi mode | arena `0x0276dde0`–`0x02f80000` | root heaps 4,787,712 B | ≈ 3.5 MiB | **Verified** constants; not measured (DeSmuME has no DSi mode) |
+| Heap 1 in the field, DS mode | heap 1 = 1,719,808 B | the field's child heaps | **110,696 B** free outside them (the field heap itself has 295–368 KB free inside) | **Verified**, E6b |
+| Save | 0x26000 B (155,648) per copy (main at 0, backup at 0x26000) of a 512 KiB chip | 155,556 B | **92 B** per copy | **Verified**, E6b (`SaveDataTable.total_size`) |
 
 What it means:
 
 - **ROM space and the ARM9 binary limit are not constraints.** Kanto's data and code fit many times over.
 - **DS-mode RAM is the constraint.** The heaps are fixed sizes, and the arena starts where the last overlay ends. All
-  of Kaleido's added code and static data (main module and overlays together) must fit in about 213 KiB, or the heaps
-  must shrink, or B2W2 systems must be switched off (Q7). This is now R-05's concrete budget.
+  of Kaleido's added code and static data (main module and overlays together) must fit in the 226,620 B the arena has
+  left after boot, or the heaps must shrink, or B2W2 systems must be switched off (Q7). This is R-05's budget.
+- **The save is full.** Black 2's 73 blocks leave 92 bytes per copy, so any new save data must replace B2W2 data
+  (R-13).
 - DSi mode has far more room, but DS mode is the hard limit (Q4), so it doesn't help the budget.
 
 ## 1. ROM
@@ -65,8 +67,8 @@ All from `extract/b2_us/arm9/arm9.yaml`, `extract/b2_us/arm9_overlays/overlays.y
   highest end of any main-RAM overlay (`0x021fd080`), so **any growth that raises the overlay area's end shrinks the
   arena by the same amount**. Growth on a branch of the overlay tree that doesn't reach the end is free up to that
   branch's slack (not measured per overlay here).
-- The arena ends at `0x023e0000` in DS mode. The ARM7 binary is loaded at `0x02380000`; whether that range stays in
-  use after boot is **Unverified**.
+- The arena ends at `0x023e0000` in DS mode. The ARM7 binary is loaded at `0x02380000`, but that range is free after
+  boot: heap 1 runs over it, to `0x023a8ac4` (**Verified**, E6b).
 
 ### Heaps (`src/system/gfl_use.c`)
 
@@ -74,7 +76,7 @@ All from `extract/b2_us/arm9/arm9.yaml`, `extract/b2_us/arm9_overlays/overlays.y
 | --- | --- | --- |
 | Root heap 0 | 0x6000 (24,576 B) | same |
 | Root heap 1 | 0x1a3e00 (1,719,808 B) | 0x48ae00 (4,763,136 B) |
-| Extra heap 9 (`EXTRA_HEAP_SIZE` 0x3f00) | from the OS heap in the arena | child of heap 1 |
+| Extra heap 9 (`EXTRA_HEAP_SIZE` 0x3f00) | from the OS's extra heap, at `0x02000020`–`0x02003f20` below ARM9, not in the arena (**Verified**, E6b) | child of heap 1 |
 | Child heap 7 of heap 1 | 0x27000 (159,744 B) | same |
 | DTCM heap | 0x2000 | same |
 | Heap IDs | 193 (`GFL_MemInit`) | same |
@@ -103,25 +105,63 @@ The blocks' sizes come from functions (`*_GetSize`), so the used total isn't a s
 of E6b. For Tier 1, Kanto reuses B2W2's blocks (event flags and variables, Pokédex, party, boxes), so no save growth is
 planned (R-13).
 
-## 5. E6b — runtime measurements (moved to Phase 1)
+## 5. E6b — runtime measurements (Phase 1, 2026-11-04)
 
-The owner moved E6b into Phase 1's emulator harness spike on 2026-11-04 (`05-roadmap.md`). It is a Phase 1 exit
-criterion, and its results go in this section.
+The owner moved E6b into Phase 1's emulator harness spike on 2026-11-04 (`05-roadmap.md`). The spike's harness
+(`harness-spike.md`, `e6b-harness.py`) ran the owner's Black 2 dump (SHA1 `e51e6dfb…`) in py-desmume 0.0.9, which
+wraps DeSmuME 0.9.12's core, in DS mode. It drove the game with scripted buttons (`e6b-route.txt`) and read RAM at each
+state through pokebw2's symbols at the pin (`config/b2_us/arm9/symbols.txt`):
 
-| Measurement | Why | How |
-| --- | --- | --- |
-| Main arena lo and hi after boot, and free bytes in heaps 0 and 1, in DS mode: at the title screen, in the field (Aspertia), in a wild battle and in the bag menu | Turns the ≈ 213 KiB upper bound and the 288,256 B field figure into measured values | Read the heap manager's state from RAM: melonDS's GDB stub (on by default) with `gdb-multiarch` in WSL, or the Phase 1 emulator harness (R-16) |
-| The save's used total (`SaveDataTable.total_size`) | Exact save headroom per copy | Same RAM read after boot; or block footers in a real save file |
-| Per-overlay slack on the overlay tree | Which overlays can grow without moving the arena | Static, from the linker script (LCF) of a build; Phase 2, when the first engine patch adds code |
+- the main arena's limits, from NitroSDK's table at `0x02fffda0` (`lib/nitro/src/os/os_arena.c`);
+- every heap, through `sHeapMgr` at `0x0214181c` (`src/gfl/heapsys.c`). That gives each heap's size, and its free bytes
+  summed over the expanded heap's free list, as `NNS_FndGetTotalFreeSizeForExpHeap` sums them;
+- the save table, through `SaveControlWork` at `0x02140f60` (`SaveDataTable.total_size`).
 
-Owner action for the GDB route: enable melonDS's GDB stub in its settings and run a session in which an agent reads
-memory. This is optional: the Phase 1 harness spike covers the same measurements.
+All **Verified** on 2026-11-04, DS mode, in DeSmuME:
+
+| State | Arena free | Heap 0 free (of 24,576) | Heap 1 free (of 1,719,808) | The state's own heaps: free of size |
+| --- | --- | --- | --- | --- |
+| Title screen | 226,620 | 18,652 | 317,592 | 22: 361,732 of 1,179,648 |
+| Field, Aspertia City's opening event | 226,620 | 17,040 | **110,696** | field heap 21: 295,136 of 1,210,368 |
+| Field, the player's room | 226,620 | 17,040 | **110,696** | 21: 368,320 of 1,210,368 |
+| Field, the lookout's stairs | 226,620 | 17,040 | **110,696** | 21: 295,120 of 1,210,368 |
+| Bag (the field is unloaded) | 226,620 | 18,652 | 1,169,528 | bag 14: 95,856 of 212,992 |
+| First battle (the rival's): intro, command menu, Tackle | 226,620 | 18,652 | 512,856 | 19: 335,332–379,280 of 705,792; 18: 81,724 of 131,072 |
+
+In every state, heap 1's free space is one block, and the save table says 155,556 of 155,648 bytes in 73 blocks. Heap
+9 has 10,920–16,056 of 16,128 B free, heap 7 1,296 of 159,744 B, and heap 8 52 of 18,720 B.
+
+What it shows:
+
+1. **The arena never moves after boot.** Its low end stays at `0x023a8ac4` and its high end at `0x023e0000` in every
+   state, so 226,620 B of main RAM go unused. That is the DS-mode budget for added code and static data. E6a's
+   ≈ 213 KiB counted heap 9 in the arena, but heap 9 is at `0x02000020`, below ARM9. The setup before heap 0 takes
+   7,236 B (heap 0 starts at `0x021fecc4`; `OV290_BSS_END` is `0x021fd080`).
+2. **The field is the tightest state for heap 1**: 110,696 B outside the field's child heaps, against 317,592 at the
+   title, 512,856 in battle and 1,169,528 in the bag. E6a's 288,256 B left out the field's smaller child heaps.
+   Aspertia's field heap (1,210,368 B) keeps 295–368 KB free inside.
+3. Heaps 7 and 8 are nearly full in every state. Anything stored there needs a bigger heap.
+4. In the field, one root heap (137, 65,536 B) is memory inside the overlay area, at `0x021d57a0`: a field overlay's
+   own space, not the arena.
+5. **The save has 92 bytes left per copy.**
+6. The ARM7 binary's load range (`0x02380000` on) is reused: heap 1 runs over it.
+
+Not covered:
+
+- DSi mode, which DeSmuME doesn't have. E6a's constants stand.
+- Other maps and map types, wild and double battles, and heavier modes (PWT, Musical, Join Avenue, link features).
+  **Assumption**: the field is the floor for ordinary play, so heavier states could have less of heap 1 free.
+- Per-overlay slack on the overlay tree: static, from a build's linker script, in Phase 2 when the first engine patch
+  adds code.
 
 ## Consequences for the plan
 
-- Validation (`03-architecture.md` §9) adds an **arena check** on every build: `0x023e0000` minus the new
-  `OV290_BSS_END` must cover the fixed root heaps and the extra heap, plus a safety margin set from E6b's overhead
-  measurement. This is cheap and catches overgrowth before anything boots.
+- Validation (`03-architecture.md` §9) adds an **arena check** on every build. `0x023e0000` minus the new
+  `OV290_BSS_END` must cover the root heaps (1,744,384 B) and the 7,236 B of setup (E6b), plus a margin; Black 2
+  leaves 226,620 B. This is cheap and catches overgrowth before anything boots.
+- Anything that enlarges the field's heaps, or allocates from heap 1 while the field runs, must fit in the 110,696 B
+  heap 1 has free in the field.
+- New save data must replace B2W2 data (switched-off systems, Q7), since the save has 92 bytes free.
 - Kaleido's engine changes should favor code in overlays that replace B2W2 ones (switched off per game, Q7), over
   growing ARM9 main or adding resident overlays.
 - ROM space and the ARM9 binary size need only a sanity check.

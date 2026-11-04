@@ -18,6 +18,7 @@ and dates.
 | Ruff | Format and lint Kaleido's Python | MIT | 0.17.3 (`framework/requirements-ci.txt`, Dependabot updates it) | One tool for both jobs. |
 | GitHub Actions: `actions/checkout`, `actions/setup-python`, `actions/cache` | CI | MIT | v7.0.1, v7.1.0, v6.1.0 by commit SHA (`.github/workflows/ci.yml`, Dependabot updates them) | GitHub's own actions; nothing else runs in CI. |
 | melonDS (primary), DeSmuME (secondary) | Manual and scripted testing | melonDS GPL-3.0; DeSmuME GPL-2.0 | latest stable at Phase 1 | Brief default; see `hardware-and-rom.md` for DSi-mode support and scripting. |
+| [py-desmume](https://github.com/SkyTemple/py-desmume) | Headless DS-mode test harness, on the builder's machine only (ADR 0005, proposed) | GPL-3.0; bundles DeSmuME's core (GPL-2.0) | 0.0.9 (DeSmuME 0.9.12 core), in its own virtual environment | The only harness that ran Black 2 headless from Python with RAM reads and savestates (`harness-spike.md`). |
 | Blender | Map and prop authoring (glTF 2.0) | **Unverified** (GitHub reports `NOASSERTION`); an artist's tool, not a build dependency | artist's choice | Upstream's map pipeline is built around Blender exports. |
 
 ## Reference only (read for behavior and formats; never copy)
