@@ -1,5 +1,6 @@
 {
     "name": "Red",
+    "title": ["Kaleido", "Red"],
     "layers": ["regions/kanto", "families/rby", "games/red"],
     "sources": [],
     "defines": {

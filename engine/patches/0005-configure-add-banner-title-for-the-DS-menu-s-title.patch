@@ -1,0 +1,149 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] configure: add --banner-title for the DS menu's title
+
+configure.py --banner-title TEXT builds the ROM with another title in its
+banner, in every language: up to three lines, separated by \n. A new script,
+tools/build/banner_title.py, writes a copy of the extracted banner.yaml with
+that title, whose image paths lead back to the extracted icon, and the ROM's
+config names the copy instead of the extracted banner. Without the option,
+nothing changes and the build still matches.
+---
+ configure.py                | 27 ++++++++++++++---
+ tools/build/banner_title.py | 58 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 81 insertions(+), 4 deletions(-)
+ create mode 100755 tools/build/banner_title.py
+
+diff --git a/configure.py b/configure.py
+index 54caa06b7..994d4b0b8 100644
+--- a/configure.py
++++ b/configure.py
+@@ -639,10 +639,10 @@ def get_dsd(tools_dir: Path, from_source: bool) -> Path:
+ 
+ 
+ def add_version(n: Writer, version: str, dsd: Path, bugfix: bool, shift: int,
+-                extra_defines: list[str]) -> tuple[list[Path], list[str]]:
++                extra_defines: list[str], banner_title: str | None = None) -> tuple[list[Path], list[str]]:
+     """Adds the build steps of one version. Returns its check targets and dsd config files. A build with the bugs fixed
+     or with its code shifted does not match, so its only targets are the ROM and its archives."""
+-    matching = not bugfix and not shift and not extra_defines
++    matching = not bugfix and not shift and not extra_defines and banner_title is None
+     baserom = Path("orig") / f"baserom_{version}.nds"
+     extract_dir = Path("extract") / version
+     config_dir = Path("config") / version
+@@ -853,7 +853,18 @@ def add_version(n: Writer, version: str, dsd: Path, bugfix: bool, shift: int,
+             checks.append(archive_ok)
+ 
+     rom_config = build_dir / "build" / "rom_config.yaml"
+-    n.build([rom_config], "rom_config", [arm9_o], variables={"config": str(arm9_config)})
++    if banner_title is None:
++        n.build([rom_config], "rom_config", [arm9_o], variables={"config": str(arm9_config)})
++    else:
++        # A copy of the extracted banner with the title given, which the ROM's config names instead
++        banner = build_dir / "banner" / "banner.yaml"
++        n.build([banner], "banner_title", [extract_dir / "config.yaml"],
++                implicit=["tools/build/banner_title.py"],
++                variables={"source": str(extract_dir / "banner" / "banner.yaml"),
++                           "title": shlex.quote(banner_title)})
++        banner_line = f"banner: {os.path.relpath(banner, rom_config.parent)}"
++        n.build([rom_config], "rom_config_banner", [arm9_o], implicit=[banner],
++                variables={"config": str(arm9_config), "banner": shlex.quote(f"s|^banner: .*|{banner_line}|")})
+     n.build([rom], "rom_build", [rom_config], implicit=[files_ok, *archives])
+ 
+     modules_ok = stamp_dir / "modules.ok"
+@@ -904,6 +915,9 @@ def main():
+     parser.add_argument("--shift", type=lambda s: int(s, 0), default=0, metavar="BYTES",
+                         help="pad the code so that it and everything after it moves, to test that a mod can change "
+                              "code sizes; the ROMs no longer match. A multiple of 32, such as 0x100")
++    parser.add_argument("--banner-title", metavar="TEXT",
++                        help="the title the DS menu shows, in every language: up to three lines separated "
++                             "by \\n; the ROMs no longer match")
+     parser.add_argument("--define", action="append", default=[], metavar="NAME[=VALUE]",
+                         help="define a preprocessor macro for the game's code and scripts; the ROMs no longer "
+                              "match")
+@@ -1006,6 +1020,10 @@ def main():
+     # needs a backup suffix after -i, which GNU sed also takes
+     n.rule("rom_config", "$dsd rom config --elf $in --config $config && sed -i.bak "
+            "'s|^files_dir: .*|files_dir: ../files|' $out && rm $out.bak", "Configuring ROM for $config")
++    n.rule("rom_config_banner", "$dsd rom config --elf $in --config $config && sed -i.bak "
++           "-e 's|^files_dir: .*|files_dir: ../files|' -e $banner $out && rm $out.bak",
++           "Configuring ROM for $config, with a banner title")
++    n.rule("banner_title", "$python tools/build/banner_title.py $source $out $title", "Titling $out")
+     rom_flags = [*([f"--arm7-bios {shlex.quote(str(args.arm7_bios.resolve()))}"] if args.arm7_bios else []),
+                  *(["--allow-stale-secure-area"] if args.allow_stale_secure_area else [])]
+     n.rule("rom_build", " ".join(["$dsd rom build --config $in --rom $out", *rom_flags]), "Building $out")
+@@ -1088,7 +1106,8 @@ def main():
+ 
+     checks, configs = [], []
+     for version in versions:
+-        version_checks, version_configs = add_version(n, version, dsd, args.bugfix, args.shift, args.define)
++        version_checks, version_configs = add_version(n, version, dsd, args.bugfix, args.shift, args.define,
++                                                      args.banner_title)
+         checks += version_checks
+         configs += version_configs
+ 
+diff --git a/tools/build/banner_title.py b/tools/build/banner_title.py
+new file mode 100755
+index 000000000..c779e2781
+--- /dev/null
++++ b/tools/build/banner_title.py
+@@ -0,0 +1,58 @@
++#!/usr/bin/env python3
++"""Writes a copy of an extracted banner.yaml with another title in every language, for configure.py --banner-title.
++The copy's image paths lead back to the extracted images, so the icon stays the base ROM's.
++
++    banner_title.py IN OUT TITLE    # TITLE: at most three lines, separated by a literal \\n
++"""
++import os
++import sys
++from pathlib import Path
++
++# The title is 128 UTF-16 characters in the banner, its line breaks included
++MAX_TITLE = 128
++MAX_LINES = 3
++IMAGE_KEYS = ("bitmap_path:", "palette_path:", "animation_path:")
++
++
++def retitle(text: str, lines: list[str], source_dir: Path, output_dir: Path) -> str:
++    out = []
++    in_title = False
++    for line in text.splitlines():
++        if line == "title:":
++            in_title = True
++            out.append(line)
++            continue
++        if in_title and not line.startswith(" "):
++            in_title = False
++        if in_title:
++            # A language's key replaces its block; the block's own lines, indented further, are dropped
++            if not line.startswith("    "):
++                language = line.strip().split(":", 1)[0]
++                out.append(f"  {language}: |-")
++                out += [f"    {title_line}" for title_line in lines]
++            continue
++        stripped = line.lstrip()
++        if stripped.startswith(IMAGE_KEYS):
++            key, _, value = stripped.partition(":")
++            indent = line[: len(line) - len(stripped)]
++            path = os.path.relpath(source_dir / value.strip(), output_dir)
++            out.append(f"{indent}{key}: {path}")
++            continue
++        out.append(line)
++    return "\n".join(out) + "\n"
++
++
++def main():
++    if len(sys.argv) != 4:
++        sys.exit(__doc__)
++    source, output, title = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
++    lines = title.split("\\n")
++    if len(lines) > MAX_LINES or not all(lines) or len("\n".join(lines)) > MAX_TITLE:
++        sys.exit(f"banner_title.py: a title is 1 to {MAX_LINES} non-empty lines, {MAX_TITLE} characters in all")
++    output.parent.mkdir(parents=True, exist_ok=True)
++    text = retitle(source.read_text(encoding="utf-8"), lines, source.parent.resolve(), output.parent.resolve())
++    output.write_text(text, encoding="utf-8")
++
++
++if __name__ == "__main__":
++    main()

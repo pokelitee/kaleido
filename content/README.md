@@ -24,7 +24,8 @@ replaces them with its own.
 ## Games
 
 `games/<game>/game.json` names the game, its layers (lowest first), the source ROMs its recipes read, and the
-`KALEIDO_*` defines it builds with, all strings (`""` for a define without a value). `./kaleido build <game>` reads it.
+`KALEIDO_*` defines it builds with, all strings (`""` for a define without a value). Its `title`, a list of up to three
+lines, is what the DS menu shows; without one the ROM keeps Black 2's. `./kaleido build <game>` reads it.
 
 - Every game has its own `KALEIDO_SAVE_MAGIC` (E9). It is never Black 2's two magics, 0 or 0xffffffff, nor another
   game's, and it never changes once a release is out: a game with a new magic finds no saves.

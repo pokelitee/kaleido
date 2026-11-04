@@ -109,6 +109,7 @@ With Kaleido's patch series applied, `configure.py` also takes:
 | `--define NAME[=VALUE]` | A `KALEIDO_*` define for the code and scripts. The build no longer matches, so build the ROM target: `ninja build/pokeblack2_us.nds` |
 | `--allow-stale-secure-area` | Needed whenever ARM9 main changes, code or data (R-27). DS mode ignores the stale values |
 | `--arm7-bios PATH` | Instead of the flag above, if you have a DS ARM7 BIOS dump: every DSi value is then correct |
+| `--banner-title TEXT` | The title the DS menu shows, in every language: up to three lines separated by `\n`. `build` passes each game's `title` |
 
 The defines the series knows so far are listed in [`engine/README.md`](../engine/README.md).
 

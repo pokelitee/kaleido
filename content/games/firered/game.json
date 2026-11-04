@@ -1,5 +1,6 @@
 {
     "name": "FireRed",
+    "title": ["Kaleido", "FireRed"],
     "layers": ["regions/kanto", "families/frlg", "games/firered"],
     "sources": ["firered"],
     "defines": {
