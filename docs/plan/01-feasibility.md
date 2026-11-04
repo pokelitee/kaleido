@@ -44,7 +44,7 @@ All **Verified** from upstream's docs and packers unless marked.
 | Content overlay into the engine tree | Our layers must land in `res/` and `generated/` | Small (framework, maybe no engine change) | Phase 1 |
 | New-game start in Pallet Town; title, intro, Professor | B2W2's opening is code and scripts | Medium | Phase 3 |
 | Per-game switches for B2W2-only systems | C-Gear, Pass Powers, seasons, Join Avenue, PWT, …; each game's config turns each on or off (Q7) | Medium, spread over overlays | Phase 1 inventory, Q7 |
-| Kanto regional Pokédex (151) | Regional dex length looks like a code constant (White2Upgrade had to patch it) | Small | **Assumption**; E5 |
+| Kanto regional Pokédex (151) | The regional table's length is counted from the species' regional numbers, so it's data; other regional-Pokédex code (completion checks, ratings) not audited | Small | **Verified** for the table, E5 (`docs/research/e5-species.md`) |
 | FRLG-only key items' behavior (where kept) | New item entries are data; their screens and logic are code | Small each | Phase 3–4 |
 | Music from FRLG | GBA sequence → Nitro SSEQ/SBNK/SWAR converter | Medium–Large | Q6, R-24 |
 
@@ -57,7 +57,6 @@ All **Verified** from upstream's docs and packers unless marked.
 | Save area headroom (ROM headroom is ≈ 231 MiB, E6) | E6b |
 | Whether a modified DSi-hybrid ROM boots in DSi mode on each loader and device | E7 |
 | Zone, flag and variable capacity beyond B2W2's counts | E4a, E6 |
-| Cost of species past 649 | E5 |
 | Determinism of upstream's packers across machines and Python versions | E0, Phase 1 exit |
 | How FRLG text fits Gen 5 boxes (width, control codes) | E1, E8 |
 
@@ -113,7 +112,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Abilities | Approximate (by decision) | Gen 5 behavior. Hidden abilities exist but appear only if content hands them out | — |
 | Base stats and species types | Exact | Gen 5 data; **Assumption**: no Gen 1–3 species' stats or types changed between Gen 3 and Gen 5 | Phase 3 data check |
 | Learnsets and evolutions | Exact | Learnsets extracted from the game; evolutions limited to species in the game's Pokédex | E8 |
-| Pokédex: Kanto (151) and National (386) | Exact with engine change | Regional length; Gen 5 UI | E5 |
+| Pokédex: Kanto (151) and National (386) | Exact with engine change | The regional length is data; the national list's length is the species list's (E5 derives it), so listing 386 of 649 species needs a per-game value; Gen 5 UI | E5 |
 | Version exclusives | Exact | Game layers | Phase 4 |
 | Sevii Islands postgame | Exact | Content volume, not feasibility | Phase 4 |
 | Mystery Gift events (Navel Rock, Birth Island) | Infeasible as distributions; Approximate as in-game unlocks | The services are gone and Gen 5 gift formats differ | Phase 4 |
@@ -142,9 +141,12 @@ decision. The game plays like a Gen 5 game set in Gen 1's story.
 
 ## Tier 2 and 3 requirements (recorded only)
 
-- **Species past 649**: save bitfields hold 672 species; archives indexed by species × constant; egg sentinels at
-  650/651; encounter species is 11 bits (max 2047); evolution slots 7 (**Verified** via White2Upgrade and pokebw2
-  headers). E5 measures the cost.
+- **Species past 649**: measured by E5 (`docs/research/e5-species.md`). A species inserted after Genesect builds into
+  every archive once about 40 numbers are derived from the species list and two packers can splice in a template's
+  files ([patch](../research/e5-species-expansion.patch), matching-neutral). Per species: data, art and cry files,
+  two sound list lines, Pokédex order entries, one icon-palette byte. The Pokédex save fits 672 species; past that the
+  save layout changes. Known gaps: Box Search and GTS letter tables, easy-chat word numbering, forms. Evolution slots 7
+  (**Verified** via White2Upgrade and pokebw2 headers).
 - **Fairy type**: 17 → 18 types; the "no type" sentinel 17 must move; every hard-coded 17 found and changed; UI loops
   over types (**Verified** via White2Upgrade).
 - **Abilities past 255**: ability IDs are u8 in personal data (**Verified** via White2Upgrade).
