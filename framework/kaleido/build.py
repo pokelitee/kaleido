@@ -12,7 +12,7 @@ from kaleido.process import CommandError
 say = partial(print, flush=True)
 
 
-def prepare(paths: Paths, game: games.Game) -> Path:
+def prepare(paths: Paths, game: games.Game, extract_sources: bool = True) -> Path:
     """The game's worktree at the engine's series, with its layers merged in. Returns the worktree."""
     config = load_engine_config(paths)
     state = engine.state(paths)
@@ -21,7 +21,9 @@ def prepare(paths: Paths, game: games.Game) -> Path:
     worktree = paths.root / "build" / game.id / "engine"
     say(f"{game.id}: engine worktree {worktree.relative_to(paths.root)} (a first checkout takes a minute or two)")
     commit = engine.worktree(paths, worktree, sorted(config.tool_hashes))
-    files, written, restored = merge.merge(paths, game, worktree)
+    if not extract_sources:
+        say(f"{game.id}: extraction skipped; only the committed layer files merge")
+    files, written, restored = merge.merge(paths, game, worktree, extract_sources)
     say(
         f"{game.id}: at {commit[:12]}; {len(game.layers)} layers merged into {files} files "
         f"({written} written, {restored} restored); report {merge.report_path(paths, game).relative_to(paths.root)}"

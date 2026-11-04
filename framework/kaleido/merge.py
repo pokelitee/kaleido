@@ -164,9 +164,10 @@ def write(paths: Paths, game: Game, worktree: Path, merged: Plan) -> tuple[int, 
     return written, restored
 
 
-def merge(paths: Paths, game: Game, worktree: Path) -> tuple[int, int, int]:
-    """Extracts, plans and writes. Returns (files merged, written, restored)."""
-    extracted = extract.run(paths, game)
+def merge(paths: Paths, game: Game, worktree: Path, extract_sources: bool = True) -> tuple[int, int, int]:
+    """Extracts, plans and writes. Returns (files merged, written, restored). Without extract_sources, only the
+    committed layer files merge, as on a machine without the source ROMs (CI)."""
+    extracted = extract.run(paths, game) if extract_sources else []
     merged = plan(paths, game, worktree, extracted)
     written, restored = write(paths, game, worktree, merged)
     return len(merged.files), written, restored

@@ -130,6 +130,13 @@ class MergeTest(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "no res/data/missing.json below it"):
             merge.plan(self.paths, self.game, self.worktree, [])
 
+    def test_without_extraction_only_committed_files_merge(self) -> None:
+        recipe = {"kind": "gba_gen3_wild_land", "source": "firered", "map": "3.19", "location": "route_1"}
+        self.put(self.paths.root / "content/regions/r/extract/route.json", recipe)
+        with self.assertRaisesRegex(ConfigError, "doesn't list"):
+            merge.merge(self.paths, self.game, self.worktree)
+        self.assertEqual(merge.merge(self.paths, self.game, self.worktree, extract_sources=False), (4, 4, 0))
+
     def test_extracted_files_join_their_layer(self) -> None:
         output = extract.directory(self.paths, self.game) / "regions/r/res/data/extracted.json"
         self.put(output, {"from": "rom"})
