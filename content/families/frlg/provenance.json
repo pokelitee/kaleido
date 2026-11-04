@@ -4,6 +4,11 @@
             "paths": ["res/field/encounters/route_19.json"],
             "category": "extracted",
             "recipe": "extract/route_1_encounters.json"
+        },
+        {
+            "paths": ["res/field/places/*.json.merge.json"],
+            "category": "extracted",
+            "recipe": "extract/place_names.json"
         }
     ]
 }
