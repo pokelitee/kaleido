@@ -78,7 +78,7 @@ Each step lands as its own pull requests, with `kaleido build firered` and `vali
 | D2 | **Who makes map art** | The owner or artists, in Blender against template materials; or simple generated geometry from Kaleido's tooling, as placeholders | Owner or artist for the measured maps (the measurement is of real art); generated placeholders only where a map just needs to exist |
 | D3 | **Professor Oak's look** | Juniper's sprite as a placeholder with Oak's words; original Oak art (CC BY-SA) now | Placeholder in Phase 3; Oak's art with the other trainer art later |
 | D4 | **The player character** | B2W2's Nate and Rosa; new Kanto player art | Nate and Rosa (Approximate) until art is scheduled |
-| D5 | **FireRed's B2W2 switches on this path** | Per system: keep or switch off (C-Gear, seasons, Pass Powers, Unova Pokédex). FRLG had none of them, but had a wireless adapter | Off for seasons, Pass Powers and the Unova Pokédex (Kanto Pokédex instead). For the C-Gear, the owner's call |
+| D5 | **FireRed's B2W2 switches on this path** | Per system: keep or switch off (C-Gear, seasons, Pass Powers, Unova Pokédex). FRLG had none of them, but had a wireless adapter | All four off, the Unova Pokédex replaced by a Kanto one. The C-Gear goes off only after Phase 2's exit check, which needs FireRed to show it; wireless features get their own decision later |
 | D6 | **Encounter rates** (`01-feasibility.md` says Phase 3 decides the rule) | Every FRLG land rate to one Gen 5 setting (E8's 7); a mapping from FRLG's rate to the nearest setting; per-map hand tuning | A mapping, written once and recorded as Approximate |
 
 ## Risks for this phase
