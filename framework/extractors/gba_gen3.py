@@ -8,18 +8,37 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
   species (u16); 12 land slots;
 - a map header: 28 bytes, whose byte 0x14 is its map section; the map groups: a table of pointers to tables of pointers
   to map headers;
-- the map section names: a table of pointers to strings, from the first Kanto section, KANTO_MAPSEC_START;
-- text: capital letters from 0xBB, digits from 0xA1, space 0x00, ended by 0xFF;
+- the map section names: a table of pointers to strings, one per section from the first Kanto section,
+  KANTO_MAPSEC_START, up to MAPSEC_NONE (0xC5), so KANTO_MAPSEC_COUNT of them. The owner's FireRed holds exactly one
+  such run; a longer run of names that also starts with Pallet Town (the region map's) is another table;
+- text: capital letters from 0xBB, digits from 0xA1, space 0x00, ended by 0xFF; the rest of CHARACTERS from pret's
+  charmap.txt, read on 2026-11-04;
 - species 1 to 251 are in national Pokédex order."""
 
 import struct
+from array import array
 from dataclasses import dataclass
 
 ROM_BASE = 0x08000000
 KANTO_MAPSEC_START = 0x58
+KANTO_MAPSEC_COUNT = 109
 HEADER_SIZE, MAP_HEADER_SIZE, LAND_SLOTS = 20, 28, 12
 MAP_SECTION_OFFSET = 0x14
 LAST_NATIONAL_ORDER_SPECIES = 251
+STRING_END = 0xFF
+NEWLINE = 0xFE
+# The characters of the English text encoding that names and plain lines use. Control codes (0xFA scroll, 0xFB new
+# box, 0xFC and 0xFD with arguments) aren't decoded yet, so a string that holds one is refused
+CHARACTERS = {
+    0x00: " ", 0x1B: "é", 0x2D: "&", 0x2E: "+", 0x5C: "(", 0x5D: ")", 0xAB: "!", 0xAC: "?", 0xAD: ".", 0xAE: "-",
+    0xB0: "…", 0xB1: "“", 0xB2: "”", 0xB3: "‘", 0xB4: "’", 0xB5: "♂", 0xB6: "♀", 0xB8: ",", 0xBA: "/", 0xF0: ":",
+    NEWLINE: "\n",
+    **{0xA1 + i: str(i) for i in range(10)},
+    **{0xBB + i: chr(ord("A") + i) for i in range(26)},
+    **{0xD5 + i: chr(ord("a") + i) for i in range(26)},
+}  # fmt: skip
+# A map section's name fits on the region map: a few words, one line
+MAX_NAME = 24
 
 
 class ExtractError(Exception):
@@ -63,18 +82,60 @@ class Rom:
         return found
 
 
+ENCODING = {character: byte for byte, character in CHARACTERS.items()}
+
+
 def encode(text: str) -> bytes:
+    """text in the source's encoding, ended by 0xFF: the inverse of decode."""
     out = bytearray()
     for c in text:
-        if "A" <= c <= "Z":
-            out.append(0xBB + ord(c) - ord("A"))
-        elif "0" <= c <= "9":
-            out.append(0xA1 + ord(c) - ord("0"))
-        elif c == " ":
-            out.append(0x00)
-        else:
+        if c not in ENCODING:
             raise ExtractError(f"no encoding for {c!r}")
-    return bytes(out) + b"\xff"
+        out.append(ENCODING[c])
+    return bytes(out) + bytes([STRING_END])
+
+
+def decode(data: bytes, offset: int, limit: int = 1024) -> str:
+    """The string at offset, up to its 0xFF; an unknown byte, a control code or a missing end is an error."""
+    out = []
+    for i in range(offset, min(offset + limit, len(data))):
+        byte = data[i]
+        if byte == STRING_END:
+            return "".join(out)
+        if byte not in CHARACTERS:
+            raise ExtractError(f"byte {byte:#04x} at {i:#x} isn't a character Kaleido decodes")
+        out.append(CHARACTERS[byte])
+    raise ExtractError(f"no end of string within {limit} bytes of {offset:#x}")
+
+
+def _is_name(data: bytes, offset: int) -> bool:
+    try:
+        name = decode(data, offset, MAX_NAME + 1)
+    except ExtractError:
+        return False
+    return bool(name.strip()) and "\n" not in name
+
+
+def section_names(rom: Rom) -> list[str]:
+    """The map section names, the first being KANTO_MAPSEC_START's: the one run of exactly KANTO_MAPSEC_COUNT pointers
+    to one-line names, so no name has to be known to find them."""
+    words = array("I", rom.data[: len(rom.data) // 4 * 4])
+    low, high = ROM_BASE, ROM_BASE + len(rom.data)
+    tables, start, count = [], 0, 0
+    for index, value in enumerate(words):
+        if low <= value < high and _is_name(rom.data, value - ROM_BASE):
+            if count == 0:
+                start = index
+            count += 1
+            continue
+        if count == KANTO_MAPSEC_COUNT:
+            tables.append(start)
+        count = 0
+    if count == KANTO_MAPSEC_COUNT:
+        tables.append(start)
+    if len(tables) != 1:
+        raise ExtractError(f"{len(tables)} tables of {KANTO_MAPSEC_COUNT} map section names, not one")
+    return [decode(rom.data, rom.at(words[tables[0] + i])) for i in range(KANTO_MAPSEC_COUNT)]
 
 
 def _is_wild_header(rom: Rom, offset: int) -> bool:
@@ -109,20 +170,10 @@ def find_wild_headers(rom: Rom) -> int:
 
 def map_section(rom: Rom, name: str) -> int:
     """The map section that the ROM names `name`: its place in the table of names, from KANTO_MAPSEC_START."""
-    target, candidates, start = encode(name), [], 0
-    while (i := rom.data.find(target, start)) != -1:
-        start = i + 1
-        for slot in rom.pointers_to(i):
-            first = slot
-            while first >= 4 and rom.is_pointer(rom.u32(first - 4)):
-                first -= 4
-            last = slot
-            while last + 4 < len(rom.data) and rom.is_pointer(rom.u32(last + 4)):
-                last += 4
-            candidates.append(((last - first) // 4 + 1, (slot - first) // 4))
-    if not candidates:
-        raise ExtractError(f"no table names {name!r}")
-    return KANTO_MAPSEC_START + max(candidates)[1]
+    names = section_names(rom)
+    if name not in names:
+        raise ExtractError(f"no map section named {name!r}")
+    return KANTO_MAPSEC_START + names.index(name)
 
 
 def _is_map_header(rom: Rom, offset: int) -> bool:
