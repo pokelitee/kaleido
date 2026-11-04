@@ -67,13 +67,25 @@ The free-byte sum is `NNS_FndGetTotalFreeSizeForExpHeap`'s, done from outside. T
 
 ## Determinism
 
-Pending: the whole route replayed from power-on in one run.
+The route was found as a chain of about 50 savestates. It was then replayed from power-on in one run, half an hour
+later by the host's clock, which DeSmuME's real-time clock follows (**Verified**, 2026-11-04):
+- 59,085 frames in 26 minutes, at 37 frames per second;
+- it ended in the same battle;
+- six of the seven measurements match the chain's exactly: every heap's size and free bytes, the arena and the save.
+
+The seventh, the battle's command menu, differs by 56 bytes in battle heap 19: 379,280 free in the replay, 379,224 in
+the chain. 379,280 is the chain's own value at the battle's intro and during Tackle, so the chain caught a short-lived
+allocation at that frame. **Assumption**: a savestate load shifted that by a frame.
+
+So a route found with savestates replays from power-on. The route still depends on every frame before it: a build
+that changes timing anywhere earlier needs the route found again, or state readers that wait for a state instead of
+counting frames.
 
 ## Not verified
 
 - Touch input; the bundled JIT; other machines and Python versions.
 - DSi mode, which DeSmuME doesn't have.
-- Whether routes survive the in-game clock. DeSmuME's real-time clock follows the host by default, and Black 2's
-  seasons and some events follow the clock.
+- Whether routes survive a change of month or season. DeSmuME's real-time clock follows the host, and Black 2's
+  seasons follow the month; the replay only crossed half an hour.
 - Whether DeSmuME and melonDS agree on anything measured here. They should for RAM layout (the same code runs), not
   necessarily for timing.
