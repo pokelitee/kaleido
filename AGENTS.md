@@ -9,9 +9,10 @@ holds the rules sessions get wrong and points into `docs/`.
 
 ## Current phase
 
-**Phase 0** (experiments) since 2026-11-03, when the owner approved the plan. Phase 0 changes only a scratch checkout of
-pokebw2 and writes results to `docs/research/e<N>-<topic>.md`. **No regions, gameplay systems or framework code until
-Phase 1** (`docs/plan/05-roadmap.md`). Read `docs/status.md` first.
+**Phase 1** (framework skeleton) since 2026-11-04, when the owner closed Phase 0 and moved E6b into Phase 1's emulator
+harness spike. Phase 1 builds the repo layout, the engine submodule and its first patches, the `kaleido` commands,
+layer merge, CI and Dependabot (`docs/plan/05-roadmap.md`). **No region content beyond Phase 1's tiny test layer until
+Phase 3.** Phase 0's prototypes and findings are in `docs/research/`. Read `docs/status.md` first.
 
 ## Where things are
 

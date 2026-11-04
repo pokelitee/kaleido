@@ -71,9 +71,15 @@ labels, so the mirror (ADR 0002) stays the R-03 mitigation. The White 2 and Apic
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
 exit Phase 3.5.
 
+**Change (2026-11-04)**: E6b (runtime free memory at field, battle and menu; save bytes used) moves into Phase 1's
+emulator harness spike (owner's decision). Measuring it needs the game driven to those states, which the harness does
+and manual play would duplicate. **Phase 0 closed on 2026-11-04**: every criterion below is met, with E6b in Phase 1,
+E7 waiting for hardware, and the in-game checks in the playtest pass (`docs/status.md`).
+
 Exit criteria:
 
-- E0–E6 and E8–E9 recorded; E10 recorded or rescheduled; E7 recorded or waiting for hardware.
+- E0–E6 and E8–E9 recorded (E6b moved to Phase 1, 2026-11-04); E10 recorded or rescheduled; E7 recorded or waiting
+  for hardware.
 - ADR 0002 (engine integration) accepted (done 2026-11-03).
 - An ADR on how new map art gets into the ROM, from E4b: ADR 0003, accepted 2026-11-03.
 - `01-feasibility.md` and `docs/risks.md` updated with the results.
@@ -90,7 +96,9 @@ Deliverables:
 - Engine submodule and the first patches (Kaleido defines and content overlay for `configure.py`).
 - `kaleido doctor`, `bootstrap`, `extract`, `merge`, `validate`, `build`, `patch`, `baseline`.
 - Layer merge with provenance and schema validation; one game config (`firered`) with a tiny layer (E1's text change,
-  E4a's zone, E8's encounter table).
+  a reused zone per ADR 0004, E8's encounter table).
+- An emulator harness spike (R-16), and E6b run with it: free main RAM and heap at field, battle and menu, in DS mode
+  (and DSi mode where the emulator allows), and save bytes used.
 - CI on GitHub Actions (no ROMs): lint, unit tests, schema/provenance/cross-reference checks on committed layers,
   `compile_all.py` for each game's define set, ROM-file guard. Actions pinned to commit SHAs, read-only permissions,
   timeouts, one required check, added to the "Protect main" ruleset once it reports.
@@ -102,6 +110,7 @@ Exit criteria:
 - `kaleido baseline` still matches Black 2's SHA1.
 - CI is green and needs no ROM.
 - Applying the patch to the base ROM yields the built ROM's SHA1.
+- E6b recorded in `docs/research/e6-headroom.md`, and R-05's budget updated with it.
 
 ## Phase 2 — Two builds
 
