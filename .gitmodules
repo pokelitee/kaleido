@@ -1,0 +1,3 @@
+[submodule "engine/pokebw2"]
+	path = engine/pokebw2
+	url = https://github.com/fuddlesworth/pokebw2.git

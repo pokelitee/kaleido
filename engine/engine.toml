@@ -1,0 +1,26 @@
+# Kaleido's engine: pokebw2 at the commit the engine/pokebw2 submodule points to, plus the patch series in patches/,
+# applied in order (ADR 0002). docs/engine-sync.md says how the pin moves.
+
+[upstream]
+url = "https://github.com/fuddlesworth/pokebw2.git"
+# An owner-controlled mirror for when upstream is unavailable (R-03); empty until one exists
+mirror = ""
+notes = "Pinned at 41f42ca (2026-10-31), the commit Phase 0 tested."
+
+[baseline]
+# Black 2 (USA, Europe): the base ROM, and what the patched engine must rebuild with every define off
+black2_sha1 = "e51e6dfb8678a3d19dcd2a10691b96a569ca0abb"
+
+# Kaleido's dsd adds `rom build --allow-stale-secure-area` (ADR 0004). It is built from the commits that pokebw2's
+# pinned dsd (v0.12.1-dsi.10) was built from, plus the patch, until upstream takes fuddlesworth/ds-rom#1 and
+# fuddlesworth/ds-decomp#2.
+[dsd]
+patch = "dsd/allow-stale-secure-area.patch"
+
+[dsd.ds_rom]
+url = "https://github.com/fuddlesworth/ds-rom.git"
+commit = "66e83ef467b1e7a4816e667bf3b86572b1f8072d"
+
+[dsd.ds_decomp]
+url = "https://github.com/fuddlesworth/ds-decomp.git"
+commit = "2dc1b27b95fe9191ea9a0c2ea3145baa349125b8"

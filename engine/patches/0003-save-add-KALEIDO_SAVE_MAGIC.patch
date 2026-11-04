@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH 3/3] save: add KALEIDO_SAVE_MAGIC
+
+With KALEIDO_SAVE_MAGIC defined, its value replaces the magic number in the save
+footers (SAVE_MAGIC, for the main save and every extra save) and in the outside
+data's block headers (SAVE_OUTSIDE_MAGIC, for the Mystery Gift cards and keys), so
+that each game has its own.
+
+A footer or header with another magic reads as never written, so a game finds no
+save on a card of another game, Black 2's included: it offers New Game only, and a
+new game takes none of that card's gifts or keys. The ROM header, and with it the
+save type that emulators and flashcarts choose, doesn't change.
+---
+ src/ov331/save_outside.c | 6 ++++++
+ src/system/save_table.c  | 7 ++++++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/src/ov331/save_outside.c b/src/ov331/save_outside.c
+index a550287e1..c191b3d30 100644
+--- a/src/ov331/save_outside.c
++++ b/src/ov331/save_outside.c
+@@ -17,7 +17,13 @@
+ #define SAVE_OUTSIDE_SIZE 0xb00
+ #define KEYS_SIZE 0x300
+ 
++// KALEIDO_SAVE_MAGIC too, so that a new game takes no gifts or keys from another game's card: a block with another
++// magic reads as never written
++#ifdef KALEIDO_SAVE_MAGIC
++#define SAVE_OUTSIDE_MAGIC KALEIDO_SAVE_MAGIC
++#else
+ #define SAVE_OUTSIDE_MAGIC 0xa10f49ae
++#endif
+ 
+ enum {
+     BLOCK_GIFTS,
+diff --git a/src/system/save_table.c b/src/system/save_table.c
+index f5edd7e90..15bcc9057 100644
+--- a/src/system/save_table.c
++++ b/src/system/save_table.c
+@@ -55,11 +55,16 @@
+ // name in the ROM; save_table.c is a guess. That it is a file apart from save_control.c shows in the order of its
+ // tables, which MWCC only gives when the file defines nothing else.
+ 
+-// Where the saves are on the card, and the magic number in their footers
++// Where the saves are on the card, and the magic number in their footers. KALEIDO_SAVE_MAGIC gives a game its own,
++// so that it finds no save on a card of another game: a footer with another magic reads as no save at all
+ #define SAVE_MAIN_ADDR 0
+ #define SAVE_BACKUP_ADDR 0x26000
+ #define SAVE_SIZE 0x26000
++#ifdef KALEIDO_SAVE_MAGIC
++#define SAVE_MAGIC KALEIDO_SAVE_MAGIC
++#else
+ #define SAVE_MAGIC 0x31053527
++#endif
+ 
+ typedef void (*SaveBlockInit)(void *block);
+ 
