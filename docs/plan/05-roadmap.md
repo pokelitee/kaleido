@@ -58,6 +58,11 @@ card, B2's included, reads as empty; the header and save type stay B2's. Verifie
 still matches. Even this data-only ARM9 change needs the dsd flag (R-27). In-game check deferred; flashcarts wait for
 E7.
 
+E8 (`docs/research/e8-extract-encounters.md`): our extractor reads FireRed Route 1's wild encounters from the owner's
+FireRed (USA) by structure, deterministically, into a `res/field/encounters/` table that packs into Black 2. It is shown
+on Route 19, not E4a's zone (a house without grass; ADR 0004 reuses zones). The encounter rate is Approximate. The
+in-game check is deferred.
+
 E10 (`docs/research/e10-regenerate-res.md`): upstream's dumpers rebuild 74.7% of `res/` from the Black 2 ROM, and the
 build from those sources still matches Black 2. The rest needs a White 2 ROM, Apicula and upstream's curated message
 labels, so the mirror (ADR 0002) stays the R-03 mitigation. The White 2 and Apicula parts aren't done.

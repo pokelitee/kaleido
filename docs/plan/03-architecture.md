@@ -142,7 +142,9 @@ Each layer's `provenance.json` assigns every committed file to exactly one categ
 ```
 
 - Extraction recipes reference source tables by ROM offset or pointer-table index for one pinned revision of the
-  source ROM. A recipe holds locations and transforms, never the extracted bytes.
+  source ROM. A recipe holds locations and transforms, never the extracted bytes. E8's extractor finds FireRed's
+  wild encounter tables by their structure and names maps by the ROM's own text, so its recipe needs no offsets
+  (`docs/research/e8-extract-encounters.md`).
 - **Assumption**: offset tables and IDs we assign are not other-game content. Distribution is decided in Q1: patches
   carry the extracted content they add.
 - A guard (CI and a pre-commit hook in Phase 1) rejects ROM files and any path that a category 2 entry covers.

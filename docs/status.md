@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-03
+Last updated: 2026-11-04
 
 ## Current phase
 
@@ -68,6 +68,12 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   differ only in their magic words; switch off still matches. Found: even this data-only change to ARM9 main needs
   `--allow-stale-secure-area`, because the ROM records ARM9's compressed size in the secure area (R-27 widened).
   Details: `docs/research/e9-save-identity.md`.
+- **E8 done** (2026-11-04): the owner's FireRed dump is FireRed (USA), SHA1 `41cb23d8…`, the first extraction target
+  (Q5); it lives in `~/kaleido-work/roms/` and is never committed. Our extractor (`docs/research/e8-frlg-wild.py`):
+  - reads Route 1's wild encounters by structure, naming the map by the ROM's own text;
+  - gives the same output on every run, which matches pret's table;
+  - writes a table that packs into Black 2 (on Route 19, since E4a's zone has no grass).
+  The encounter rate is Approximate in Gen 5. Details: `docs/research/e8-extract-encounters.md`.
 - **E10 done, partly** (2026-11-03): upstream's dumpers rebuilt 74.7% of `res/` (104,424 of 139,732 files) from the
   Black 2 ROM. With those files in place, the full matching build still gives Black 2's SHA1. Not rebuilt:
   - 13% needs a White 2 ROM;
@@ -96,21 +102,20 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target
-   (Q5). E8 is the last Phase 0 experiment the exit criteria need.
-2. E6b (runtime memory, save use) needs an emulator harness or a melonDS GDB session; it may move to Phase 1's
-   harness spike (R-16).
-3. E7 waits for hardware.
-4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
+1. E6b (runtime memory, save use) is the last part of Phase 0's exit criteria (`05-roadmap.md`: E0–E6 and E8–E9
+   recorded). It needs an emulator harness or a melonDS GDB session. The owner decides: run it now, or move it into
+   Phase 1's harness spike (R-16) and close Phase 0.
+2. E7 waits for hardware; the exit criteria allow that.
+3. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
    under "Deferred to playtesting" below.
-5. Optional, E10's rest: a White 2 dump and Apicula (a third-party download, owner's go-ahead).
+4. Optional, E10's rest: a White 2 dump and Apicula (a third-party download, owner's go-ahead).
 
 The prototypes are on branches of `~/kaleido-work/pokebw2`: `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`,
-`phase0-e5` and `phase0-e9`. E10's regenerated tree is the worktree `~/kaleido-work/e10-res`.
+`phase0-e5`, `phase0-e8` and `phase0-e9`. E10's regenerated tree is the worktree `~/kaleido-work/e10-res`. The
+FireRed dump is `~/kaleido-work/roms/firered.gba`.
 
 ## Blockers
 
-- FireRed dump (E8 only).
 - No hardware yet (E7; required by Phase 3.5's exit).
 
 ## Not verified yet
@@ -130,6 +135,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | E3 | Every damaging hit in that battle is "A critical hit!", with no crash, although 15 overlays moved | same |
 | E4a | Aspertia City's door (warp 6) leads into the new zone: one NPC whose line is "Kaleido E4a: you're in a new zone."; the exit leads back; DS mode with stale secure-area values boots | `~/kaleido-work/e4a/kaleido-e4a-test.nds` |
 | E5 | Kaleidomon (#650, Audino's art and cry, Steel/Psychic) appears in Route 19's grass at level 3; its battle sprite, cry, summary and icon show; it can be caught; the Pokédex lists it at #650 with its entry and finds it by search; it goes to the box and the party; it survives save and reload. Also check the egg, a Pokéstar Studios film and the musical still work, and whether Box Search by name misgroups species from K on (`e5-species.md` §8) | `~/kaleido-work/e5/kaleido-e5-test.nds` |
+| E8 | Route 19's grass gives FireRed Route 1's wild Pokémon at their levels, with no shaking grass, surfing or fishing encounters | `~/kaleido-work/e8/kaleido-e8-test.nds` |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
