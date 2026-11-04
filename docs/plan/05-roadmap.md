@@ -131,7 +131,7 @@ Exit criteria:
 
 ## Phase 3 — Prototype: Pallet Town to Viridian City
 
-Depends on: Phase 2; the new-map-art route chosen after E4b.
+Depends on: Phase 2; the new-map-art route chosen after E4b. Plan: `08-phase3.md` (accepted, 2026-11-04).
 
 Scope: Pallet Town, Route 1, Viridian City (Pokémon Center, Mart), Oak's Lab, player's house; NPCs and signs; dialogue
 extracted from FireRed; wild encounters; at least one trainer; Oak's Parcel progression; new-game start in Pallet Town.

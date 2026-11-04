@@ -25,7 +25,7 @@ in `docs/research/`. Read `docs/status.md` first.
 | Feasibility, Exact/Approximate/Infeasible tables | `docs/plan/01-feasibility.md` |
 | Tools used and excluded, with licenses | `docs/plan/02-foundation.md` |
 | Repo layout, layering, provenance, build pipeline | `docs/plan/03-architecture.md` |
-| Phases, experiments (E0–E10), acceptance criteria | `docs/plan/05-roadmap.md` |
+| Phases, experiments (E0–E10), acceptance criteria | `docs/plan/05-roadmap.md`; Phase 3's plan: `docs/plan/08-phase3.md` |
 | Test strategy and the CI/local split | `docs/plan/06-testing.md` |
 | Owner's answers to Q1–Q10 | `docs/plan/07-open-questions.md` |
 | What is decided and built so far | `docs/architecture.md` |
