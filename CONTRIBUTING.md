@@ -32,6 +32,7 @@ By opening a pull request, you agree to license your contribution under these te
 
 - Branch from `main`; never commit to `main`. The "Protect main" ruleset requires a pull request and allows squash
   merges only.
+- CI must pass before a pull request merges (see Testing).
 - Small commits in Conventional Commits form: `docs: …`, `feat(framework): …`, `fix(engine): …`.
 - A pull request says what changed, why, and how it was tested. A check you couldn't run is named, not implied.
 - Files use LF line endings (`.gitattributes`).
@@ -58,12 +59,17 @@ By opening a pull request, you agree to license your contribution under these te
 
 ## Testing
 
-Run the framework's tests before a pull request that touches `framework/`:
+Every pull request runs CI (`.github/workflows/ci.yml`), and its `CI` check must pass to merge. CI never sees a ROM
+or anything made from one: no step, secret, cache or artifact may hold one. Before a pull request, run what it runs
+(details in [`docs/building.md`](docs/building.md) §6):
 
 ```bash
+./kaleido check
 python3 -m unittest discover -s framework -t framework
 ```
 
-Tests use `unittest` on synthetic fixtures (`docs/plan/06-testing.md`). CI arrives later in Phase 1; until then,
-describe the checks you ran in the pull request. Checks that need playing the game are listed in `docs/status.md`
-under "Deferred to playtesting".
+and, for engine or content changes, `./kaleido compile` and `./kaleido validate <game> --no-extract`. Format Python
+with Ruff, at the version in `framework/requirements-ci.txt`. Tests use `unittest` on synthetic fixtures
+(`docs/plan/06-testing.md`). The checks that need the ROMs (`baseline`, `build`, `patch`) run on your machine: name the
+ones you ran in the pull request. Checks that need playing the game are listed in `docs/status.md` under "Deferred to
+playtesting".

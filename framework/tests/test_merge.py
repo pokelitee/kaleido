@@ -29,8 +29,10 @@ class MergeRulesTest(unittest.TestCase):
             merge.override_messages(text, {"T_Text_Three": "x"}, "here")
 
     def test_constants_are_appended_once(self) -> None:
-        self.assertEqual(merge.append_constants(UPSTREAM["generated/things.txt"], "# mine\nTHING_C\n", "here"),
-                         "# Things\nTHING_A = 0\nTHING_B\nTHING_C\n")
+        self.assertEqual(
+            merge.append_constants(UPSTREAM["generated/things.txt"], "# mine\nTHING_C\n", "here"),
+            "# Things\nTHING_A = 0\nTHING_B\nTHING_C\n",
+        )
         with self.assertRaisesRegex(ConfigError, "already in the list"):
             merge.append_constants(UPSTREAM["generated/things.txt"], "THING_B\n", "here")
         with self.assertRaisesRegex(ConfigError, "isn't a constant name"):
@@ -49,12 +51,16 @@ class MergeTest(unittest.TestCase):
         git("add", "-A", cwd=self.worktree)
         git("commit", "-q", "-m", "upstream", cwd=self.worktree)
         self.layer("regions/r", "region", {})
-        self.layer("games/g", "game", {
-            "res/data/a.json.merge.json": {"stats": {"hp": 5}},
-            "res/text/system/t.txt.merge.json": {"T_Text_One": "uno"},
-            "generated/things.txt": "THING_C\n",
-            "res/data/new.json": {"new": True},
-        })
+        self.layer(
+            "games/g",
+            "game",
+            {
+                "res/data/a.json.merge.json": {"stats": {"hp": 5}},
+                "res/text/system/t.txt.merge.json": {"T_Text_One": "uno"},
+                "generated/things.txt": "THING_C\n",
+                "res/data/new.json": {"new": True},
+            },
+        )
         self.game = Game("g", "G", {}, ("regions/r", "games/g"), ())
 
     def tearDown(self) -> None:
@@ -86,8 +92,9 @@ class MergeTest(unittest.TestCase):
         self.assertTrue(self.read("generated/things.txt").endswith("THING_B\nTHING_C\n"))
         self.assertEqual(json.loads(self.read("res/data/new.json")), {"new": True})
         report = json.loads(merge.report_path(self.paths, self.game).read_text())
-        self.assertEqual(report["files"]["res/data/a.json"], [{"layer": "games/g", "category": "original",
-                                                                "how": "merge"}])
+        self.assertEqual(
+            report["files"]["res/data/a.json"], [{"layer": "games/g", "category": "original", "how": "merge"}]
+        )
 
     def test_a_second_merge_writes_nothing(self) -> None:
         self.run_merge()
@@ -122,6 +129,13 @@ class MergeTest(unittest.TestCase):
         self.put(self.paths.root / "content/games/g/res/data/missing.json.merge.json", {"x": 1})
         with self.assertRaisesRegex(ConfigError, "no res/data/missing.json below it"):
             merge.plan(self.paths, self.game, self.worktree, [])
+
+    def test_without_extraction_only_committed_files_merge(self) -> None:
+        recipe = {"kind": "gba_gen3_wild_land", "source": "firered", "map": "3.19", "location": "route_1"}
+        self.put(self.paths.root / "content/regions/r/extract/route.json", recipe)
+        with self.assertRaisesRegex(ConfigError, "doesn't list"):
+            merge.merge(self.paths, self.game, self.worktree)
+        self.assertEqual(merge.merge(self.paths, self.game, self.worktree, extract_sources=False), (4, 4, 0))
 
     def test_extracted_files_join_their_layer(self) -> None:
         output = extract.directory(self.paths, self.game) / "regions/r/res/data/extracted.json"

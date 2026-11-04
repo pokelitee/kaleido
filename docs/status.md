@@ -6,8 +6,9 @@ Last updated: 2026-11-04
 
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
-(2026-11-04), and so are the engine submodule with its first three patches, and `./kaleido doctor`, `bootstrap`,
-`baseline`, `extract`, `merge`, `validate`, `build` and `patch`. `firered` has its first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+(2026-11-04), and so are the engine submodule with its first four patches, `./kaleido doctor`, `bootstrap`, `check`,
+`baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch`, and CI with Dependabot. `firered` has its
+first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -28,8 +29,9 @@ in `docs/research/`. The playtest checks it deferred are listed at the end of th
 - Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
-  "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). The ruleset has
-  no required CI check yet, because there is no CI; Phase 1 adds both (`05-roadmap.md`).
+  "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). Since
+  2026-11-04 it also requires the `CI` check, from GitHub Actions only, and auto-merge is allowed, so a pull request
+  with it on merges once `CI` passes (owner's go-ahead).
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
 - **E0a passed** (Phase 0, 2026-11-03): upstream's `compile_all.py` at the pin compiled 3,584 of 3,584 (every C file,
@@ -141,7 +143,21 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - a second patch is byte-identical (xdelta3 3.0.11 with `-A`).
    83 unit tests. This step is done.
 5. The emulator harness spike (R-16), and E6b with it.
-6. CI on GitHub Actions and Dependabot, then the required check in the "Protect main" ruleset.
+6. CI on GitHub Actions and Dependabot (2026-11-04): `.github/workflows/ci.yml` and `.github/dependabot.yml`
+   (`docs/building.md` §6). Built for it:
+   - `./kaleido check` (ROM-content guard, layers and games, links);
+   - `./kaleido compile`, with engine patch `0004` (`compile_all.py --define`);
+   - `validate --no-extract`.
+   The framework is now formatted with Ruff. CI's first run found a real bug: a failed series' `git am --abort` needed
+   the builder's git identity (fixed, with a test). Verified on the WSL clone:
+   - `compile`: 1792 of 1792 files for each define set;
+   - `validate firered --no-extract`: no problems;
+   - `baseline` still matches Black 2;
+   - `build firered` gives the same SHA1 as before (`f64d9a56…`).
+   On GitHub, the Engine job takes about 4 minutes. The "Protect main" ruleset requires the `CI` check (2026-11-04).
+   This step is done.
+   Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
+   (only after doing it by hand three times).
 
 Outside Phase 1:
 
@@ -161,7 +177,8 @@ FireRed dump is `~/kaleido-work/roms/firered.gba`.
 ## Not verified yet
 
 - Hardware facts come from GBATEK, emulator and loader sources, not from devices.
-- xdelta determinism, and the determinism of modified builds and Kaleido's own tooling, are untested (see `risks.md`).
+- Determinism on a second machine: same ROM and patch SHA1s from a clean clone (Phase 1's exit). On one machine,
+  rebuilds and patches are already byte-identical (2026-11-04).
 
 ## Deferred to playtesting
 

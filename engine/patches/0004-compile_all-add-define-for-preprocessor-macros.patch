@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] compile_all: add --define for preprocessor macros
+
+compile_all.py --define NAME[=VALUE], which can be repeated, defines a macro for
+every file it compiles or assembles, as configure.py --define does for the
+build. The check that needs no ROM then also covers code that only builds with a
+macro defined.
+---
+ tools/decomp/compile_all.py | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/tools/decomp/compile_all.py b/tools/decomp/compile_all.py
+index 2ffa6f0f7..96c3fa66d 100644
+--- a/tools/decomp/compile_all.py
++++ b/tools/decomp/compile_all.py
+@@ -8,6 +8,7 @@ push and pull request; matching is still checked by `ninja` with the ROMs.
+ 
+     compile_all.py                  # every file, both versions
+     compile_all.py --version b2_us  # one version
++    compile_all.py --define NAME    # with a macro defined, as configure.py --define gives the build
+ """
+ import argparse
+ import os
+@@ -40,15 +41,17 @@ class CompileResult:
+     stderr: str
+ 
+ 
+-def compile_file(source: Path, version: str, out_dir: Path) -> CompileResult:
+-    """Compiles or assembles one file, retaining its exit status and both diagnostic streams."""
++def compile_file(source: Path, version: str, defines: list[str], out_dir: Path) -> CompileResult:
++    """Compiles or assembles one file with the version's defines and the given ones, retaining its exit status and
++    both diagnostic streams."""
++    defines = VERSIONS[version]["defines"] + defines
+     obj = out_dir / version / source.with_suffix(".o")
+     obj.parent.mkdir(parents=True, exist_ok=True)
+     if source.suffix == ".s":
+         compiler, flags = source_assembler(source)
+         command = [*mwcc_command(TOOLS / "mwccarm" / compiler / "mwasmarm.exe"),
+                    *(arg for flag in flags for arg in shlex.split(flag)),
+-                   *(arg for define in VERSIONS[version]["defines"] for arg in ("-d", define)),
++                   *(arg for define in defines for arg in ("-d", define)),
+                    *(arg for d in INCLUDE_DIRS for arg in ("-i", d)), "-o", str(obj), str(source)]
+         proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+         return CompileResult(source, version, proc.returncode, proc.stdout, proc.stderr)
+@@ -61,7 +64,7 @@ def compile_file(source: Path, version: str, out_dir: Path) -> CompileResult:
+     command = [
+         *mwcc_command(TOOLS / "mwccarm" / compiler / "mwccarm.exe"),
+         *(arg for flag in flags for arg in shlex.split(flag)),
+-        *(arg for define in VERSIONS[version]["defines"] for arg in ("-d", define)),
++        *(arg for define in defines for arg in ("-d", define)),
+         *(arg for d in INCLUDE_DIRS for arg in ("-i", d)),
+         "-o", str(obj),
+         str(source),
+@@ -134,6 +137,8 @@ def generate_constants():
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+     parser.add_argument("--version", choices=VERSIONS, action="append", help="version to compile, default every one")
++    parser.add_argument("--define", action="append", default=[], metavar="NAME[=VALUE]",
++                        help="define a preprocessor macro, as configure.py --define does")
+     parser.add_argument("-j", "--jobs", type=int, default=os.cpu_count(), help="files to compile at once")
+     args = parser.parse_args()
+ 
+@@ -144,7 +149,8 @@ def main():
+     manifest_path = ROOT / "config" / "deadstrip.toml"
+     manifest = deadstrip.load_manifest(manifest_path, ROOT) if manifest_path.exists() else {}
+     with tempfile.TemporaryDirectory() as tmp, ThreadPoolExecutor(args.jobs) as pool:
+-        jobs = [pool.submit(compile_file, source, version, Path(tmp)) for version in versions for source in sources]
++        jobs = [pool.submit(compile_file, source, version, args.define, Path(tmp))
++                for version in versions for source in sources]
+         results = [job.result() for job in jobs]
+         strip_errors = []
+         if manifest:

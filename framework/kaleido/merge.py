@@ -11,6 +11,7 @@ The lower file is always the layers below over upstream's file at the worktree's
 content, so a merge gives the same tree however often it runs. Only files whose bytes change are written, which keeps
 ninja's build incremental, and files that an earlier merge wrote but this one doesn't are restored. The merge writes
 build/<game>/merge-report.json: every file it wrote, and each layer's part in it with its provenance category."""
+
 import json
 import re
 import subprocess
@@ -93,8 +94,11 @@ def plan(paths: Paths, game: Game, worktree: Path, extracted: list[extract.Extra
 
     for layer in layer_module.load_stack(paths, list(game.layers)):
         items = [(path, layer.path / path, layer.category_of(path)) for path in layer.content_files()]
-        items += [(item.path, extract.directory(paths, game) / layer.id / item.path, "extracted")
-                  for item in extracted if item.layer == layer.id]
+        items += [
+            (item.path, extract.directory(paths, game) / layer.id / item.path, "extracted")
+            for item in extracted
+            if item.layer == layer.id
+        ]
         targets: dict[str, str] = {}
         for path, _, _ in items:
             target = path.removesuffix(MERGE_SUFFIX)
@@ -119,8 +123,9 @@ def plan(paths: Paths, game: Game, worktree: Path, extracted: list[extract.Extra
                 how = "merge"
             elif path.startswith("generated/") and path.endswith(".txt"):
                 target = path
-                content = append_constants(lower(target, where).decode("utf-8"), file.read_text(encoding="utf-8"),
-                                           where).encode()
+                content = append_constants(
+                    lower(target, where).decode("utf-8"), file.read_text(encoding="utf-8"), where
+                ).encode()
                 how = "append"
             else:
                 target, content, how = path, file.read_bytes(), "replace"
@@ -159,9 +164,10 @@ def write(paths: Paths, game: Game, worktree: Path, merged: Plan) -> tuple[int, 
     return written, restored
 
 
-def merge(paths: Paths, game: Game, worktree: Path) -> tuple[int, int, int]:
-    """Extracts, plans and writes. Returns (files merged, written, restored)."""
-    extracted = extract.run(paths, game)
+def merge(paths: Paths, game: Game, worktree: Path, extract_sources: bool = True) -> tuple[int, int, int]:
+    """Extracts, plans and writes. Returns (files merged, written, restored). Without extract_sources, only the
+    committed layer files merge, as on a machine without the source ROMs (CI)."""
+    extracted = extract.run(paths, game) if extract_sources else []
     merged = plan(paths, game, worktree, extracted)
     written, restored = write(paths, game, worktree, merged)
     return len(merged.files), written, restored

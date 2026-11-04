@@ -23,8 +23,10 @@ class TreeDigestTest(unittest.TestCase):
 
     def test_is_the_sha256_of_sorted_hash_and_path_lines(self) -> None:
         directory = self.make("tree", {"b.txt": b"B", "a/c.bin": b"C"})
-        lines = "".join(f"{hashlib.sha256(content).hexdigest()}  {path}\n"
-                        for path, content in sorted({"b.txt": b"B", "a/c.bin": b"C"}.items()))
+        lines = "".join(
+            f"{hashlib.sha256(content).hexdigest()}  {path}\n"
+            for path, content in sorted({"b.txt": b"B", "a/c.bin": b"C"}.items())
+        )
         self.assertEqual(tree_digest(directory), hashlib.sha256(lines.encode()).hexdigest())
 
     def test_does_not_depend_on_creation_order(self) -> None:

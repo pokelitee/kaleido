@@ -25,9 +25,16 @@ class ValidateTest(unittest.TestCase):
         put(self.tree / "res/field/events/b.json", {"warps": [{"zone": "ZONE_A", "warp": 0}]})
         put(self.tree / "res/field/zones/a.json", {"encounters": "ENCOUNTERS_A"})
         put(self.tree / "res/field/zones/b.json", {"encounters": None})
-        put(self.tree / "res/field/encounters/a.json", {"all_year": {
-            "rates": {"grass": 7}, "grass": [["SPECIES_PIDGEY", 2, 3]],
-            "surf": {"black2": [["SPECIES_PIDGEY", 5, 5]], "white2": []}}})
+        put(
+            self.tree / "res/field/encounters/a.json",
+            {
+                "all_year": {
+                    "rates": {"grass": 7},
+                    "grass": [["SPECIES_PIDGEY", 2, 3]],
+                    "surf": {"black2": [["SPECIES_PIDGEY", 5, 5]], "white2": []},
+                }
+            },
+        )
 
     def tearDown(self) -> None:
         self._temp.cleanup()
@@ -37,30 +44,49 @@ class ValidateTest(unittest.TestCase):
 
     def test_upstream_shaped_data_has_no_problems(self) -> None:
         self.warps({"zone": "ZONE_B", "warp": 0}, {"zone": 0xFFFF, "warp": 0})
-        self.assertEqual(validate.check_warps(self.tree) + validate.check_zone_encounters(self.tree)
-                         + validate.check_encounter_tables(self.tree), [])
+        self.assertEqual(
+            validate.check_warps(self.tree)
+            + validate.check_zone_encounters(self.tree)
+            + validate.check_encounter_tables(self.tree),
+            [],
+        )
 
     def test_a_warp_needs_a_zone_with_that_warp(self) -> None:
-        self.warps({"zone": "ZONE_B", "warp": 1}, {"zone": "ZONE_GONE", "warp": 0},
-                   {"zone": "ZONE_NO_EVENTS", "warp": 0})
+        self.warps(
+            {"zone": "ZONE_B", "warp": 1}, {"zone": "ZONE_GONE", "warp": 0}, {"zone": "ZONE_NO_EVENTS", "warp": 0}
+        )
         problems = validate.check_warps(self.tree)
-        self.assertEqual([(p.field, p.message.split(":")[0]) for p in problems], [
-            ("warps[0].warp", "ZONE_B has warps 0 to 0, not 1"),
-            ("warps[1].zone", "'ZONE_GONE' isn't a zone of generated/zones.txt"),
-            ("warps[2].zone", "ZONE_NO_EVENTS has no events file, so no warps"),
-        ])
+        self.assertEqual(
+            [(p.field, p.message.split(":")[0]) for p in problems],
+            [
+                ("warps[0].warp", "ZONE_B has warps 0 to 0, not 1"),
+                ("warps[1].zone", "'ZONE_GONE' isn't a zone of generated/zones.txt"),
+                ("warps[2].zone", "ZONE_NO_EVENTS has no events file, so no warps"),
+            ],
+        )
 
     def test_a_zones_encounter_table_must_exist(self) -> None:
         put(self.tree / "res/field/zones/c.json", {"encounters": "ENCOUNTERS_LOST"})
         put(self.tree / "res/field/zones/d.json", {"encounters": "ENCOUNTERS_UNKNOWN"})
         messages = [p.message for p in validate.check_zone_encounters(self.tree)]
-        self.assertEqual(messages, ["ENCOUNTERS_LOST has no file in res/field/encounters/",
-                                    "ENCOUNTERS_UNKNOWN isn't in generated/encounters.txt"])
+        self.assertEqual(
+            messages,
+            [
+                "ENCOUNTERS_LOST has no file in res/field/encounters/",
+                "ENCOUNTERS_UNKNOWN isn't in generated/encounters.txt",
+            ],
+        )
 
     def test_slots_name_species_and_sane_levels(self) -> None:
-        put(self.tree / "res/field/encounters/a.json", {"all_year": {
-            "grass": [["SPECIES_MISSINGNO", 2, 3], ["SPECIES_PIDGEY", 5, 4]],
-            "surf": {"black2": [["SPECIES_PIDGEY", 0, 101]], "white2": []}}})
+        put(
+            self.tree / "res/field/encounters/a.json",
+            {
+                "all_year": {
+                    "grass": [["SPECIES_MISSINGNO", 2, 3], ["SPECIES_PIDGEY", 5, 4]],
+                    "surf": {"black2": [["SPECIES_PIDGEY", 0, 101]], "white2": []},
+                }
+            },
+        )
         fields = [p.field for p in validate.check_encounter_tables(self.tree)]
         self.assertEqual(fields, ["all_year.grass[0]", "all_year.grass[1]", "all_year.surf[0]"])
 

@@ -1,0 +1,22 @@
+# Weekly, grouped updates of CI's checkers and actions. The engine/pokebw2 submodule isn't here: its pin moves only
+# with the series re-exported against it (docs/engine-sync.md).
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /framework
+    schedule:
+      interval: weekly
+    groups:
+      ci-tools:
+        patterns: ["*"]
+    ignore:
+      # pokebw2 formats C with clang-format 23.1.1 only; it moves when upstream's Standards workflow does
+      - dependency-name: clang-format
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

@@ -42,10 +42,12 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | --- | --- |
 | `./kaleido bootstrap` | engine at the pin, the patch series on branch `kaleido`, the base ROM linked, Kaleido's dsd built |
 | `./kaleido doctor` | checks the machine, engine, dsd, ROMs and downloaded tools; exits 1 on a failure |
+| `./kaleido check` | no ROM or engine needed: the ROM-content guard, every layer, recipe and game config, doc links |
 | `./kaleido baseline` | the patched engine, every define off, must rebuild Black 2 byte for byte |
+| `./kaleido compile` | no ROM needed: every C file of the patched engine, once per define set (baseline, each game) |
 | `./kaleido extract <game>` | the game's layers' recipes, run on your source ROMs, into `build/<game>/extracted/` |
 | `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
-| `./kaleido validate <game>` | extracts, merges, then checks the merged tree's cross-references |
+| `./kaleido validate <game>` | extracts, merges, then checks the merged tree's cross-references; `--no-extract` merges only committed files, as CI does |
 | `./kaleido build <game>` | extracts, merges, validates and builds the ROM: `build/<game>/kaleido-<game>.nds` |
 | `./kaleido patch <game>` | `dist/kaleido-<game>.xdelta` against your Black 2, checked by applying it (xdelta3 3.0.11) |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
@@ -59,6 +61,8 @@ Details: `docs/building.md`; layers and their rules: `content/README.md`.
 - **Never commit ROMs or anything extracted from them.** That covers `orig/`, `extract/`, `build/`, `dist/`, `*.nds`,
   `*.gba`, `*.gb`, `*.gbc`, saves, and other-game text, tables or graphics, even in tests, fixtures, docs or commit
   messages. Test fixtures are synthetic.
+- **CI never sees a ROM** or anything made from one: no workflow step, secret, cache or artifact may hold one
+  (`docs/plan/06-testing.md`).
 - **Never copy code, data files or labels from unlicensed projects**: the pret decomps (pokered, pokefirered, …),
   White2Upgrade, CTRMapV, SwissArmyKnife, FrostsGen5Editor. Read them for behavior and formats, then write our own.
   GPL-3.0 sources (pokebw2, CTRMap-CE, swan, PMC) may be reused under GPL-3.0 with attribution.
@@ -94,5 +98,7 @@ Details: `docs/building.md`; layers and their rules: `content/README.md`.
 - When a rule changes, update `AGENTS.md`, `CONTRIBUTING.md` and the affected docs in the same commit.
 - Small commits in Conventional Commits form (`docs: …`, `feat(framework): …`). Work on feature branches; never commit
   to `main` directly.
+- A pull request merges only with the `CI` check green (`.github/workflows/ci.yml`). Run `./kaleido check` and the
+  tests first, and format Python with Ruff at the version in `framework/requirements-ci.txt`.
 - Files use LF line endings (`.gitattributes`).
 - Add skills, subagents or hooks only after a procedure has been done by hand at least three times.

@@ -7,6 +7,7 @@ A recipe, extract/<name>.json in a layer:
 
 `map` is the map's name as the source ROM shows it; `location` is the region's name for it, which the region layer's
 zones.json maps to the zone that holds it (ADR 0004). That zone's header names the encounter table to write."""
+
 import json
 import shutil
 from dataclasses import dataclass
@@ -72,16 +73,36 @@ def _wild_land(paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[s
         roms[source] = gba_gen3.Rom(_source_rom(paths, game, source))
     land = gba_gen3.land_encounters(roms[source], recipe["map"])
     names = _species_names(paths)
-    table = {"$schema": "encounters.schema.json", "all_year": {
-        "rates": {"grass": GEN5_GRASS_SETTING, **{group: 0 for group in EMPTY_GROUPS}, "flags": 0},
-        "grass": [[names[slot.species], slot.min_level, slot.max_level] for slot in land.slots],
-        **{group: [] for group in EMPTY_GROUPS}}}
+    table = {
+        "$schema": "encounters.schema.json",
+        "all_year": {
+            "rates": {"grass": GEN5_GRASS_SETTING, **{group: 0 for group in EMPTY_GROUPS}, "flags": 0},
+            "grass": [[names[slot.species], slot.min_level, slot.max_level] for slot in land.slots],
+            **{group: [] for group in EMPTY_GROUPS},
+        },
+    }
     path = encounter_table_path(paths, layer_module.zone_of(stack, recipe["location"]))
     return path, json.dumps(table, indent=4) + "\n"
 
 
 KINDS = {"gba_gen3_wild_land": _wild_land}
 REQUIRED = {"gba_gen3_wild_land": ("source", "map", "location")}
+
+
+def read_recipe(layer: layer_module.Layer, recipe_path: str) -> dict:
+    """A layer's recipe, checked for a known kind and that kind's fields; reading it needs no ROM."""
+    where = f"{layer.id}/{recipe_path}"
+    try:
+        recipe = json.loads((layer.path / recipe_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ConfigError(f"{where}: {error}") from error
+    kind = recipe.get("kind") if isinstance(recipe, dict) else None
+    if kind not in KINDS:
+        raise ConfigError(f"{where}: kind {kind!r} isn't one of {', '.join(KINDS)}")
+    missing = [key for key in REQUIRED[kind] if not isinstance(recipe.get(key), str)]
+    if missing:
+        raise ConfigError(f"{where}: missing {', '.join(missing)}")
+    return recipe
 
 
 def run(paths: Paths, game: Game) -> list[Extracted]:
@@ -93,14 +114,8 @@ def run(paths: Paths, game: Game) -> list[Extracted]:
     for layer in stack:
         for recipe_path in layer.recipes():
             where = f"{layer.id}/{recipe_path}"
-            recipe = json.loads((layer.path / recipe_path).read_text(encoding="utf-8"))
-            kind = recipe.get("kind")
-            if kind not in KINDS:
-                raise ConfigError(f"{where}: kind {kind!r} isn't one of {', '.join(KINDS)}")
-            missing = [key for key in REQUIRED[kind] if not isinstance(recipe.get(key), str)]
-            if missing:
-                raise ConfigError(f"{where}: missing {', '.join(missing)}")
-            path, content = KINDS[kind](paths, game, stack, recipe, roms)
+            recipe = read_recipe(layer, recipe_path)
+            path, content = KINDS[recipe["kind"]](paths, game, stack, recipe, roms)
             layer.category_of(path, recipe_path)
             target = out / layer.id / path
             if target.exists():

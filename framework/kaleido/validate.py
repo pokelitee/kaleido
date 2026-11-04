@@ -1,9 +1,10 @@
-"""kaleido validate <game>: checks the cross-references of a game's merged tree before it builds (03-architecture.md §7).
-Upstream's packers check each file against its schema; these checks span files, so a layer that breaks a reference
-fails here, naming the file, the field, and the layers that wrote the file.
+"""kaleido validate <game>: checks the cross-references of a game's merged tree before it builds
+(03-architecture.md §7). Upstream's packers check each file against its schema; these checks span files, so a layer
+that breaks a reference fails here, naming the file, the field, and the layers that wrote the file.
 
 So far: warps lead to a zone that has the target warp; zone headers name encounter tables that exist; encounter slots
 name species and sane levels; regions map their locations to zones that exist."""
+
 import json
 from dataclasses import dataclass
 from functools import partial
@@ -35,8 +36,11 @@ def constants(tree: Path, list_name: str) -> set[str]:
 
 
 def _data_files(directory: Path) -> list[Path]:
-    return sorted(path for path in directory.glob("*.json")
-                  if not path.name.endswith(".schema.json") and path.name != "order.json")
+    return sorted(
+        path
+        for path in directory.glob("*.json")
+        if not path.name.endswith(".schema.json") and path.name != "order.json"
+    )
 
 
 def _file_name(constant: str, prefix: str) -> str:
@@ -47,8 +51,9 @@ def check_warps(tree: Path) -> list[Problem]:
     zones = constants(tree, "zones")
     events_dir = tree / "res" / "field" / "events"
     files = {path.name: path for path in _data_files(events_dir)}
-    warp_counts = {name: len(json.loads(path.read_text(encoding="utf-8")).get("warps", []))
-                   for name, path in files.items()}
+    warp_counts = {
+        name: len(json.loads(path.read_text(encoding="utf-8")).get("warps", [])) for name, path in files.items()
+    }
     problems = []
     for name, path in files.items():
         for i, warp in enumerate(json.loads(path.read_text(encoding="utf-8")).get("warps", [])):
@@ -62,8 +67,13 @@ def check_warps(tree: Path) -> list[Problem]:
             if target not in warp_counts:
                 problems.append(Problem(file, f"{field}.zone", f"{zone} has no events file, so no warps"))
             elif not 0 <= warp.get("warp", -1) < warp_counts[target]:
-                problems.append(Problem(file, f"{field}.warp", f"{zone} has warps 0 to {warp_counts[target] - 1}, "
-                                                               f"not {warp.get('warp')}"))
+                problems.append(
+                    Problem(
+                        file,
+                        f"{field}.warp",
+                        f"{zone} has warps 0 to {warp_counts[target] - 1}, not {warp.get('warp')}",
+                    )
+                )
     return problems
 
 
@@ -110,14 +120,21 @@ def check_encounter_tables(tree: Path) -> list[Problem]:
 
 def check_region_zones(paths: Paths, game: Game, tree: Path) -> list[Problem]:
     zones = constants(tree, "zones")
-    return [Problem(f"content/{layer.id}/zones.json", f"locations.{location}", f"{zone} isn't a zone")
-            for layer in layer_module.load_stack(paths, list(game.layers))
-            for location, zone in sorted(layer.zones.items()) if zone not in zones]
+    return [
+        Problem(f"content/{layer.id}/zones.json", f"locations.{location}", f"{zone} isn't a zone")
+        for layer in layer_module.load_stack(paths, list(game.layers))
+        for location, zone in sorted(layer.zones.items())
+        if zone not in zones
+    ]
 
 
 def run(paths: Paths, game: Game, tree: Path) -> list[Problem]:
-    return [*check_region_zones(paths, game, tree), *check_warps(tree), *check_zone_encounters(tree),
-            *check_encounter_tables(tree)]
+    return [
+        *check_region_zones(paths, game, tree),
+        *check_warps(tree),
+        *check_zone_encounters(tree),
+        *check_encounter_tables(tree),
+    ]
 
 
 def report(paths: Paths, game: Game, problems: list[Problem]) -> None:

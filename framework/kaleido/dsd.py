@@ -1,5 +1,6 @@
 """Kaleido's dsd: the dsd that pokebw2 pins, plus `rom build --allow-stale-secure-area` (ADR 0004), built with Rust
 from ds-rom and ds-decomp at the commits engine/engine.toml names. Until upstream takes the change."""
+
 import json
 import os
 import shutil
@@ -8,7 +9,6 @@ from pathlib import Path
 from kaleido.config import EngineConfig, Paths, Repo
 from kaleido.hashing import file_hash
 from kaleido.process import CommandError, run, stream
-
 
 FLAG = "--allow-stale-secure-area"
 
@@ -22,8 +22,7 @@ def binary(paths: Paths) -> Path:
 
 
 def expected_stamp(config: EngineConfig) -> dict:
-    return {"ds_rom": config.ds_rom.commit, "ds_decomp": config.ds_decomp.commit,
-            "patch": file_hash(config.dsd_patch)}
+    return {"ds_rom": config.ds_rom.commit, "ds_decomp": config.ds_decomp.commit, "patch": file_hash(config.dsd_patch)}
 
 
 def _stamp_path(paths: Paths) -> Path:
@@ -71,8 +70,7 @@ def apply_patch(root: Path, patch: Path, checkouts: list[str]) -> None:
     """Applies a patch whose paths start with the checkouts' directory names, from root, and checks that it changed
     each checkout. root may lie inside another repository (.cache/ is inside Kaleido's): git apply run there would take
     the paths as that repository's and skip them, so the ceiling stops its search at root."""
-    run(["git", "apply", str(patch)], cwd=root,
-        env={**os.environ, "GIT_CEILING_DIRECTORIES": str(root.parent)})
+    run(["git", "apply", str(patch)], cwd=root, env={**os.environ, "GIT_CEILING_DIRECTORIES": str(root.parent)})
     for checkout in checkouts:
         if not run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root / checkout).strip():
             raise CommandError(f"{patch.name} changed nothing in {checkout}")

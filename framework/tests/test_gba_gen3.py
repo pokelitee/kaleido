@@ -17,7 +17,7 @@ def synthetic_rom(route_species: int = 19) -> bytes:
     rom = bytearray(0x1000)
 
     def put(offset: int, data: bytes) -> None:
-        rom[offset:offset + len(data)] = data
+        rom[offset : offset + len(data)] = data
 
     def pointer(offset: int) -> bytes:
         return struct.pack("<I", BASE + offset)
@@ -75,8 +75,7 @@ class EncounterTablePathTest(unittest.TestCase):
             header = paths.engine / "res/field/zones/route_19.json"
             header.parent.mkdir(parents=True)
             header.write_text(json.dumps({"encounters": "ENCOUNTERS_ROUTE_19"}))
-            self.assertEqual(extract.encounter_table_path(paths, "ZONE_ROUTE_19"),
-                             "res/field/encounters/route_19.json")
+            self.assertEqual(extract.encounter_table_path(paths, "ZONE_ROUTE_19"), "res/field/encounters/route_19.json")
 
 
 if __name__ == "__main__":

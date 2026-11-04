@@ -5,7 +5,8 @@ and §7). Run it from the repository's root with `./kaleido <command>`; nothing 
 
 | Path | What |
 | --- | --- |
-| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline`, `extract`, `merge`, `validate`, `build` and `patch` (`docs/building.md`) |
+| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `check`, `baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch` (`docs/building.md`) |
+| `requirements-ci.txt` | the checkers CI installs (Ruff, clang-format); Kaleido itself needs none |
 | `extractors/` | readers for source-game formats, code only: `gba_gen3.py` reads FireRed's wild encounters by structure (from E8's prototype) |
 | `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories, files and ROM-shaped bytes, never ROM data) |
 | `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet; the code checks the files for now |
@@ -16,4 +17,5 @@ Tests:
 python3 -m unittest discover -s framework -t framework
 ```
 
-Ruff formats and lints this code (settings in `pyproject.toml`); CI runs both checks once it exists.
+Ruff formats and lints this code (settings in `pyproject.toml`, version in `requirements-ci.txt`); CI runs both checks
+(`docs/building.md` §6).

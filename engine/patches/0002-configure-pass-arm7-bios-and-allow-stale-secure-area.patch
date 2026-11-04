@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Allen Zheng <zhenga8533@gmail.com>
 Date: Wed, 4 Nov 2026 00:00:00 +0000
-Subject: [PATCH 2/3] configure: pass --arm7-bios and --allow-stale-secure-area
- to dsd
+Subject: [PATCH] configure: pass --arm7-bios and --allow-stale-secure-area to
+ dsd
 
 When the first 16 KiB of ARM9 main change, dsd rom build needs the DS ARM7 BIOS's
 Blowfish key to compute the DSi values derived from the encrypted secure area, and

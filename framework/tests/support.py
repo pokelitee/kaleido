@@ -1,19 +1,27 @@
 """Synthetic repositories for the tests: a stand-in upstream engine and a Kaleido checkout around it."""
+
 import os
 import subprocess
 import tempfile
 from pathlib import Path
 
-GIT_ENV = {"GIT_AUTHOR_NAME": "Test", "GIT_AUTHOR_EMAIL": "test@localhost", "GIT_COMMITTER_NAME": "Test",
-           "GIT_COMMITTER_EMAIL": "test@localhost", "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
-           "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z", "GIT_CONFIG_GLOBAL": os.devnull,
-           "GIT_CONFIG_NOSYSTEM": "1"}
+GIT_ENV = {
+    "GIT_AUTHOR_NAME": "Test",
+    "GIT_AUTHOR_EMAIL": "test@localhost",
+    "GIT_COMMITTER_NAME": "Test",
+    "GIT_COMMITTER_EMAIL": "test@localhost",
+    "GIT_AUTHOR_DATE": "2026-01-01T00:00:00Z",
+    "GIT_COMMITTER_DATE": "2026-01-01T00:00:00Z",
+    "GIT_CONFIG_GLOBAL": os.devnull,
+    "GIT_CONFIG_NOSYSTEM": "1",
+}
 
 
 def git(*args: str, cwd: Path) -> str:
     env = {**os.environ, **GIT_ENV, "GIT_ALLOW_PROTOCOL": "file"}
-    return subprocess.run(["git", "-c", "protocol.file.allow=always", *args], cwd=cwd, env=env, check=True,
-                          capture_output=True, text=True).stdout.strip()
+    return subprocess.run(
+        ["git", "-c", "protocol.file.allow=always", *args], cwd=cwd, env=env, check=True, capture_output=True, text=True
+    ).stdout.strip()
 
 
 class Fixture:
@@ -44,8 +52,16 @@ class Fixture:
         git("commit", "-q", "-m", f"add {name}", cwd=self.upstream)
         patches = self.root / "engine" / "patches"
         number = len(list(patches.glob("*.patch"))) + 1
-        out = git("format-patch", "--zero-commit", "--no-signature", f"--start-number={number}", "-o", str(patches),
-                  "HEAD~1..HEAD", cwd=self.upstream)
+        out = git(
+            "format-patch",
+            "--zero-commit",
+            "--no-signature",
+            f"--start-number={number}",
+            "-o",
+            str(patches),
+            "HEAD~1..HEAD",
+            cwd=self.upstream,
+        )
         git("reset", "-q", "--hard", "HEAD~1", cwd=self.upstream)
         return Path(out.splitlines()[-1])
 

@@ -1,5 +1,6 @@
 """Building with the engine: upstream's configure.py with Kaleido's dsd and options, then ninja, run again until
 nothing is left to compile."""
+
 import re
 import subprocess
 import sys

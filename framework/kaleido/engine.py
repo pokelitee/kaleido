@@ -1,4 +1,5 @@
 """The engine: pokebw2 at the pin, with Kaleido's patch series applied on a local branch (ADR 0002)."""
+
 import hashlib
 import json
 import os
@@ -96,14 +97,17 @@ def apply_series(paths: Paths, force: bool = False) -> bool:
     if current.applied and not current.dirty:
         return False
     if current.dirty:
-        raise EngineError("engine/pokebw2 has uncommitted changes: commit and export them to engine/patches/, "
-                          "or discard them, first")
+        raise EngineError(
+            "engine/pokebw2 has uncommitted changes: commit and export them to engine/patches/, or discard them, first"
+        )
     commit = pin(paths)
     stamp = _read_stamp(paths)
     expected_head = stamp["head"] if stamp else commit
     if current.head != expected_head and not force:
-        raise EngineError(f"engine/pokebw2 is at {current.head[:12]}, not where bootstrap left it: export any engine "
-                          "commits to engine/patches/ (git format-patch), or pass --force to discard them")
+        raise EngineError(
+            f"engine/pokebw2 is at {current.head[:12]}, not where bootstrap left it: export any engine "
+            "commits to engine/patches/ (git format-patch), or pass --force to discard them"
+        )
     patches = series(paths)
     run(["git", "switch", "-q", "--force-create", BRANCH, commit], cwd=paths.engine)
     if patches:
@@ -111,12 +115,13 @@ def apply_series(paths: Paths, force: bool = False) -> bool:
         try:
             run(["git", "am", "-q", "--committer-date-is-author-date", *map(str, patches)], cwd=paths.engine, env=env)
         except CommandError as error:
-            run(["git", "am", "--abort"], cwd=paths.engine)
+            run(["git", "am", "--abort"], cwd=paths.engine, env=env)
             raise EngineError(f"the series doesn't apply to {commit[:12]}: {error}") from error
     head = run(["git", "rev-parse", "HEAD"], cwd=paths.engine).strip()
     paths.cache.mkdir(exist_ok=True)
-    _stamp_path(paths).write_text(json.dumps({"pin": commit, "series": series_digest(patches), "head": head},
-                                             indent=2) + "\n", encoding="utf-8")
+    _stamp_path(paths).write_text(
+        json.dumps({"pin": commit, "series": series_digest(patches), "head": head}, indent=2) + "\n", encoding="utf-8"
+    )
     return True
 
 

@@ -2,6 +2,7 @@
 
 The SHA1s are from docs/research/hardware-and-rom.md. Kaleido keeps the ROMs in the ignored orig/ at the repository's
 root, under fixed names, and never in git."""
+
 from dataclasses import dataclass
 
 
