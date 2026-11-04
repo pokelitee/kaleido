@@ -6,7 +6,8 @@ Last updated: 2026-11-04
 
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
-(2026-11-04), and so are the engine submodule and its first three patches. No framework code or game content yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+(2026-11-04), and so are the engine submodule with its first three patches, and `./kaleido doctor` and `bootstrap`.
+No game content yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -117,8 +118,10 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - two exports of the series are identical.
    Left out on purpose: E5's species-count patch (no species-expansion scaffolding, `03-architecture.md` §12) and E4b's
    template-append, which joins when Phase 3 adds map art (ADR 0003).
-3. `kaleido doctor` and `bootstrap`: tool hashes, the patched dsd built from pinned commits (until upstream takes it),
-   and ninja run until nothing compiles (R-28, until upstream takes #807).
+3. ~~`kaleido doctor` and `bootstrap`~~: done 2026-11-04. They are `./kaleido` from the checkout: Python 3.11+, standard
+   library only, 31 unit tests on synthetic repositories. A fresh WSL clone bootstrapped to the tested engine tree
+   (`60702d25…`) with a working dsd, and `doctor` passed with no warnings. The tool hashes are in `engine/engine.toml`.
+   Running ninja until nothing compiles (R-28) belongs to `kaleido build` and `baseline`, next.
 4. `extract`, `merge`, `validate`, `build`, `patch`, `baseline`, and the `firered` config with its tiny layer (E1's
    text, a reused zone, E8's encounter table).
 5. The emulator harness spike (R-16), and E6b with it.

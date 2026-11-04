@@ -1,8 +1,8 @@
 # Syncing the engine with upstream
 
 How the pin moves (ADR 0002, `docs/plan/03-architecture.md` §4). A sync is deliberate: chosen for a reason, never
-automatic (R-02). The `kaleido` commands below arrive in Phase 1. Until then, run their manual equivalents from
-[`building.md`](building.md).
+automatic (R-02). `kaleido bootstrap` and `doctor` exist; `baseline` and `engine export` arrive later in Phase 1. Until then, run
+their manual equivalents from [`building.md`](building.md).
 
 The pin is `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c` (2026-10-31), recorded in `engine/pokebw2` (the submodule),
 `docs/plan/02-foundation.md` and `docs/research/pokebw2.md`.
@@ -21,7 +21,8 @@ The pin is `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c` (2026-10-31), recorded in 
 
 All on a branch:
 
-1. Move `engine/pokebw2` to the new commit.
+1. Move `engine/pokebw2` to the new commit and stage that pointer. `kaleido doctor` reports the staged pointer as a
+   failure until the sync is committed; that is expected here and nowhere else.
 2. `kaleido bootstrap` applies `engine/patches/` with `git am`. Fix conflicts on the engine branch, then
    `kaleido engine export` writes the series back.
 3. `kaleido doctor`: new tool versions get their hashes recorded (R-12). If upstream's dsd changed, rebase Kaleido's dsd

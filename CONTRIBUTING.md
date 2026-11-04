@@ -42,6 +42,9 @@ By opening a pull request, you agree to license your contribution under these te
 - Engine changes live only as patches in `engine/patches/` (ADR 0002), each behavior change behind a `KALEIDO_*`
   define. With every define off, the engine must still rebuild Black 2 byte for byte.
 - Inside engine code, follow pokebw2's rules: natural C, its `docs/code-standards.md`, clang-format 23.1.1.
+- After `./kaleido bootstrap`, `git status` shows `engine/pokebw2` as changed: the engine's branch carries the series,
+  in commits only your machine has. Never stage that pointer; only an engine sync moves it (`docs/engine-sync.md`).
+  `./kaleido doctor` fails while it is staged.
 - Any change to ARM9 main, code or data, needs `--allow-stale-secure-area` or `--arm7-bios` to finish the ROM (R-27).
 - After changing a `generated/*.txt` list, run `ninja` again until nothing is left to compile (R-28).
 - Generic changes are offered upstream first.
