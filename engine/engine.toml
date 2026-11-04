@@ -24,3 +24,12 @@ commit = "66e83ef467b1e7a4816e667bf3b86572b1f8072d"
 [dsd.ds_decomp]
 url = "https://github.com/fuddlesworth/ds-decomp.git"
 commit = "2dc1b27b95fe9191ea9a0c2ea3145baa349125b8"
+
+# SHA256s of the tools pokebw2's configure.py downloads into engine/pokebw2/tools/, which kaleido doctor checks (R-12).
+# The files' match E0's records (docs/research/e0-baseline.md). mwccarm is a directory: its value is Kaleido's tree
+# digest (kaleido.hashing.tree_digest), first recorded 2026-11-04 from the copy downloaded in E0.
+[tools]
+wibo = "d708570bd64cc8c176273a2bb7b5082f4fa849139d0ffe6cd0b96e26f3bc1ef2"
+"sjiswrap.exe" = "4e9c917ba3f245da74a5a48ec91b459e956189cc1411233aa40046e0f7ac294f"
+objdiff-cli = "c8290281e82114bcc1a06ff73061110d3902a177822e750337de2537188e358f"
+mwccarm = "73c421beb9e5a6ec72e607b04058cc48f8e1890189cffe84669ea99d2729620e"

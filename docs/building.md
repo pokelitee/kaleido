@@ -1,7 +1,7 @@
 # Building
 
-Phase 1 is writing `kaleido doctor`, `bootstrap` and `build` (`docs/plan/03-architecture.md` §7). Until they exist,
-this is the manual procedure. Its steps were run on the owner's machine in Phase 0 and Phase 1
+`./kaleido bootstrap` and `./kaleido doctor` set up and check a checkout. Building is still by hand until Phase 1 adds
+`kaleido build` and `baseline` (`docs/plan/03-architecture.md` §7). Every step here was run on the owner's machine
 (`docs/research/e0-baseline.md`, `e4a-new-zone.md`, `docs/status.md`).
 
 ## Requirements
@@ -10,53 +10,44 @@ this is the manual procedure. Its steps were run on the owner's machine in Phase
   (`~/…`), not on `/mnt/c`, which is far slower (R-23).
 - **Packages** (Ubuntu 26.04): `sudo apt install ninja-build clang llvm python3.14-venv`. Python 3.11 or later; 3.14.4
   was used, upstream's CI uses 3.12.
-- **Rust**, through [rustup](https://rustup.rs) (minimal profile is enough), to build Kaleido's dsd. Only until upstream
-  takes the change (ADR 0004).
+- **Rust**, through [rustup](https://rustup.rs) (minimal profile is enough), for `bootstrap` to build Kaleido's dsd.
+  Only until upstream takes the change (ADR 0004).
 - **Your own Black 2 (USA, Europe) dump**, SHA1 `e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`.
 - For extraction: your own source ROM. FireRed (USA) is SHA1 `41cb23d8dccc8ebd7c649cd8fbb58eeace6e2fdc`; the others
   are in `docs/research/hardware-and-rom.md`.
 
 Disk: about 3 GB for one checkout with one build (E0), plus Rust's build directory for dsd.
 
-## 1. Kaleido and the engine
+## 1. Set up
 
-Clone Kaleido in WSL's filesystem, fetch the engine at the pin, and apply Kaleido's patch series:
+Clone Kaleido in WSL's filesystem, put your ROMs in `orig/` (ignored by git), then bootstrap:
 
 ```bash
 cd ~ && git clone https://github.com/pokelitee/kaleido.git && cd kaleido
-git submodule update --init --depth 1
-cd engine/pokebw2
-git switch -c kaleido
-git am ../patches/*.patch
-cp /path/to/your/black2.nds orig/baserom_b2_us.nds
-sha1sum orig/baserom_b2_us.nds
+mkdir -p orig && cp /path/to/your/black2.nds orig/black2.nds
+./kaleido bootstrap
+./kaleido doctor
 ```
 
-`--depth 1` fetches only the pinned commit: 79 s and 1.2 GB on the owner's machine. Without it, git fetches the pin's
-whole history (4,179 commits), because the pin isn't upstream's latest commit. `git am` needs a git identity
-(`user.name`, `user.email`); with it, the engine's tree is the one Kaleido tested.
+For extraction, also `orig/firered.gba`. Nothing needs installing: `./kaleido` runs the framework from the checkout.
 
-## 2. Kaleido's dsd
+`bootstrap` does each step only if it isn't done already:
 
-pokebw2's dsd refuses to finish a ROM whose ARM9 main changed, unless it has the DS ARM7 BIOS (R-27). Kaleido's dsd adds
-`--allow-stale-secure-area` (`engine/dsd/allow-stale-secure-area.patch`, offered upstream as fuddlesworth/ds-rom#1 and
-fuddlesworth/ds-decomp#2). `engine/engine.toml` names the commits it builds on.
+1. Checks `engine/pokebw2` out at the pin, fetching only that commit (`--depth 1`: about 80 s and 1.2 GB; without it
+   git fetches the pin's 4,179-commit history).
+2. Applies `engine/patches/` with `git am` on the engine's branch `kaleido`. The commits are the same on every machine.
+   It refuses to discard uncommitted engine changes, or engine commits not exported to `engine/patches/`, unless
+   given `--force`.
+3. Links `engine/pokebw2/orig/baserom_b2_us.nds` to `orig/black2.nds`.
+4. Builds Kaleido's dsd into `.cache/dsd/`: ds-rom and ds-decomp at the commits in `engine/engine.toml`, plus
+   `engine/dsd/allow-stale-secure-area.patch` (R-27, ADR 0004). The first build takes about 35 minutes. `--skip-dsd`
+   leaves it out.
 
-```bash
-mkdir -p ~/kaleido/.cache/dsd && cd ~/kaleido/.cache/dsd
-for repo in ds-rom:66e83ef467b1e7a4816e667bf3b86572b1f8072d ds-decomp:2dc1b27b95fe9191ea9a0c2ea3145baa349125b8; do
-  name=${repo%%:*}; commit=${repo#*:}
-  git init -q "$name" && git -C "$name" remote add origin "https://github.com/fuddlesworth/$name.git"
-  git -C "$name" fetch -q --depth 1 origin "$commit" && git -C "$name" checkout -q FETCH_HEAD
-done
-git apply ~/kaleido/engine/dsd/allow-stale-secure-area.patch
-cd ds-decomp && cargo build --release --bin dsd
-```
+`doctor` checks the platform, Python, the commands upstream's build calls, disk space, the engine, dsd, the ROMs'
+SHA1s, and the SHA256s of the tools pokebw2 downloads (recorded in `engine/engine.toml`, R-12). It prints how to fix
+each problem and exits 1 if anything fails.
 
-The first build takes about 35 minutes. The result, `ds-decomp/target/release/dsd`, had SHA256
-`d19cbd9a2b85b7e173777de5839bb5d117ee6a74e2a5ede8edb45d6915ec3b37` on the owner's machine.
-
-## 3. The matching baseline
+## 2. The matching baseline
 
 ```bash
 cd ~/kaleido/engine/pokebw2
@@ -68,7 +59,7 @@ sha1sum build/pokeblack2_us.nds    # e51e6dfb8678a3d19dcd2a10691b96a569ca0abb
 `configure.py` downloads the other tools into `tools/`. `ninja` extracts the ROM, compiles, links and rebuilds it, and
 fails unless every matching check passes. A clean build takes 10–12 minutes.
 
-## 4. Modified builds
+## 3. Modified builds
 
 With Kaleido's patch series applied, `configure.py` also takes:
 

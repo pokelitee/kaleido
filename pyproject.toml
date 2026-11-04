@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kaleido"
+version = "0.0.0"
+description = "Builds other games of the series on the pokebw2 engine"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+kaleido = "kaleido.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["framework"]
+include = ["kaleido*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["framework"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
