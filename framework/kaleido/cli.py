@@ -59,9 +59,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "validate":
             game = games.load(paths, args.game)
-            problems = validate.run(paths, game, build.prepare(paths, game, extract_sources=not args.no_extract))
-            validate.report(paths, game, problems)
-            return 1 if problems else 0
+            result = validate.run(paths, game, build.prepare(paths, game, extract_sources=not args.no_extract))
+            validate.report(paths, game, result)
+            return 1 if result.problems else 0
         if args.command == "patch":
             return patch.main(paths, games.load(paths, args.game))
         return build.main(paths, args.game)
