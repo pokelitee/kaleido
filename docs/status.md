@@ -29,8 +29,8 @@ in `docs/research/`. The playtest checks it deferred are listed at the end of th
 - Planning pass merged to `main` (pokelitee/kaleido#1). The owner made the repository **public** on 2026-11-03 to
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
-  "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). The ruleset has
-  no required CI check yet, because there is no CI; Phase 1 adds both (`05-roadmap.md`).
+  "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). Since
+  2026-11-04 it also requires the `CI` check, from GitHub Actions only (owner's go-ahead).
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
 - **E0a passed** (Phase 0, 2026-11-03): upstream's `compile_all.py` at the pin compiled 3,584 of 3,584 (every C file,
@@ -153,7 +153,8 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - `validate firered --no-extract`: no problems;
    - `baseline` still matches Black 2;
    - `build firered` gives the same SHA1 as before (`f64d9a56…`).
-   On GitHub, the Engine job takes about 4 minutes. Still to do: the `CI` check in the "Protect main" ruleset.
+   On GitHub, the Engine job takes about 4 minutes. The "Protect main" ruleset requires the `CI` check (2026-11-04).
+   This step is done.
    Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
    (only after doing it by hand three times).
 
