@@ -198,6 +198,13 @@ Phase 2's deliverables (`05-roadmap.md`, two builds), started 2026-11-04:
    The built banners read back "Kaleido / FireRed" and "Kaleido / Red" in every language, and the DSi checks pass.
 3. ~~The first B2W2-system switch~~: done. Engine patch `0006`, `KALEIDO_NO_CGEAR`, keeps the C-Gear out of Red.
    `docs/research/b2w2-systems.md` is a first inventory of the systems, with the C-Gear's entry points traced.
+   **Verified** on the WSL clone:
+   - `baseline` still matches Black 2, and `compile` is clean both with and without the switch;
+   - FireRed is unchanged (`688d008d…`);
+   - Red builds (`4566ffc8…`), its DSi checks pass, and its patch applies back to it.
+
+   Red's patch grew from about 420 KB to 5.9 MB. The switch shortens a function in ARM9 main, so the code after it
+   moves, and so does every reference to it. Any switch that changes code size in ARM9 main will do the same.
 4. Left for the exit:
    - both ROMs in melonDS, DS mode;
    - the C-Gear in one game and not the other;

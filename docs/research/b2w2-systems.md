@@ -41,5 +41,9 @@ Traced at `41f42ca` (**Verified** in the code):
 
 With `KALEIDO_NO_CGEAR`, `CGearSettings_IsOn` always says no, and command `0x197` reads its operand and lets the
 script go on. A script command that returns FALSE lets the next one run at once (`VM_Run`, `src/system/vm.c`). The
-C-Gear's code and data stay in the build. Taking them out, which would free RAM (R-05), is later work. Black 2's
+C-Gear's code and data stay in the build.
+
+`CGearSettings_IsOn` is in ARM9 main, and the switch shortens it, so the code after it moves (**Verified**,
+2026-11-04). Red's patch went from about 420 KB to 5.9 MB, and its build needs `--allow-stale-secure-area` (R-27),
+which every game build passes. Its DSi checks still pass. Taking them out, which would free RAM (R-05), is later work. Black 2's
 script still says the C-Gear was obtained: a Kaleido game's own scripts won't hand it out.
