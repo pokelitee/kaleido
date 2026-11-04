@@ -79,12 +79,28 @@ def check_engine(paths: Paths) -> Check:
     return Check("engine", OK, f"pin {engine.pin(paths)[:12]} + {len(engine.series(paths))} patches")
 
 
+def check_pointer(paths: Paths) -> Check:
+    """The engine's branch carries the series, so git status shows engine/pokebw2 as changed. Staging that would point
+    the superproject at a commit only this machine has."""
+    try:
+        staged, committed = engine.pin(paths), engine.committed_pin(paths)
+    except (CommandError, engine.EngineError) as error:
+        return Check("engine pointer", FAIL, str(error), "check engine/pokebw2 in .gitmodules and the index")
+    if staged != committed:
+        return Check("engine pointer", FAIL, f"staged {staged[:12]}, committed {committed[:12]}",
+                     "git restore --staged engine/pokebw2, unless you are syncing the engine (docs/engine-sync.md)")
+    return Check("engine pointer", OK, f"{committed[:12]}")
+
+
 def check_dsd(paths: Paths, config: EngineConfig) -> Check:
     if dsd.is_current(paths, config):
         return Check("dsd", OK, str(dsd.binary(paths).relative_to(paths.root)))
-    if dsd.binary(paths).exists():
-        return Check("dsd", WARN, "built from other commits or another patch", "run ./kaleido bootstrap")
-    return Check("dsd", WARN, "Kaleido's dsd isn't built", "run ./kaleido bootstrap (about 35 minutes the first time)")
+    if not dsd.binary(paths).exists():
+        return Check("dsd", WARN, "Kaleido's dsd isn't built",
+                     "run ./kaleido bootstrap (about 35 minutes the first time)")
+    if not dsd.has_flag(dsd.binary(paths)):
+        return Check("dsd", WARN, f"the built dsd doesn't take {dsd.FLAG}", "run ./kaleido bootstrap")
+    return Check("dsd", WARN, "built from other commits or another patch", "run ./kaleido bootstrap")
 
 
 def check_rom(paths: Paths, spec: RomSpec) -> Check:
@@ -134,7 +150,7 @@ def run_checks(paths: Paths) -> list[Check]:
         config = load_engine_config(paths)
     except ConfigError as error:
         return [*checks, Check("engine.toml", FAIL, str(error), "fix engine/engine.toml")]
-    checks += [check_engine(paths), check_dsd(paths, config), check_rom(paths, BASE),
+    checks += [check_pointer(paths), check_engine(paths), check_dsd(paths, config), check_rom(paths, BASE),
                *(check_rom(paths, spec) for spec in SOURCES), check_engine_rom(paths), *check_tools(paths, config)]
     return checks
 

@@ -10,6 +10,9 @@ from kaleido.hashing import file_hash
 from kaleido.process import CommandError, run, stream
 
 
+FLAG = "--allow-stale-secure-area"
+
+
 def directory(paths: Paths) -> Path:
     return paths.cache / "dsd"
 
@@ -27,12 +30,20 @@ def _stamp_path(paths: Paths) -> Path:
     return directory(paths) / "stamp.json"
 
 
+def has_flag(executable: Path) -> bool:
+    """Whether a dsd takes Kaleido's flag, as its help for `rom build` says."""
+    try:
+        return FLAG in run([str(executable), "rom", "build", "--help"])
+    except (CommandError, OSError):
+        return False
+
+
 def is_current(paths: Paths, config: EngineConfig) -> bool:
     try:
         stamp = json.loads(_stamp_path(paths).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
-    return binary(paths).exists() and stamp == expected_stamp(config)
+    return binary(paths).exists() and stamp == expected_stamp(config) and has_flag(binary(paths))
 
 
 def cargo() -> str | None:
@@ -56,6 +67,17 @@ def _checkout(checkout: Path, repo: Repo) -> None:
     run(["git", "checkout", "-q", "--force", "--detach", repo.commit], cwd=checkout)
 
 
+def apply_patch(root: Path, patch: Path, checkouts: list[str]) -> None:
+    """Applies a patch whose paths start with the checkouts' directory names, from root, and checks that it changed
+    each checkout. root may lie inside another repository (.cache/ is inside Kaleido's): git apply run there would take
+    the paths as that repository's and skip them, so the ceiling stops its search at root."""
+    run(["git", "apply", str(patch)], cwd=root,
+        env={**os.environ, "GIT_CEILING_DIRECTORIES": str(root.parent)})
+    for checkout in checkouts:
+        if not run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root / checkout).strip():
+            raise CommandError(f"{patch.name} changed nothing in {checkout}")
+
+
 def build(paths: Paths, config: EngineConfig) -> bool:
     """Builds Kaleido's dsd unless it is current. Returns False if it was."""
     if is_current(paths, config):
@@ -66,13 +88,13 @@ def build(paths: Paths, config: EngineConfig) -> bool:
     root = directory(paths)
     _checkout(root / "ds-rom", config.ds_rom)
     _checkout(root / "ds-decomp", config.ds_decomp)
-    # .cache/ lies inside Kaleido's checkout: the ceiling keeps git apply from treating it as part of that repository,
-    # so the patch's ds-rom/ and ds-decomp/ paths are taken from this directory
-    run(["git", "apply", str(config.dsd_patch)], cwd=root, env={**os.environ, "GIT_CEILING_DIRECTORIES": str(root)})
+    apply_patch(root, config.dsd_patch, ["ds-rom", "ds-decomp"])
     env = dict(os.environ)
     if not shutil.which("cc") and shutil.which("clang"):
         # Rust links with cc by default; upstream's build already needs clang
         env.update(CC="clang", RUSTFLAGS="-C linker=clang")
     stream([tool, "build", "--release", "--bin", "dsd"], cwd=root / "ds-decomp", env=env)
+    if not has_flag(binary(paths)):
+        raise CommandError(f"the built dsd doesn't take {FLAG}")
     _stamp_path(paths).write_text(json.dumps(expected_stamp(config), indent=2) + "\n", encoding="utf-8")
     return True

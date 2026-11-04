@@ -36,9 +36,16 @@ Phase 3.** Phase 0's prototypes and findings are in `docs/research/`. Read `docs
 
 ## Commands
 
-None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `validate`, `build`, `patch` and `baseline`
-(`docs/plan/03-architecture.md` §7); until then, `docs/building.md` is the manual procedure. Builds run in Linux or
-WSL2, never native Windows; upstream requires it.
+From the repository's root, in Linux or WSL2 (never native Windows; upstream requires it):
+
+| Command | What |
+| --- | --- |
+| `./kaleido bootstrap` | engine at the pin, the patch series on branch `kaleido`, the base ROM linked, Kaleido's dsd built |
+| `./kaleido doctor` | checks the machine, engine, dsd, ROMs and downloaded tools; exits 1 on a failure |
+| `python3 -m unittest discover -s framework -t framework` | the framework's tests |
+
+`extract`, `merge`, `validate`, `build`, `patch` and `baseline` follow in Phase 1 (`docs/plan/03-architecture.md`
+§7); until then, building is by hand (`docs/building.md`).
 
 ## Rules
 

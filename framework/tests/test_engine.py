@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from kaleido import engine
+from kaleido import doctor, engine
 from kaleido.config import Paths
 from kaleido.roms import BASE, ENGINE_BASEROM
 from tests.support import Fixture, git
@@ -74,6 +74,16 @@ class SeriesTest(unittest.TestCase):
             engine.apply_series(self.paths)
         self.assertTrue(engine.apply_series(self.paths, force=True))
         self.assertEqual(self.subjects(), ["add two", "add one"])
+
+    def test_doctor_fails_a_staged_engine_pointer(self) -> None:
+        self.fixture.make_patch("one", "1\n")
+        engine.apply_series(self.paths)
+        self.assertEqual(doctor.check_pointer(self.paths).status, doctor.OK)
+        # git add -A in the superproject would stage the engine's branch, a commit only this machine has
+        git("add", "engine/pokebw2", cwd=self.fixture.root)
+        check = doctor.check_pointer(self.paths)
+        self.assertEqual(check.status, doctor.FAIL)
+        self.assertIn("restore --staged", check.fix)
 
     def test_a_patch_that_does_not_apply_leaves_the_engine_usable(self) -> None:
         (self.paths.patches / "0001-broken.patch").write_text("From 0 Mon Sep 17 00:00:00 2001\nnot a patch\n")

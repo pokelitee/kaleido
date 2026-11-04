@@ -35,6 +35,12 @@ def pin(paths: Paths) -> str:
     return line[1]
 
 
+def committed_pin(paths: Paths) -> str:
+    """The commit that HEAD's tree records for the submodule. It differs from pin() only while a new pointer is
+    staged, which only an engine sync should do (docs/engine-sync.md)."""
+    return run(["git", "rev-parse", "HEAD:engine/pokebw2"], cwd=paths.root).strip()
+
+
 def series(paths: Paths) -> list[Path]:
     return sorted(paths.patches.glob("*.patch"))
 

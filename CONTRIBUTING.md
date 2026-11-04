@@ -55,5 +55,12 @@ By opening a pull request, you agree to license your contribution under these te
 
 ## Testing
 
-CI arrives in Phase 1 (`docs/plan/06-testing.md`). Until then, describe the checks you ran in the pull request. Checks
-that need playing the game are listed in `docs/status.md` under "Deferred to playtesting".
+Run the framework's tests before a pull request that touches `framework/`:
+
+```bash
+python3 -m unittest discover -s framework -t framework
+```
+
+Tests use `unittest` on synthetic fixtures (`docs/plan/06-testing.md`). CI arrives later in Phase 1; until then,
+describe the checks you ran in the pull request. Checks that need playing the game are listed in `docs/status.md`
+under "Deferred to playtesting".
