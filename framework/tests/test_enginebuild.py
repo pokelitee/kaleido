@@ -16,6 +16,10 @@ class OptionsTest(unittest.TestCase):
     def test_the_baseline_passes_nothing(self) -> None:
         self.assertEqual(Options().arguments(), [])
 
+    def test_a_title_passes_its_lines_joined_by_a_literal_backslash_n(self) -> None:
+        options = Options(banner_title=("Kaleido", "FireRed"))
+        self.assertEqual(options.arguments(), ["--banner-title", "Kaleido\\nFireRed"])
+
 
 class FakeNinja:
     """Each real run compiles the next count in `runs`; a dry run shows the count after it as still to compile."""

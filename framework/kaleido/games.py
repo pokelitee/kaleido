@@ -21,6 +21,9 @@ RESERVED_MAGICS = {
 }
 DEFINE_NAME = re.compile(r"KALEIDO_[A-Z0-9_]+")
 GAME_ID = re.compile(r"[a-z0-9_]+")
+# The ROM banner's title: three lines at most, 128 UTF-16 characters with the line breaks (configure.py --banner-title)
+TITLE_LINES = 3
+TITLE_CHARACTERS = 128
 
 
 @dataclass(frozen=True)
@@ -32,6 +35,8 @@ class Game:
     layers: tuple[str, ...] = ()
     # The source ROMs its recipes read, by the name of their file in orig/ without its extension
     sources: tuple[str, ...] = ()
+    # The title the DS menu shows, a line each; none keeps Black 2's
+    title: tuple[str, ...] = ()
 
 
 def directory(paths: Paths) -> Path:
@@ -65,7 +70,18 @@ def _load(path: Path) -> Game:
     for source in sources:
         if source not in known:
             raise ConfigError(f"{where}: source {source!r} isn't a ROM Kaleido knows ({', '.join(sorted(known))})")
-    return Game(game_id, name, dict(defines), tuple(layers), tuple(sources))
+    title = data.get("title", [])
+    if (
+        not isinstance(title, list)
+        or len(title) > TITLE_LINES
+        or not all(isinstance(line, str) and line and "\\" not in line and "\n" not in line for line in title)
+        or len("\n".join(title)) > TITLE_CHARACTERS
+    ):
+        raise ConfigError(
+            f"{where}: 'title' is the DS menu's title: a list of up to {TITLE_LINES} non-empty lines, "
+            f"{TITLE_CHARACTERS} characters in all, without backslashes"
+        )
+    return Game(game_id, name, dict(defines), tuple(layers), tuple(sources), tuple(title))
 
 
 def load_all(paths: Paths) -> list[Game]:

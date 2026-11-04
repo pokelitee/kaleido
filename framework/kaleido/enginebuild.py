@@ -30,6 +30,8 @@ class Options:
     defines: dict[str, str] = field(default_factory=dict)
     # Needed whenever ARM9 main changes, code or data (R-27); never for the baseline
     allow_stale_secure_area: bool = False
+    # The DS menu's title, a line each (engine patch 0005); none keeps Black 2's banner
+    banner_title: tuple[str, ...] = ()
 
     def arguments(self) -> list[str]:
         args = []
@@ -37,6 +39,9 @@ class Options:
             args += ["--define", f"{name}={value}" if value else name]
         if self.allow_stale_secure_area:
             args.append("--allow-stale-secure-area")
+        if self.banner_title:
+            # configure.py splits the title's lines at a literal \n
+            args += ["--banner-title", "\\n".join(self.banner_title)]
         return args
 
 

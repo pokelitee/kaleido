@@ -25,6 +25,16 @@ class GamesTest(unittest.TestCase):
         game = games.load(self.paths, "test_game")
         self.assertEqual((game.name, game.defines["KALEIDO_X"]), ("Test", ""))
 
+    def test_a_title_is_up_to_three_plain_lines(self) -> None:
+        magic = {"KALEIDO_SAVE_MAGIC": "0x54455354"}
+        self.add("titled", {"name": "Titled", "defines": magic, "title": ["Kaleido", "Test"]})
+        self.assertEqual(games.load(self.paths, "titled").title, ("Kaleido", "Test"))
+        for i, title in enumerate((["a", "b", "c", "d"], ["a\\nb"], [""], "Kaleido", ["x" * 129])):
+            paths = Paths(Path(self._temp.name) / f"bad{i}")
+            self.add("bad", {"name": "Bad", "defines": magic, "title": title}, paths)
+            with self.assertRaisesRegex(ConfigError, "DS menu's title"):
+                games.load_all(paths)
+
     def test_names_unknown_games(self) -> None:
         self.add("one", {"name": "One", "defines": {"KALEIDO_SAVE_MAGIC": "0x1"}})
         with self.assertRaisesRegex(ConfigError, r"no game 'two'.*games: one"):
