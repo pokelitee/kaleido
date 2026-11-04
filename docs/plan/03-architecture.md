@@ -229,9 +229,11 @@ points; the first switches arrive with the Phase 3 prototype.
 ### Save identity
 
 - Keep B2's header game code (`IREO`) and its 512 KB FLASH save. melonDS picks save type and ROM size by game code
-  (**Verified**, `hardware-and-rom.md`); TWiLight Menu++ and nds-bootstrap key per-game handling on it too. E9 checks
-  flashcarts.
-- Each game writes its own signature into the save, and refuses saves of other games and of B2.
+  (**Verified**, `hardware-and-rom.md`); TWiLight Menu++ and nds-bootstrap key per-game handling on it too. E7 checks
+  flashcarts on hardware.
+- Each game has its own save magic, `KALEIDO_SAVE_MAGIC` in its game config. It replaces the save footers' magic and the
+  outside data's, so another game's card, B2's included, reads as empty (E9, `docs/research/e9-save-identity.md`). The
+  validator keeps each game's value unique and away from B2's two magics, 0 and 0xffffffff.
 - Emulators and flashcarts already keep one save file per ROM file name.
 
 ## 9. Validation

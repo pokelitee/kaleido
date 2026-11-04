@@ -53,6 +53,11 @@ E5 (`docs/research/e5-species.md`): a species inserted after Genesect, as #650, 
 back from the ROM. That takes a matching-neutral patch (about 40 numbers derived from the species list, and a template
 splice in two packers). The Pokédex save fits 672 species. Its in-game check is deferred to the playtest pass.
 
+E9 (`docs/research/e9-save-identity.md`): `KALEIDO_SAVE_MAGIC` gives each game its own save magic, so another game's
+card, B2's included, reads as empty; the header and save type stay B2's. Verified in code and built ROMs; switch off
+still matches. Even this data-only ARM9 change needs the dsd flag (R-27). In-game check deferred; flashcarts wait for
+E7.
+
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
 exit Phase 3.5.

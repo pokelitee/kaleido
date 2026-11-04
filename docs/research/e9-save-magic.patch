@@ -1,0 +1,48 @@
+E9 prototype for fuddlesworth/pokebw2 at 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c: with KALEIDO_SAVE_MAGIC defined, it
+replaces the save footers' magic (SAVE_MAGIC, the main save and every extra save) and the outside data's
+(SAVE_OUTSIDE_MAGIC, Mystery Gift cards and keys), so a game reads another game's card, Black 2's included, as empty.
+Pass it with E3's --define, e.g. --define KALEIDO_SAVE_MAGIC=0x4b4c4431. With it undefined the build matches Black 2.
+Modifies GPL-3.0 code, so this patch is GPL-3.0. Recorded for Phase 1 (docs/research/e9-save-identity.md); no build
+applies it. It changes ARM9 main's data, so a ROM built with it on needs --allow-stale-secure-area or --arm7-bios.
+Check: git apply --check docs/research/e9-save-magic.patch (in a pokebw2 checkout at the commit above).
+
+diff --git a/src/ov331/save_outside.c b/src/ov331/save_outside.c
+index a550287e1..c191b3d30 100644
+--- a/src/ov331/save_outside.c
++++ b/src/ov331/save_outside.c
+@@ -17,7 +17,13 @@
+ #define SAVE_OUTSIDE_SIZE 0xb00
+ #define KEYS_SIZE 0x300
+ 
++// KALEIDO_SAVE_MAGIC too, so that a new game takes no gifts or keys from another game's card: a block with another
++// magic reads as never written
++#ifdef KALEIDO_SAVE_MAGIC
++#define SAVE_OUTSIDE_MAGIC KALEIDO_SAVE_MAGIC
++#else
+ #define SAVE_OUTSIDE_MAGIC 0xa10f49ae
++#endif
+ 
+ enum {
+     BLOCK_GIFTS,
+diff --git a/src/system/save_table.c b/src/system/save_table.c
+index f5edd7e90..15bcc9057 100644
+--- a/src/system/save_table.c
++++ b/src/system/save_table.c
+@@ -55,11 +55,16 @@
+ // name in the ROM; save_table.c is a guess. That it is a file apart from save_control.c shows in the order of its
+ // tables, which MWCC only gives when the file defines nothing else.
+ 
+-// Where the saves are on the card, and the magic number in their footers
++// Where the saves are on the card, and the magic number in their footers. KALEIDO_SAVE_MAGIC gives a game its own,
++// so that it finds no save on a card of another game: a footer with another magic reads as no save at all
+ #define SAVE_MAIN_ADDR 0
+ #define SAVE_BACKUP_ADDR 0x26000
+ #define SAVE_SIZE 0x26000
++#ifdef KALEIDO_SAVE_MAGIC
++#define SAVE_MAGIC KALEIDO_SAVE_MAGIC
++#else
+ #define SAVE_MAGIC 0x31053527
++#endif
+ 
+ typedef void (*SaveBlockInit)(void *block);
+ 
