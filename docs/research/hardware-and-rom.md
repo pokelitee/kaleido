@@ -144,6 +144,15 @@ All rows **Verified** unless marked.
   **Assumption**: pinning the version and passing `-a -A= -S none` with `-B` covering the 512 MB source gives
   deterministic, widely compatible patches. Phase 1 tests this, along with applying the patch in Delta Patcher (an
   xdelta 3.0 fork, GPL-2.0, v3.1.6) and Rom Patcher JS.
+- **Phase 1 (2026-11-04)**: Kaleido pins xdelta3 **3.0.11**, Ubuntu 26.04's package, which predates armor. **Verified**
+  on the owner's machine with FireRed's test ROM:
+  - by default 3.0.11 writes the file names into the application header (`game.nds//base.nds/`), so patches of the
+    same files under other names differ;
+  - with `-e -9 -S none -A -B <base size>`, two patches made from differently named copies in different directories
+    were byte-identical (420 KB), and applying either to the base ROM gave the built ROM;
+  - xdelta3 refuses a source window under 512 KiB.
+  Still **Unverified**: the same patch on another machine (Phase 1's exit criterion), and Delta Patcher and Rom Patcher
+  JS applying it.
 - **Verified** (Rom Patcher JS source): IPS is capped at 16 MB, so it is unsuitable. BPS/UPS at 512 MB: **Unverified**.
 
 ## Source ROM hashes for extraction
@@ -168,4 +177,5 @@ TASVideos where given.
 3. Real headroom in DS mode (4 MB) and within the DSi's 2.5 MB ARM9 limit (E6).
 4. Saves on flashcarts with IR-prefixed SPI and a modified header; whether guarding DS Protect out removes the
    anti-piracy effects (E7, E9).
-5. Determinism and compatibility of xdelta 3.2.2 patches, and that the output ROM stays ≤ 512 MB (Phase 1, E6).
+5. Determinism across machines and compatibility of Kaleido's xdelta3 3.0.11 patches (one machine verified in Phase 1),
+   and that the output ROM stays ≤ 512 MB (Phase 1, E6).

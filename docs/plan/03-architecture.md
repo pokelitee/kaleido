@@ -174,10 +174,10 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
   (R-28, E5), so until `fix_depfile.py` is fixed, `build` runs the engine's ninja again until nothing is left to
   compile.
 - **Deterministic**: pinned tool versions and hashes, sorted file walks, canonical JSON output, no timestamps or
-  environment data in outputs. xdelta 3.2.x writes file names and BLAKE3 "armor" into the patch header by default, so
-  patches are made with a pinned xdelta and `-a -A= -S none` plus a source window covering the 512 MB base ROM
-  (**Assumption**, tested in Phase 1; `hardware-and-rom.md`). Phase 1's exit criterion checks it: a clean clone on a
-  second machine builds the same ROM hash.
+  environment data in outputs. Patches are made with xdelta3 3.0.11 and `-e -9 -S none -A` plus a source window
+  covering the 512 MB base ROM: `-A` leaves out the header that would record file names (**Verified** on one machine,
+  `hardware-and-rom.md`). Phase 1's exit criterion checks the rest: a clean clone on a second machine builds the same
+  ROM and patch hashes.
 - **Working copy location**: build in WSL's own filesystem, not `/mnt/c`. **Assumption**: 9P file access makes a
   140k-file build much slower; measured in E0.
 - **Tool cache**: upstream's downloaded tools (wibo, sjiswrap, objdiff, mwccarm) are downloaded once, into

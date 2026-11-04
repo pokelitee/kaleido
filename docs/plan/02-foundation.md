@@ -13,7 +13,7 @@ and dates.
 | Rust (rustup, stable) | Builds Kaleido's patched dsd (ADR 0004) until upstream takes the change | MIT / Apache-2.0 | stable at Phase 1 (1.99.1 in Phase 0) | dsd is Rust; the patch adds `--allow-stale-secure-area`. |
 | Python 3.11+ | Kaleido's tooling (`framework/`) | PSF | 3.12 in CI, matching upstream (decision in Phase 1) | Upstream's tooling is Python; one language for both. |
 | ninja, LLVM (`clang`, `llvm-objcopy`) | Build graph, script assembly | ninja Apache-2.0; LLVM Apache-2.0 with LLVM exception | Ubuntu packages, versions recorded by `doctor` | Required by upstream. |
-| [xdelta3](https://github.com/jmacd/xdelta) | Patches for players | Apache-2.0 | release chosen in Phase 1 | The brief's distribution format. |
+| [xdelta3](https://github.com/jmacd/xdelta) | Patches for players | Apache-2.0 | 3.0.11, Ubuntu's package (`sudo apt install xdelta3`) | The brief's distribution format. 3.0.11 predates 3.2's armor; with `-A` its patches don't depend on file names (`hardware-and-rom.md`). |
 | clang-format 23.1.1 | Format engine C | Apache-2.0 with LLVM exception | 23.1.1 | Upstream pins it; our patches must pass upstream's style. |
 | Ruff | Format and lint Kaleido's Python | MIT | Phase 1 | One tool for both jobs. |
 | melonDS (primary), DeSmuME (secondary) | Manual and scripted testing | melonDS GPL-3.0; DeSmuME GPL-2.0 | latest stable at Phase 1 | Brief default; see `hardware-and-rom.md` for DSi-mode support and scripting. |

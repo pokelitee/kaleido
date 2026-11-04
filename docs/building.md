@@ -1,14 +1,14 @@
 # Building
 
-`./kaleido` sets up, checks and builds a checkout (`docs/plan/03-architecture.md` §7). `extract`, `merge`, `validate`
-and `patch` follow later in Phase 1. Every step here was run on the owner's machine (`docs/status.md`).
+`./kaleido` sets up, checks, builds and patches a checkout (`docs/plan/03-architecture.md` §7). Every step here was run
+on the owner's machine (`docs/status.md`).
 
 ## Requirements
 
 - **Linux or WSL2.** Upstream's build doesn't run on native Windows. Under WSL2, work in WSL's own filesystem
   (`~/…`), not on `/mnt/c`, which is far slower (R-23).
-- **Packages** (Ubuntu 26.04): `sudo apt install ninja-build clang llvm python3.14-venv`. Python 3.11 or later; 3.14.4
-  was used, upstream's CI uses 3.12.
+- **Packages** (Ubuntu 26.04): `sudo apt install ninja-build clang llvm python3.14-venv xdelta3`. Python 3.11 or later;
+  3.14.4 was used, upstream's CI uses 3.12. xdelta3 is only for `kaleido patch`.
 - **Rust**, through [rustup](https://rustup.rs) (minimal profile is enough), for `bootstrap` to build Kaleido's dsd.
   Only until upstream takes the change (ADR 0004).
 - **Your own Black 2 (USA, Europe) dump**, SHA1 `e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`.
@@ -75,11 +75,25 @@ checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstr
 4. **Build:** the game's defines and `--allow-stale-secure-area` go to `configure.py`, ninja builds the ROM target, and
    the ROM is copied to `build/<game>/kaleido-<game>.nds`. Logs go to `build/<game>/logs/`.
 
-`./kaleido extract <game>` and `./kaleido merge <game>` run the first steps alone, to look at their output.
+Between merge and build, `validate` checks the merged tree's cross-references and stops the build on a problem.
+
+`./kaleido extract <game>`, `merge <game>` and `validate <game>` run the first steps alone, to look at their output.
+
+## 4. A patch
+
+```bash
+./kaleido patch firered
+```
+
+`patch` makes `dist/kaleido-<game>.xdelta` from `orig/black2.nds` and the built ROM. It applies the patch to the base
+ROM and checks the result is the built ROM, then writes `dist/kaleido-<game>.sha1` with the base ROM's, the patch's and
+the result's SHA1s. It needs xdelta3 3.0.11 (`sudo apt install xdelta3`), whose patches don't depend on file names with
+the options Kaleido passes. The patch carries the game's extracted content (Q1): `dist/` is never committed, and where
+patches are published is decided before the first release (R-06).
 
 Both commands run `ninja` again while a dry run still has something to compile (R-28).
 
-## 4. Options behind the commands
+## 5. Options behind the commands
 
 With Kaleido's patch series applied, `configure.py` also takes:
 

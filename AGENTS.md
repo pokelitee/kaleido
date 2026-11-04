@@ -45,11 +45,12 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | `./kaleido baseline` | the patched engine, every define off, must rebuild Black 2 byte for byte |
 | `./kaleido extract <game>` | the game's layers' recipes, run on your source ROMs, into `build/<game>/extracted/` |
 | `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
-| `./kaleido build <game>` | extracts, merges and builds the ROM: `build/<game>/kaleido-<game>.nds` |
+| `./kaleido validate <game>` | extracts, merges, then checks the merged tree's cross-references |
+| `./kaleido build <game>` | extracts, merges, validates and builds the ROM: `build/<game>/kaleido-<game>.nds` |
+| `./kaleido patch <game>` | `dist/kaleido-<game>.xdelta` against your Black 2, checked by applying it (xdelta3 3.0.11) |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
 
-`validate` and `patch` follow in Phase 1 (`docs/plan/03-architecture.md` §7). Details: `docs/building.md`; layers
-and their rules: `content/README.md`.
+Details: `docs/building.md`; layers and their rules: `content/README.md`.
 
 ## Rules
 

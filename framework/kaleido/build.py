@@ -4,7 +4,7 @@ import shutil
 from functools import partial
 from pathlib import Path
 
-from kaleido import dsd, engine, enginebuild, games, merge
+from kaleido import dsd, engine, enginebuild, games, merge, validate
 from kaleido.config import Paths, load_engine_config
 from kaleido.process import CommandError
 
@@ -31,6 +31,10 @@ def main(paths: Paths, game_id: str) -> int:
     if not dsd.is_current(paths, load_engine_config(paths)):
         raise CommandError("Kaleido's dsd isn't built: run ./kaleido bootstrap")
     worktree = prepare(paths, game)
+    problems = validate.run(paths, game, worktree)
+    validate.report(paths, game, problems)
+    if problems:
+        return 1
     say(f"{game.id}: configure.py with {', '.join(sorted(game.defines)) or 'no defines'}")
     # A game's defines can change ARM9 main, so the stale secure-area values are allowed (R-27); DS mode ignores them
     enginebuild.configure(worktree, paths, enginebuild.Options(game.defines, allow_stale_secure_area=True))
