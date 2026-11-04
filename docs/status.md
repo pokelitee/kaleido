@@ -62,6 +62,12 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   species. Known gaps: Box Search and GTS letter tables, easy-chat word numbering, forms. The Kanto regional Pokédex's
   length is data. Found on the way: one ninja run can link stale objects after a generated header changes (R-28).
   Details: `docs/research/e5-species.md`.
+- **E9 done** (2026-11-03): `KALEIDO_SAVE_MAGIC` replaces the save footers' magic and the outside data's (Mystery Gift
+  cards, keys). The game reads another game's card, Black 2's included, as empty: New Game only, and no gifts or keys
+  taken. The ROM header, and so the save type, stay Black 2's. Verified in the code and in two built games, which
+  differ only in their magic words; switch off still matches. Found: even this data-only change to ARM9 main needs
+  `--allow-stale-secure-area`, because the ROM records ARM9's compressed size in the secure area (R-27 widened).
+  Details: `docs/research/e9-save-identity.md`.
 - The dsd change is offered upstream (2026-11-03): [fuddlesworth/ds-rom#1](https://github.com/fuddlesworth/ds-rom/pull/1)
   and [fuddlesworth/ds-decomp#2](https://github.com/fuddlesworth/ds-decomp/pull/2), both open; CI hasn't run on either.
 
@@ -81,9 +87,9 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3, E4a and E5 prototypes are on
-   branches `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a` and `phase0-e5`). E6b (runtime memory, save use) when
-   an emulator harness or a melonDS GDB session is available.
+1. E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3, E4a, E5 and E9 prototypes are on
+   branches `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`, `phase0-e5` and `phase0-e9`). E6b (runtime memory,
+   save use) when an emulator harness or a melonDS GDB session is available.
 2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
 3. E7 waits for hardware.
 4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
@@ -111,6 +117,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | E3 | Every damaging hit in that battle is "A critical hit!", with no crash, although 15 overlays moved | same |
 | E4a | Aspertia City's door (warp 6) leads into the new zone: one NPC whose line is "Kaleido E4a: you're in a new zone."; the exit leads back; DS mode with stale secure-area values boots | `~/kaleido-work/e4a/kaleido-e4a-test.nds` |
 | E5 | Kaleidomon (#650, Audino's art and cry, Steel/Psychic) appears in Route 19's grass at level 3; its battle sprite, cry, summary and icon show; it can be caught; the Pokédex lists it at #650 with its entry and finds it by search; it goes to the box and the party; it survives save and reload. Also check the egg, a Pokéstar Studios film and the musical still work, and whether Box Search by name misgroups species from K on (`e5-species.md` §8) | `~/kaleido-work/e5/kaleido-e5-test.nds` |
+| E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
 harness (R-16) could run these checks automatically.

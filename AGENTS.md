@@ -58,8 +58,9 @@ None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `valid
   names. Upstream's agent setup (`.claude/` in pokebw2) and its "push to main" workflow are **not** ours.
 - Never assume a mechanic exists in the engine. Prove it with an experiment and record it in `docs/research/`.
 - Respect DS limits: RAM, overlays, ROM and save sizes are measured (E6), not assumed.
-- Tier 1 zones reuse existing zone IDs; don't append zones (ADR 0004). A build that changes ARM9 main code needs
-  `--allow-stale-secure-area` (Kaleido's dsd) or `--arm7-bios`.
+- Tier 1 zones reuse existing zone IDs; don't append zones (ADR 0004). A build that changes anything in ARM9 main, code
+  or data, needs `--allow-stale-secure-area` (Kaleido's dsd) or `--arm7-bios` (R-27).
+- Each game has its own `KALEIDO_SAVE_MAGIC`; never reuse Black 2's or another game's (E9).
 - After changing a `generated/*.txt` list or anything else that regenerates a header, run `ninja` again until nothing is
   left to compile. One run can link objects built against the old constants and still finish the ROM (R-28).
 
