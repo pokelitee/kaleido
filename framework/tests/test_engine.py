@@ -1,5 +1,6 @@
 import os
 import unittest
+from unittest import mock
 
 from kaleido import doctor, engine
 from kaleido.config import Paths
@@ -87,7 +88,9 @@ class SeriesTest(unittest.TestCase):
 
     def test_a_patch_that_does_not_apply_leaves_the_engine_usable(self) -> None:
         (self.paths.patches / "0001-broken.patch").write_text("From 0 Mon Sep 17 00:00:00 2001\nnot a patch\n")
-        with self.assertRaises(engine.EngineError):
+        # As on a machine with no git identity (CI): the series must not need the builder's
+        no_identity = {"GIT_COMMITTER_NAME": "", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1"}
+        with mock.patch.dict(os.environ, no_identity), self.assertRaises(engine.EngineError):
             engine.apply_series(self.paths)
         git("status", cwd=self.engine)
         self.assertFalse(engine.state(self.paths).applied)

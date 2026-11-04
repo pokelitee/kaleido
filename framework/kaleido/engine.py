@@ -115,7 +115,7 @@ def apply_series(paths: Paths, force: bool = False) -> bool:
         try:
             run(["git", "am", "-q", "--committer-date-is-author-date", *map(str, patches)], cwd=paths.engine, env=env)
         except CommandError as error:
-            run(["git", "am", "--abort"], cwd=paths.engine)
+            run(["git", "am", "--abort"], cwd=paths.engine, env=env)
             raise EngineError(f"the series doesn't apply to {commit[:12]}: {error}") from error
     head = run(["git", "rev-parse", "HEAD"], cwd=paths.engine).strip()
     paths.cache.mkdir(exist_ok=True)
