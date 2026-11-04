@@ -7,8 +7,8 @@ Last updated: 2026-11-04
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
 (2026-11-04), and so are the engine submodule with its first four patches, `./kaleido doctor`, `bootstrap`, `check`,
-`baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch`, and CI with Dependabot. `firered` has its
-first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+`baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch`, CI with Dependabot, and the emulator
+harness spike with E6b. `firered` has its first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -142,7 +142,15 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - `dist/kaleido-firered.xdelta` (420 KB) rebuilds the built ROM from Black 2, including from a renamed copy;
    - a second patch is byte-identical (xdelta3 3.0.11 with `-A`).
    83 unit tests. This step is done.
-5. The emulator harness spike (R-16), and E6b with it.
+5. The emulator harness spike (R-16) and E6b (2026-11-04): py-desmume drove Black 2 headless from power-on to the
+   first battle and read RAM through pokebw2's symbols (`docs/research/harness-spike.md`). E6b, DS mode, all
+   **Verified** (`docs/research/e6-headroom.md` §5):
+   - the arena keeps **226,620 B** unused in every state, the budget for added code and static data; E6a's ≈ 213 KiB
+     wrongly counted heap 9, which lives below ARM9;
+   - heap 1 has **110,696 B** free in the field, the tightest state (title 317,592; battle 512,856; bag 1,169,528);
+   - the save has **92 B** free per copy.
+   R-05, R-13 and R-16 are updated. ADR 0005 accepted by the owner (2026-11-04): py-desmume for DS-mode checks, DSi
+   mode manual in melonDS. This step is done.
 6. CI on GitHub Actions and Dependabot (2026-11-04): `.github/workflows/ci.yml` and `.github/dependabot.yml`
    (`docs/building.md` §6). Built for it:
    - `./kaleido check` (ROM-content guard, layers and games, links);
@@ -158,6 +166,7 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    This step is done.
    Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
    (only after doing it by hand three times).
+7. Left for Phase 1's exit: a clean clone on a second machine must build the same ROM and patch SHA1s.
 
 Outside Phase 1:
 
@@ -168,7 +177,8 @@ Outside Phase 1:
 
 The prototypes are on branches of `~/kaleido-work/pokebw2`: `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`,
 `phase0-e5`, `phase0-e8` and `phase0-e9`. E10's regenerated tree is the worktree `~/kaleido-work/e10-res`. The
-FireRed dump is `~/kaleido-work/roms/firered.gba`.
+FireRed dump is `~/kaleido-work/roms/firered.gba`. The harness's virtual environment is `~/kaleido-work/harness-venv`
+(py-desmume 0.0.9), and E6b's savestates, screenshots and measurements are in `~/kaleido-work/e6b`.
 
 ## Blockers
 

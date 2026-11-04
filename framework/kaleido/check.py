@@ -17,7 +17,10 @@ from kaleido.config import ConfigError, Paths
 from kaleido.process import run
 
 FORBIDDEN_DIRECTORIES = ("orig/", "extract/", "build/", "dist/")
-FORBIDDEN_SUFFIXES = (".nds", ".srl", ".dsi", ".gba", ".gb", ".gbc", ".sav", ".dsv", ".xdelta")
+ROM_SUFFIXES = (".nds", ".srl", ".dsi", ".gba", ".gb", ".gbc")
+# Saves, and emulator savestates, which hold the game's RAM: DeSmuME's .dst and slots .ds0-.ds9, melonDS's .mln
+SAVE_SUFFIXES = (".sav", ".dsv", ".dst", ".mln", *(f".ds{slot}" for slot in range(10)))
+FORBIDDEN_SUFFIXES = (*ROM_SUFFIXES, *SAVE_SUFFIXES, ".xdelta")
 # A backstop for ROMs and dumps under other names; every file in the repository is far smaller. Raise it here, with
 # the reason, if content ever needs larger files
 MAX_BYTES = 1024 * 1024
@@ -87,7 +90,7 @@ def guard(root: Path, files: list[str]) -> list[str]:
         if path.startswith(FORBIDDEN_DIRECTORIES):
             problems.append(f"{path}: nothing under {path.split('/')[0]}/ is ever committed")
         if path.lower().endswith(FORBIDDEN_SUFFIXES):
-            problems.append(f"{path}: a ROM, save or patch file by its extension")
+            problems.append(f"{path}: a ROM, save, patch or savestate file by its extension")
         if not file.is_file():
             continue
         size = file.stat().st_size

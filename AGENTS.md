@@ -59,8 +59,8 @@ Details: `docs/building.md`; layers and their rules: `content/README.md`.
 ### Legal and provenance
 
 - **Never commit ROMs or anything extracted from them.** That covers `orig/`, `extract/`, `build/`, `dist/`, `*.nds`,
-  `*.gba`, `*.gb`, `*.gbc`, saves, and other-game text, tables or graphics, even in tests, fixtures, docs or commit
-  messages. Test fixtures are synthetic.
+  `*.gba`, `*.gb`, `*.gbc`, saves, emulator savestates and screenshots, and other-game text, tables or graphics, even
+  in tests, fixtures, docs or commit messages. Test fixtures are synthetic.
 - **CI never sees a ROM** or anything made from one: no workflow step, secret, cache or artifact may hold one
   (`docs/plan/06-testing.md`).
 - **Never copy code, data files or labels from unlicensed projects**: the pret decomps (pokered, pokefirered, …),

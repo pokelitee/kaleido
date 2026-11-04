@@ -8,6 +8,10 @@ orig/
 *.gbc
 *.sav
 *.dsv
+# Emulator savestates hold the game's RAM
+*.dst
+*.ds[0-9]
+*.mln
 
 # Build output, patches and tool caches
 build/
