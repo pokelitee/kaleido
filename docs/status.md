@@ -147,7 +147,13 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - `./kaleido check` (ROM-content guard, layers and games, links);
    - `./kaleido compile`, with engine patch `0004` (`compile_all.py --define`);
    - `validate --no-extract`.
-   The framework is now formatted with Ruff. Still to do: the `CI` check in the "Protect main" ruleset.
+   The framework is now formatted with Ruff. CI's first run found a real bug: a failed series' `git am --abort` needed
+   the builder's git identity (fixed, with a test). Verified on the WSL clone:
+   - `compile`: 1792 of 1792 files for each define set;
+   - `validate firered --no-extract`: no problems;
+   - `baseline` still matches Black 2;
+   - `build firered` gives the same SHA1 as before (`f64d9a56…`).
+   On GitHub, the Engine job takes about 4 minutes. Still to do: the `CI` check in the "Protect main" ruleset.
    Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
    (only after doing it by hand three times).
 
