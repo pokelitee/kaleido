@@ -1,0 +1,124 @@
+name: CI
+
+# Every check that needs no ROM (docs/plan/06-testing.md, layer 1). CI never sees a ROM or anything made from one, so
+# no step downloads a ROM, caches one or uploads an artifact; the only cache holds the Metrowerks tools that pokebw2's
+# configure.py downloads. The job named CI is the check that the "Protect main" ruleset requires: it passes only when
+# every other job does.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  framework:
+    name: Framework
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          # The oldest Python that Kaleido supports (pyproject.toml)
+          python-version: "3.11"
+
+      - name: Install Ruff and xdelta3
+        run: |
+          python -m pip install -r framework/requirements-ci.txt
+          sudo apt-get update
+          sudo apt-get install -y xdelta3
+          xdelta3 -V
+
+      - name: Ruff format
+        run: ruff format --check framework
+
+      - name: Ruff lint
+        run: ruff check framework --output-format github
+
+      - name: Unit tests
+        run: python -m unittest discover -s framework -t framework
+
+      - name: ROM-content guard, layers and links
+        run: ./kaleido check
+
+  engine:
+    name: Engine
+    runs-on: ubuntu-26.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          # The Python that pokebw2's own CI uses
+          python-version: "3.12"
+
+      - name: Install clang-format
+        run: python -m pip install -r framework/requirements-ci.txt
+
+      - name: Engine at the pin with Kaleido's series
+        run: ./kaleido bootstrap --skip-dsd
+
+      - name: Cache pokebw2's tools
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            engine/pokebw2/tools/wibo
+            engine/pokebw2/tools/sjiswrap.exe
+            engine/pokebw2/tools/objdiff-cli
+            engine/pokebw2/tools/mwccarm
+          # engine.toml records the tools' hashes, which change only when the pin does
+          key: pokebw2-tools-${{ hashFiles('engine/engine.toml') }}
+
+      - name: Format of the C files the series changes
+        working-directory: engine/pokebw2
+        run: |
+          pin=$(git -C ../.. rev-parse HEAD:engine/pokebw2)
+          files=$(git diff --name-only --diff-filter=ACMR "$pin" HEAD -- '*.c' '*.h')
+          if [ -z "$files" ]; then echo "The series changes no C files"; exit 0; fi
+          clang-format --version
+          if ! clang-format --dry-run --Werror $files; then
+            echo "::error::Format these files with clang-format 23.1.1 in the engine, then export the series again."
+            exit 1
+          fi
+
+      - name: Compile for every define set
+        run: ./kaleido compile
+
+      - name: Cross-references of the committed layers
+        run: |
+          for config in content/games/*/game.json; do
+            ./kaleido validate "$(basename "$(dirname "$config")")" --no-extract
+          done
+
+  ci:
+    name: CI
+    if: always()
+    needs: [framework, engine]
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    steps:
+      - name: Every job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          for result in $RESULTS; do
+            if [ "$result" != success ]; then exit 1; fi
+          done
