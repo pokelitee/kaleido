@@ -13,8 +13,8 @@ rules for people and agents alike; this file covers how to work, and repeats the
 ## Rules you must not break
 
 - **Never commit ROMs or anything extracted from them**: `orig/`, `extract/`, `build/`, `dist/`, `*.nds`, `*.gba`,
-  `*.gb`, `*.gbc`, saves, and other games' text, tables or graphics. That includes tests, fixtures, docs and commit
-  messages. Fixtures are synthetic.
+  `*.gb`, `*.gbc`, saves, emulator savestates and screenshots, and other games' text, tables or graphics. That includes
+  tests, fixtures, docs and commit messages. Fixtures are synthetic.
 - **Never copy code, data files or labels from unlicensed projects**: the pret decomps, White2Upgrade, CTRMapV,
   SwissArmyKnife, FrostsGen5Editor. Read them for behavior and formats, then write your own.
 - Every committed content file has exactly one provenance category (`docs/plan/03-architecture.md` §6). Third-party

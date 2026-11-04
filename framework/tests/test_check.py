@@ -86,6 +86,7 @@ class GuardTest(unittest.TestCase):
             "content/games/g/extract/recipe.json": b"{}",
             "game.GBA": b"x",
             "black2.sav": b"x",
+            "e6b/title.dst": b"x",
             "fixtures/header.bin": nds_header(),
             "art/big.png": bytes(check.MAX_BYTES + 1),
             "docs/fine.md": b"# Fine\n",
@@ -94,7 +95,14 @@ class GuardTest(unittest.TestCase):
             self.put(path, data)
         problems = check.guard(self.root, sorted(files))
         flagged = sorted({problem.split(":")[0] for problem in problems})
-        expected = ["art/big.png", "black2.sav", "extract/b2/arm9.bin", "fixtures/header.bin", "game.GBA"]
+        expected = [
+            "art/big.png",
+            "black2.sav",
+            "e6b/title.dst",
+            "extract/b2/arm9.bin",
+            "fixtures/header.bin",
+            "game.GBA",
+        ]
         self.assertEqual(flagged, sorted([*expected, "orig/notes.txt"]))
 
 
