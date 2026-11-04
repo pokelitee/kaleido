@@ -13,6 +13,9 @@ Steps, separated by commas or lines (# starts a comment):
     save NAME       savestate to DIR/NAME.dst
     load NAME       restore DIR/NAME.dst, to branch off a saved point
     measure NAME    measurements to DIR/NAME.json, and printed
+    cgear-on        set the C-Gear's on byte in the save, as script command 0x197 does
+    export-save N   the save chip to DIR/N.sav
+    import-save N   DIR/N.sav into the save chip, then reset the console
     pos             the player's tile, from an address found in Aspertia City (see e6b's write-up)
     dump NAME A B   RAM from A to B to DIR/NAME.bin, for finding addresses
 
@@ -36,6 +39,8 @@ HEAP_INDEX_NONE = 0xFF
 EXP_HEAP_SIGNATURE = 0x45585048  # 'EXPH'
 FREE_BLOCK_SIGNATURE = 0x4652  # 'FR'
 MAX_FREE_BLOCKS = 100_000
+CGEAR_BLOCK = 0x20  # SAVE_BLOCK_CGEAR
+CGEAR_SETTINGS = 5 * 8  # CGearSave.settings, after five 8-byte PMSData phrases
 
 KEYS = {
     name: keymask(getattr(Keys, f"KEY_{name}"))
@@ -109,19 +114,44 @@ class Harness:
             )
         return result
 
-    def save_table(self) -> dict | None:
+    def _save(self) -> tuple[int, int]:
+        """SaveData and its SaveDataTable, or zeros before the save is loaded."""
+        control = self.u32(SAVE_CONTROL_WORK)
+        save = self.u32(control + 0x10) if control else 0  # SaveControl.sv
+        table = self.u32(save + 0x2C) if save else 0  # SaveData.table
+        return save, table
+
+    def save_block(self, block: int) -> int:
+        """Where a save block lives in RAM: SaveData.data plus the block's offset (SaveDataTable.blocks, 12 bytes
+        each: id, size, offset; src/gfl/savedata.c)."""
+        save, table = self._save()
+        if not table:
+            return 0
+        return self.u32(save + 0x34) + self.u32(self.u32(table + 0x14) + block * 12 + 8)
+
+    def save_control(self) -> dict | None:
+        """SaveControl's first bytes: newGame (no save was loaded) and dataExists (the card holds this game's save)."""
         control = self.u32(SAVE_CONTROL_WORK)
         if not control:
             return None
-        save = self.u32(control + 0x10)  # SaveControl.sv
-        table = self.u32(save + 0x2C) if save else 0  # SaveData.table
+        return {"new_game": self.u8(control), "data_exists": self.u8(control + 1)}
+
+    def set_cgear_on(self) -> None:
+        """What script command 0x197 does to the save before the C-Gear shows: CGearSettings.on = 1."""
+        self.emu.memory.write_byte(self.save_block(CGEAR_BLOCK) + CGEAR_SETTINGS + 7, 1)
+
+    def save_table(self) -> dict | None:
+        save, table = self._save()
         if not table:
             return None
+        cgear = self.save_block(CGEAR_BLOCK) + CGEAR_SETTINGS
         return {
             "total_size": self.u32(table + 0x0C),  # SaveDataTable.total_size
             "savearea_size": self.u32(table + 0x10),
             "blocks": self.u32(table + 0x04),
             "save_size": self.u32(save + 0x30),  # SaveData.saveSize
+            # CGearSettings.wasOn and .on (include/save/c_gear_savedata.h)
+            "cgear": {"was_on": self.u8(cgear + 6), "on": self.u8(cgear + 7)},
         }
 
     def measure(self) -> dict:
@@ -131,6 +161,7 @@ class Harness:
             "main_arena": {"lo": lo, "hi": hi, "free": hi - lo},
             "heaps": self.heaps(),
             "save": self.save_table(),
+            "save_control": self.save_control(),
         }
 
 
@@ -155,6 +186,15 @@ def run_steps(harness: Harness, steps: list[str], out: Path) -> None:
             harness.emu.screenshot().save(out / f"{words[1]}.png")
         elif words[0] == "save":
             harness.emu.savestate.save_file(str(out / f"{words[1]}.dst"))
+        elif words[0] == "cgear-on":
+            harness.set_cgear_on()
+        elif words[0] == "export-save":
+            if not harness.emu.backup.export_file(str(out / f"{words[1]}.sav")):
+                raise RuntimeError(f"couldn't export the save to {words[1]}.sav")
+        elif words[0] == "import-save":
+            if not harness.emu.backup.import_file(str(out / f"{words[1]}.sav")):
+                raise RuntimeError(f"couldn't import {words[1]}.sav")
+            harness.emu.reset()
         elif words[0] == "pos":
             # Found by RAM search in Aspertia City after one step left and one up; valid while that field heap lives
             print(f"pos: x {harness.u16(0x0223E43A)} z {harness.u16(0x0223E43C)}", flush=True)
@@ -183,6 +223,10 @@ def summary(data: dict) -> str:
             parts.append(f"heap {heap['id']} {heap['free']}/{heap['size']} free (largest {heap['largest_free_block']})")
     if data["save"]:
         parts.append(f"save total {data['save']['total_size']} of {data['save']['savearea_size']}")
+        parts.append(f"C-Gear on {data['save']['cgear']['on']}")
+    if data["save_control"]:
+        control = data["save_control"]
+        parts.append(f"new game {control['new_game']}, data exists {control['data_exists']}")
     return "; ".join(parts)
 
 

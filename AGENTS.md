@@ -9,10 +9,10 @@ holds the rules sessions get wrong and points into `docs/`.
 
 ## Current phase
 
-**Phase 1** (framework skeleton) since 2026-11-04, when the owner closed Phase 0 and moved E6b into Phase 1's emulator
-harness spike. Phase 1 builds the repo layout, the engine submodule and its first patches, the `kaleido` commands,
-layer merge, CI and Dependabot (`docs/plan/05-roadmap.md`). **No region content beyond Phase 1's tiny test layer until
-Phase 3.** Phase 0's prototypes and findings are in `docs/research/`. Read `docs/status.md` first.
+**Phase 2** (two builds) since 2026-11-04: FireRed and a Red stub, which differ by family, title, save identity and a
+B2W2-system switch (`docs/plan/05-roadmap.md`). Phase 1's framework is built; its last exit check (a second machine)
+is the owner's. **No region content beyond the tiny test layers until Phase 3.** Phase 0's prototypes and findings are
+in `docs/research/`. Read `docs/status.md` first.
 
 ## Where things are
 

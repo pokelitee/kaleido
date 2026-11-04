@@ -4,6 +4,7 @@
     "layers": ["regions/kanto", "families/rby", "games/red"],
     "sources": [],
     "defines": {
-        "KALEIDO_SAVE_MAGIC": "0x4b524431"
+        "KALEIDO_SAVE_MAGIC": "0x4b524431",
+        "KALEIDO_NO_CGEAR": ""
     }
 }

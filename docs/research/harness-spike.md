@@ -37,6 +37,16 @@ stays excluded: unclear licensing, Mono, no headless flag (`hardware-and-rom.md`
 Everything it writes comes from the ROM, so `--out` is a directory outside the repository (`~/kaleido-work/e6b`).
 The ROM-content guard rejects savestate files.
 
+Phase 2 added steps for its own checks (2026-11-04):
+- `cgear-on` sets the C-Gear's save byte, as script command `0x197` does. On Black 2 the bottom screen then became
+  the C-Gear.
+- `export-save` writes the save chip to a file. On Black 2, a save from the X menu made `SaveControl.dataExists` 1,
+  and the export worked.
+- `import-save` loads a save file and resets. It hasn't been run yet.
+
+Measurements now include the C-Gear's byte and `SaveControl`'s new-game and data-exists bytes. Running these checks
+on FireRed and Red was set aside by the owner for now (`status.md`).
+
 A measurement reads, all at pokebw2 `41f42ca`'s addresses for Black 2:
 
 | What | Where | Source |

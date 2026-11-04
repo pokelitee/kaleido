@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] c_gear: add KALEIDO_NO_CGEAR for games without the C-Gear
+
+With KALEIDO_NO_CGEAR defined, the game has no C-Gear. CGearSettings_IsOn,
+which the field's bottom screen, the start menu, wireless communication and the
+trainer card ask, always says no, so the bottom screen stays the one shown
+before the C-Gear arrives. The script command that hands the C-Gear over
+(0x197) reads its operand and lets the script go on without turning it on or
+showing it.
+
+This is the first of the B2W2-system switches, one per system, that each game
+picks.
+---
+ src/ov036/scrcmd_proc_fld.c  | 5 +++++
+ src/system/c_gear_savedata.c | 6 ++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/src/ov036/scrcmd_proc_fld.c b/src/ov036/scrcmd_proc_fld.c
+index 90c993416..e762f99c3 100644
+--- a/src/ov036/scrcmd_proc_fld.c
++++ b/src/ov036/scrcmd_proc_fld.c
+@@ -155,9 +155,14 @@ BOOL Scrcmd_ProcFld_CGearPowerOn(VM *vm, FieldScriptEnv *env) {
+     ScriptWork *work = FieldScriptEnv_GetScriptWork(env);
+     GameSystem *gsys = FieldScriptEnv_GetGameSystem(env);
+ 
++#ifdef KALEIDO_NO_CGEAR
++    // A game without the C-Gear reads the command's operand and goes on, with no C-Gear to show
++    return FALSE;
++#else
+     CGearSettings_SetOn(cgear, 1);
+     ScriptWork_CallEvent(work, EventCGearPowerOn_Create(gsys, bootComm));
+     return TRUE;
++#endif
+ }
+ 
+ BOOL Scrcmd_ProcFld_CallGeonet(VM *vm, FieldScriptEnv *env) {
+diff --git a/src/system/c_gear_savedata.c b/src/system/c_gear_savedata.c
+index a7453100a..fcdcc8ad2 100644
+--- a/src/system/c_gear_savedata.c
++++ b/src/system/c_gear_savedata.c
+@@ -42,8 +42,14 @@ void CGearSettings_SetOn(CGearSettings *settings, u8 on) {
+     settings->on = on;
+ }
+ 
++// Whether the player has the C-Gear: the field's bottom screen, the start menu, wireless and the trainer card ask.
++// A game built with KALEIDO_NO_CGEAR has none
+ u8 CGearSettings_IsOn(CGearSettings *settings) {
++#ifdef KALEIDO_NO_CGEAR
++    return FALSE;
++#else
+     return settings->on;
++#endif
+ }
+ 
+ void CGearSettings_SetSkin(CGearSettings *settings, u8 value) {
