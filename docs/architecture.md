@@ -5,7 +5,14 @@ decided and what is built.
 
 ## Built
 
-Nothing yet: the repository holds documentation only. Phase 1 (`docs/plan/05-roadmap.md`) builds the skeleton.
+Phase 1 (`docs/plan/05-roadmap.md`) is building the skeleton. So far:
+
+| Part | State |
+| --- | --- |
+| Repository layout (`03-architecture.md` §3) | `engine/`, `framework/` and `content/` exist with READMEs; their contents come next |
+| Licenses | `LICENSE` (GNU GPL v3.0, the same text as pokebw2's) and `LICENSE-CONTENT` (CC BY-SA 4.0) |
+| Contributor and build docs | `CONTRIBUTING.md`, `docs/building.md` (the manual procedure until `kaleido` exists), `docs/engine-sync.md` |
+| Engine | not yet: the submodule and patches come from Phase 0's prototypes in `docs/research/` |
 
 ## Decided
 

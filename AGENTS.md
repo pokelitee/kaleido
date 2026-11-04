@@ -19,6 +19,9 @@ Phase 3.** Phase 0's prototypes and findings are in `docs/research/`. Read `docs
 | Need | Read |
 | --- | --- |
 | What is happening now, next steps, blockers | `docs/status.md` |
+| Workflow and licensing for contributors | `CONTRIBUTING.md` |
+| Building by hand (until `kaleido` exists) | `docs/building.md` |
+| Moving the engine pin | `docs/engine-sync.md` |
 | Feasibility, Exact/Approximate/Infeasible tables | `docs/plan/01-feasibility.md` |
 | Tools used and excluded, with licenses | `docs/plan/02-foundation.md` |
 | Repo layout, layering, provenance, build pipeline | `docs/plan/03-architecture.md` |
@@ -34,7 +37,8 @@ Phase 3.** Phase 0's prototypes and findings are in `docs/research/`. Read `docs
 ## Commands
 
 None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `validate`, `build`, `patch` and `baseline`
-(`docs/plan/03-architecture.md` §7). Builds will run in Linux or WSL2, never native Windows; upstream requires it.
+(`docs/plan/03-architecture.md` §7); until then, `docs/building.md` is the manual procedure. Builds run in Linux or
+WSL2, never native Windows; upstream requires it.
 
 ## Rules
 
@@ -75,7 +79,7 @@ None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `valid
 
 - At the end of every session, commit the work and update `docs/status.md`. Leave no uncommitted state on a machine.
 - An accepted ADR is never edited; supersede it with a new one (ADR 0001).
-- When a rule changes, update `AGENTS.md`, `CONTRIBUTING.md` (Phase 1) and the affected docs in the same commit.
+- When a rule changes, update `AGENTS.md`, `CONTRIBUTING.md` and the affected docs in the same commit.
 - Small commits in Conventional Commits form (`docs: …`, `feat(framework): …`). Work on feature branches; never commit
   to `main` directly.
 - Files use LF line endings (`.gitattributes`).

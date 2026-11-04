@@ -56,7 +56,8 @@ kaleido/
 └── (ignored) orig/  build/  extract/  dist/  .cache/  .venv/
 ```
 
-Phase 1 creates this skeleton. Only `docs/` and the repo records exist after the planning pass.
+Phase 1 creates this skeleton. The top-level directories, licenses and contributor docs exist since 2026-11-04;
+`docs/architecture.md` tracks the rest.
 
 ## 4. Engine integration
 
