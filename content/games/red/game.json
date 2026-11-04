@@ -3,6 +3,7 @@
     "title": ["Kaleido", "Red"],
     "layers": ["regions/kanto", "families/rby", "games/red"],
     "sources": [],
+    "start": "players_house_2f",
     "defines": {
         "KALEIDO_SAVE_MAGIC": "0x4b524431",
         "KALEIDO_NO_CGEAR": ""

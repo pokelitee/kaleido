@@ -1,6 +1,14 @@
 {
-    "notes": "Which existing zone holds each Kanto location (ADR 0004). Phase 1's test mapping: Route 1 takes Route 19, Aspertia's first route, which has grass. Phase 3 sets the real mapping.",
+    "notes": "Which existing zone holds each Kanto location (ADR 0004). Phase 3's stand-ins (docs/plan/08-phase3.md, D1): Pallet Town on Aspertia City, Route 1 on Route 19 and Viridian City on Floccesy Town, which Unova's maps already join; the player's house is a two-floor Aspertia house. Aspertia's gate to Route 19 (ZONE_ASPERTIA_GATE) is the stand-ins' way between, not a Kanto location. New maps replace stand-ins one at a time.",
     "locations": {
-        "route_1": "ZONE_ROUTE_19"
+        "pallet_town": "ZONE_ASPERTIA_CITY",
+        "players_house_1f": "ZONE_ASPERTIA_CITY_3",
+        "players_house_2f": "ZONE_ASPERTIA_CITY_4",
+        "rivals_house": "ZONE_ASPERTIA_CITY_5",
+        "oaks_lab": "ZONE_ASPERTIA_CITY_9",
+        "route_1": "ZONE_ROUTE_19",
+        "viridian_city": "ZONE_FLOCCESY_TOWN",
+        "viridian_pokemon_center": "ZONE_FLOCCESY_TOWN_POKEMON_CENTER",
+        "viridian_mart": "ZONE_FLOCCESY_TOWN_3"
     }
 }

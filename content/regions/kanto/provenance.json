@@ -1,0 +1,11 @@
+{
+    "entries": [
+        {
+            "paths": [
+                "res/field/events/*.json.merge.json",
+                "res/field/scripts/init_*.s"
+            ],
+            "category": "original"
+        }
+    ]
+}

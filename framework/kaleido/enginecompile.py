@@ -14,17 +14,17 @@ VERSION = "b2_us"
 say = partial(print, flush=True)
 
 
-def define_sets(game_list: list[games.Game]) -> list[tuple[list[str], dict[str, str]]]:
+def define_sets(game_defines: list[tuple[str, dict[str, str]]]) -> list[tuple[list[str], dict[str, str]]]:
     """Each distinct set of defines with the names that build with it: the baseline's (none) first, then each game's
-    in turn, so games that share a set compile once."""
+    (its ID and build defines) in turn, so games that share a set compile once."""
     sets: list[tuple[list[str], dict[str, str]]] = [(["baseline"], {})]
-    for game in game_list:
+    for game_id, wanted in game_defines:
         for names, defines in sets:
-            if defines == game.defines:
-                names.append(game.id)
+            if defines == wanted:
+                names.append(game_id)
                 break
         else:
-            sets.append(([game.id], dict(game.defines)))
+            sets.append(([game_id], dict(wanted)))
     return sets
 
 
@@ -33,7 +33,8 @@ def main(paths: Paths) -> int:
     if not state.applied or state.dirty:
         raise CommandError("engine/pokebw2 isn't the pin with the current series: run ./kaleido bootstrap")
     failed = []
-    for names, defines in define_sets(games.load_all(paths)):
+    game_defines = [(game.id, games.build_defines(paths, game)) for game in games.load_all(paths)]
+    for names, defines in define_sets(game_defines):
         label = ", ".join(names)
         arguments = enginebuild.Options(defines).arguments()
         say(f"compile: {label}: compile_all.py --version {VERSION} {' '.join(arguments) or '(every define off)'}")

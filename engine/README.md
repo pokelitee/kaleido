@@ -20,6 +20,7 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 | `0004` | `compile_all.py --define NAME[=VALUE]`, so CI compiles each game's defines without a ROM | Phase 1 CI |
 | `0005` | `configure.py --banner-title TEXT`: the DS menu's title, in every language | Phase 2 |
 | `0006` | `KALEIDO_NO_CGEAR`: a game without the C-Gear, the first B2W2-system switch (`docs/research/b2w2-systems.md`) | Phase 2 |
+| `0007` | `KALEIDO_NEW_GAME_ZONE`: where a new game starts (a zone's Fly position), without Black 2's flight over Unova and opening scene | Phase 3 |
 
 - Every behavior change sits behind a `KALEIDO_*` define. With all defines off, the patched engine must still rebuild
   Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).

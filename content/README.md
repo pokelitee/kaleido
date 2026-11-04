@@ -25,7 +25,9 @@ replaces them with its own.
 
 `games/<game>/game.json` names the game, its layers (lowest first), the source ROMs its recipes read, and the
 `KALEIDO_*` defines it builds with, all strings (`""` for a define without a value). Its `title`, a list of up to three
-lines, is what the DS menu shows; without one the ROM keeps Black 2's. `./kaleido build <game>` reads it.
+lines, is what the DS menu shows; without one the ROM keeps Black 2's. Its `start` names the location a new game starts
+in, as the region's `zones.json` does; `build` turns it into `KALEIDO_NEW_GAME_ZONE` (patch `0007`), and a game names
+one or the other. `./kaleido build <game>` reads it.
 
 - Every game has its own `KALEIDO_SAVE_MAGIC` (E9). It is never Black 2's two magics, 0 or 0xffffffff, nor another
   game's, and it never changes once a release is out: a game with a new magic finds no saves.
@@ -35,7 +37,7 @@ lines, is what the DS menu shows; without one the ROM keeps Black 2's. `./kaleid
 
 | Layer | What |
 | --- | --- |
-| `regions/kanto` | `route_1` lives in `ZONE_ROUTE_19`, Aspertia's first route, for now. FireRed and Red share it |
+| `regions/kanto` | Phase 3's stand-ins (`docs/plan/08-phase3.md`, D1): nine Kanto locations on Unova zones in `zones.json`. Pallet Town is on Aspertia City, Route 1 on Route 19 and Viridian City on Floccesy Town, which Unova's maps already join. Each stand-in, and Aspertia's gate to Route 19, loses Black 2's NPCs, triggers, signs and map scripts and keeps its warps. FireRed and Red share it |
 | `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
 | `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |

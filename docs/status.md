@@ -224,7 +224,24 @@ steps. The owner took every recommendation on 2026-11-04:
   the C-Gear;
 - D6: FireRed's encounter rates map to Gen 5's nearest setting by one recorded rule.
 
-Step 1, a walkable Kanto skeleton, hasn't started.
+Step 1, a walkable Kanto skeleton (2026-11-04):
+- The Kanto region maps the nine locations to Unova stand-ins: Pallet Town on Aspertia City, Route 1 on Route 19 and
+  Viridian City on Floccesy Town, which Unova's maps already join, plus six interiors.
+- Every stand-in, and Aspertia's gate to Route 19, loses Black 2's NPCs, triggers, signs and map scripts and keeps its
+  warps.
+- Engine patch `0007` (`KALEIDO_NEW_GAME_ZONE`) starts a new game upstairs in the player's house, without Black 2's
+  flight over Unova or its opening scene. `game.json`'s `start` names the location.
+- Doors that lead to Unova zones outside the nine stay as they are, with Black 2's own contents; new maps replace the
+  stand-ins later.
+
+**Verified** on the WSL clone:
+- `baseline` still matches Black 2;
+- `validate firered` is clean, the ten merged events files included;
+- every stand-in reads back with no NPCs, triggers, signs or map scripts, and its warps intact;
+- both games build with `KALEIDO_NEW_GAME_ZONE=ZONE_ASPERTIA_CITY_4` (FireRed `a072ae76…`, Red `1f5346d2…`), and
+  their patches apply back to them. The patches are now about 5.7 MB each, since `0007` changes ARM9 main too.
+
+Not seen in game yet: the playtest list has it, since harness testing is set aside.
 
 Outside Phases 1 and 2:
 
@@ -261,8 +278,9 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | E4a | Aspertia City's door (warp 6) leads into the new zone: one NPC whose line is "Kaleido E4a: you're in a new zone."; the exit leads back; DS mode with stale secure-area values boots | `~/kaleido-work/e4a/kaleido-e4a-test.nds` |
 | E5 | Kaleidomon (#650, Audino's art and cry, Steel/Psychic) appears in Route 19's grass at level 3; its battle sprite, cry, summary and icon show; it can be caught; the Pokédex lists it at #650 with its entry and finds it by search; it goes to the box and the party; it survives save and reload. Also check the egg, a Pokéstar Studios film and the musical still work, and whether Box Search by name misgroups species from K on (`e5-species.md` §8) | `~/kaleido-work/e5/kaleido-e5-test.nds` |
 | E8 | Route 19's grass gives FireRed Route 1's wild Pokémon at their levels, with no shaking grass, surfing or fishing encounters | `~/kaleido-work/e8/kaleido-e8-test.nds` |
-| Phase 1 | `./kaleido build firered`: the intro's first line is "Kaleido FireRed / This is Phase 1's test layer." (seen in DeSmuME by the harness, 2026-11-04); Route 19's grass gives FireRed Route 1's wild Pokémon | `build/firered/kaleido-firered.nds` (rebuild it) |
-| Phase 2 | Both ROMs boot in melonDS in DS mode, and the DS menu lists them as "Kaleido / FireRed" and "Kaleido / Red". Red's intro shows its line, then the RBY family's ("This line comes from the RBY family's layer…"). After the first rival battle in Aspertia, FireRed's bottom screen becomes the C-Gear and Red's never does. Each game, given the other's save, offers only New Game | `build/firered/kaleido-firered.nds`, `build/red/kaleido-red.nds` (rebuild them) |
+| Phase 1 | `./kaleido build firered`: the intro's first line is "Kaleido FireRed / This is Phase 1's test layer." (seen in DeSmuME by the harness, 2026-11-04); Route 19's grass gives FireRed Route 1's wild Pokémon (from Phase 3's step 3 on, once the story gives a Pokémon; before then, at `6342c0e`) | `build/firered/kaleido-firered.nds` (rebuild it) |
+| Phase 2 | Both ROMs boot in melonDS in DS mode, and the DS menu lists them as "Kaleido / FireRed" and "Kaleido / Red". Red's intro shows its line, then the RBY family's ("This line comes from the RBY family's layer…"). After the first rival battle in Aspertia, FireRed's bottom screen becomes the C-Gear and Red's never does. Each game, given the other's save, offers only New Game | Both games built at `6342c0e`, Phase 2's last commit: Phase 3's skeleton takes Aspertia's story (the rival battle, the C-Gear) out of later builds |
+| Phase 3, step 1 | A new game goes from the intro straight to the player's room upstairs, with no flight over Unova and no opening scene, standing on open floor. The stairs lead down. The front door leads out into "Pallet Town" (Aspertia City, still with Unova's names), with no NPCs or scenes. The other doors reach the rival's house and the lab (the Trainers' School). The gate leads through to Route 1 (Route 19), and Route 1 to Viridian City (Floccesy Town), with its Pokémon Center and Mart (a house). Nothing stops the player on the way | `build/firered/kaleido-firered.nds` or `build/red/kaleido-red.nds` (rebuild them) |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator

@@ -1,17 +1,20 @@
 """Games: content/games/<game>/game.json, each one ROM (03-architecture.md §2).
 
-A game's config has its name, its layers (lowest first), the source ROMs its layers extract from, and the KALEIDO_*
-defines it builds with."""
+A game's config has its name, its layers (lowest first), the source ROMs its layers extract from, the KALEIDO_*
+defines it builds with, its DS-menu title, and the location a new game starts in."""
 
 import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from kaleido import layers as layer_module
 from kaleido.config import ConfigError, Paths
 from kaleido.roms import SOURCES
 
 SAVE_MAGIC = "KALEIDO_SAVE_MAGIC"
+# The zone a new game starts in (engine patch 0007), which build_defines sets from the game's start location
+NEW_GAME_ZONE = "KALEIDO_NEW_GAME_ZONE"
 # A game's save magic must not be Black 2's footer or outside-data magic, nor what a zeroed or erased card holds (E9)
 RESERVED_MAGICS = {
     0x31053527: "Black 2's save footers'",
@@ -37,10 +40,21 @@ class Game:
     sources: tuple[str, ...] = ()
     # The title the DS menu shows, a line each; none keeps Black 2's
     title: tuple[str, ...] = ()
+    # The location a new game starts in, as the game's region layer names it; none starts where Black 2 does
+    start: str | None = None
 
 
 def directory(paths: Paths) -> Path:
     return paths.root / "content" / "games"
+
+
+def build_defines(paths: Paths, game: Game) -> dict[str, str]:
+    """The defines a game builds with: its own, and KALEIDO_NEW_GAME_ZONE for its start location, mapped to a zone by
+    its region layer (zones.json)."""
+    defines = dict(game.defines)
+    if game.start is not None:
+        defines[NEW_GAME_ZONE] = layer_module.zone_of(layer_module.load_stack(paths, list(game.layers)), game.start)
+    return defines
 
 
 def _load(path: Path) -> Game:
@@ -81,7 +95,12 @@ def _load(path: Path) -> Game:
             f"{where}: 'title' is the DS menu's title: a list of up to {TITLE_LINES} non-empty lines, "
             f"{TITLE_CHARACTERS} characters in all, without backslashes"
         )
-    return Game(game_id, name, dict(defines), tuple(layers), tuple(sources), tuple(title))
+    start = data.get("start")
+    if start is not None and (not isinstance(start, str) or not start):
+        raise ConfigError(f"{where}: 'start' is the location a new game starts in, as the region's zones.json names it")
+    if start is not None and NEW_GAME_ZONE in defines:
+        raise ConfigError(f"{where}: 'start' sets {NEW_GAME_ZONE}; don't define it as well")
+    return Game(game_id, name, dict(defines), tuple(layers), tuple(sources), tuple(title), start)
 
 
 def load_all(paths: Paths) -> list[Game]:
