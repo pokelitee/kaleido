@@ -1,12 +1,17 @@
-"""kaleido validate <game>: checks the cross-references of a game's merged tree before it builds
-(03-architecture.md §7). Upstream's packers check each file against its schema; these checks span files, so a layer
-that breaks a reference fails here, naming the file, the field, and the layers that wrote the file.
+"""kaleido validate <game>: checks a game's merged tree before it builds (03-architecture.md §7), so a layer that breaks
+something fails here, naming the file, the field, and the layers that wrote the file.
 
-So far: warps lead to a zone that has the target warp; zone headers name encounter tables that exist; encounter slots
-name species and sane levels; regions map their locations to zones that exist."""
+- Each JSON file the layers wrote is checked against the schema its "$schema" names, with pokebw2's own checker
+  (tools/data/datajson.py), as the packers check it at build time. That also runs where nothing builds: CI, with
+  --no-extract. A file whose "$schema" is missing or names no file is listed as unchecked.
+- Cross-references, which span files: warps lead to a zone that has the target warp; zone headers name encounter
+  tables that exist; encounter slots name species and sane levels; regions map their locations to zones that exist."""
 
+import importlib
 import json
-from dataclasses import dataclass
+import sys
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 
@@ -28,6 +33,56 @@ class Problem:
     file: str
     field: str
     message: str
+
+
+@dataclass(frozen=True)
+class Result:
+    problems: list[Problem]
+    # JSON files the layers wrote that name no schema to check them against
+    unchecked: list[str] = field(default_factory=list)
+
+
+# Checks data against a schema: None when it fits, else what is wrong
+SchemaCheck = Callable[[object, dict], str | None]
+
+
+def upstream_schema_check(tree: Path) -> SchemaCheck:
+    """pokebw2's tools/data/datajson.validate, imported from the tree: its constant lookups ("x-constant") then read
+    the tree's merged generated/ lists, as the packers' do."""
+    sys.path.insert(0, str(tree))
+    try:
+        datajson = importlib.import_module("tools.data.datajson")
+    finally:
+        sys.path.remove(str(tree))
+
+    def check(data: object, schema: dict) -> str | None:
+        try:
+            datajson.validate(data, schema, "")
+        except datajson.DataError as error:
+            return str(error)
+        return None
+
+    return check
+
+
+def check_schemas(tree: Path, files: list[str], schema_check: SchemaCheck) -> Result:
+    """The JSON files among files (paths in the tree, as the merge report lists them) against the schema each one's
+    "$schema" names, relative to the file."""
+    problems, unchecked = [], []
+    for file in sorted(files):
+        if not file.startswith("res/") or not file.endswith(".json") or file.endswith(".schema.json"):
+            continue
+        path = tree / file
+        data = json.loads(path.read_text(encoding="utf-8"))
+        ref = data.get("$schema") if isinstance(data, dict) else None
+        schema = path.parent / ref if isinstance(ref, str) else None
+        if schema is None or not schema.is_file():
+            unchecked.append(file)
+            continue
+        error = schema_check(data, json.loads(schema.read_text(encoding="utf-8")))
+        if error:
+            problems.append(Problem(file, schema.name, error))
+    return Result(problems, unchecked)
 
 
 def constants(tree: Path, list_name: str) -> set[str]:
@@ -128,19 +183,30 @@ def check_region_zones(paths: Paths, game: Game, tree: Path) -> list[Problem]:
     ]
 
 
-def run(paths: Paths, game: Game, tree: Path) -> list[Problem]:
-    return [
+def _merged_files(paths: Paths, game: Game) -> dict[str, list[dict]]:
+    """The merge report's files: each path the layers wrote, with its layers."""
+    report_file = merge.report_path(paths, game)
+    return json.loads(report_file.read_text(encoding="utf-8"))["files"] if report_file.exists() else {}
+
+
+def run(paths: Paths, game: Game, tree: Path, schema_check: SchemaCheck | None = None) -> Result:
+    schemas = check_schemas(tree, list(_merged_files(paths, game)), schema_check or upstream_schema_check(tree))
+    problems = [
+        *schemas.problems,
         *check_region_zones(paths, game, tree),
         *check_warps(tree),
         *check_zone_encounters(tree),
         *check_encounter_tables(tree),
     ]
+    return Result(problems, schemas.unchecked)
 
 
-def report(paths: Paths, game: Game, problems: list[Problem]) -> None:
-    merged = merge.report_path(paths, game)
-    files = json.loads(merged.read_text(encoding="utf-8"))["files"] if merged.exists() else {}
-    for problem in problems:
+def report(paths: Paths, game: Game, result: Result) -> None:
+    files = _merged_files(paths, game)
+    for file in result.unchecked:
+        say(f'{file}: not checked against a schema; its "$schema" is missing or names no file')
+    for problem in result.problems:
         writers = ", ".join(part["layer"] for part in files.get(problem.file, [])) or "upstream"
         say(f"{problem.file} ({writers}) {problem.field}: {problem.message}")
-    say(f"{game.id}: {len(problems)} problems" if problems else f"{game.id}: no problems")
+    count = len(result.problems)
+    say(f"{game.id}: {count} problems" if count else f"{game.id}: no problems")

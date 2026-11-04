@@ -76,7 +76,12 @@ checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstr
 4. **Build:** the game's defines and `--allow-stale-secure-area` go to `configure.py`, ninja builds the ROM target, and
    the ROM is copied to `build/<game>/kaleido-<game>.nds`. Logs go to `build/<game>/logs/`.
 
-Between merge and build, `validate` checks the merged tree's cross-references and stops the build on a problem.
+Between merge and build, `validate` checks the merged tree and stops the build on a problem:
+- each JSON file the layers wrote is checked against the schema its `"$schema"` names, with pokebw2's own checker
+  (`tools/data/datajson.py`), as the packers will. A file whose schema can't be found is listed as unchecked;
+- the cross-references between files are checked.
+
+Each problem names the file, the field and the layers that wrote the file.
 
 `./kaleido extract <game>`, `merge <game>` and `validate <game>` run the first steps alone, to look at their output.
 `validate <game> --no-extract` skips extraction and merges only the committed layer files, as CI does (section 6).

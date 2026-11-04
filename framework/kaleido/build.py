@@ -36,9 +36,9 @@ def main(paths: Paths, game_id: str) -> int:
     if not dsd.is_current(paths, load_engine_config(paths)):
         raise CommandError("Kaleido's dsd isn't built: run ./kaleido bootstrap")
     worktree = prepare(paths, game)
-    problems = validate.run(paths, game, worktree)
-    validate.report(paths, game, problems)
-    if problems:
+    result = validate.run(paths, game, worktree)
+    validate.report(paths, game, result)
+    if result.problems:
         return 1
     say(f"{game.id}: configure.py with {', '.join(sorted(game.defines)) or 'no defines'}")
     # A game's defines can change ARM9 main, so the stale secure-area values are allowed (R-27); DS mode ignores them

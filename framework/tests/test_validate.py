@@ -1,4 +1,5 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -97,6 +98,47 @@ class ValidateTest(unittest.TestCase):
         game = Game("g", "G", {}, ("regions/r",), ())
         problems = validate.check_region_zones(Paths(root), game, self.tree)
         self.assertEqual([p.field for p in problems], ["locations.route_2"])
+
+    def test_merged_json_is_checked_against_the_schema_it_names(self) -> None:
+        put(self.tree / "res/field/encounters/encounters.schema.json", {"required": ["all_year"]})
+        put(self.tree / "res/field/encounters/good.json", {"$schema": "encounters.schema.json", "all_year": {}})
+        put(self.tree / "res/field/encounters/bad.json", {"$schema": "encounters.schema.json"})
+        put(self.tree / "res/field/encounters/lost.json", {"$schema": "../nowhere.schema.json"})
+        put(self.tree / "res/field/encounters/bare.json", {"all_year": {}})
+        put(self.tree / "res/text/system/t.txt", "T_Text = one\n")
+        checked = []
+
+        def schema_check(data, schema):
+            checked.append(data)
+            return None if all(key in data for key in schema["required"]) else "all_year is missing"
+
+        files = [f"res/field/encounters/{name}.json" for name in ("good", "bad", "lost", "bare")]
+        result = validate.check_schemas(self.tree, [*files, "res/text/system/t.txt"], schema_check)
+        self.assertEqual(len(checked), 2)
+        self.assertEqual(
+            result.problems,
+            [validate.Problem("res/field/encounters/bad.json", "encounters.schema.json", "all_year is missing")],
+        )
+        self.assertEqual(result.unchecked, ["res/field/encounters/bare.json", "res/field/encounters/lost.json"])
+
+    def test_the_schema_check_is_pokebw2s_own_from_the_tree(self) -> None:
+        # A stand-in for pokebw2's tools/data/datajson.py, with the two names Kaleido uses
+        put(self.tree / "tools/__init__.py", "")
+        put(self.tree / "tools/data/__init__.py", "")
+        put(
+            self.tree / "tools/data/datajson.py",
+            "class DataError(Exception):\n    pass\n\n\n"
+            "def validate(data, schema, where):\n"
+            "    if data != schema['const']:\n        raise DataError(f'{data} is not {schema[\"const\"]}')\n",
+        )
+        try:
+            check = validate.upstream_schema_check(self.tree)
+            self.assertIsNone(check(1, {"const": 1}))
+            self.assertEqual(check(2, {"const": 1}), "2 is not 1")
+            self.assertNotIn(str(self.tree), sys.path)
+        finally:
+            for name in ("tools.data.datajson", "tools.data", "tools"):
+                sys.modules.pop(name, None)
 
 
 if __name__ == "__main__":

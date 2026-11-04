@@ -9,7 +9,7 @@ and §7). Run it from the repository's root with `./kaleido <command>`; nothing 
 | `requirements-ci.txt` | the checkers CI installs (Ruff, clang-format); Kaleido itself needs none |
 | `extractors/` | readers for source-game formats, code only: `gba_gen3.py` reads FireRed's wild encounters by structure (from E8's prototype) |
 | `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories, files and ROM-shaped bytes, never ROM data) |
-| `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet; the code checks the files for now |
+| (schemas) | Content files are checked against pokebw2's own schemas, with its checker, by `validate`. Kaleido's own files (game, layer, provenance, recipes) are checked by the code that reads them; there are no JSON schemas for them yet |
 
 Tests:
 

@@ -164,8 +164,14 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - `build firered` gives the same SHA1 as before (`f64d9a56…`).
    On GitHub, the Engine job takes about 4 minutes. The "Protect main" ruleset requires the `CI` check (2026-11-04).
    This step is done.
-   Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
-   (only after doing it by hand three times).
+   Schema validation followed (2026-11-04): `validate` checks each JSON file the layers wrote against pokebw2's
+   schema, with pokebw2's own checker, so CI checks it through `validate --no-extract`. **Verified** on the WSL
+   clone:
+   - FireRed's merged Route 19 table passes;
+   - a layer file with a string for a rate fails, naming the field, the schema and both layers that wrote it.
+
+   Kaleido's own files stay checked by the code that reads them; JSON schemas for them would repeat those checks. Not
+   added: a pre-commit hook (only after doing it by hand three times).
 7. Reproducibility. A clean clone of `main` (`6c98934`) in a new WSL directory on the owner's machine, built from
    nothing (2026-11-04), matched the first clone. **Verified**:
    - bootstrap gave the same engine commit (`e66725f1c361…`);
