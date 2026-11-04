@@ -13,7 +13,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [hardware-and-rom.md](hardware-and-rom.md) | DS/DSi limits, the Black 2 cart and ROM, hybrid boot paths, emulators, xdelta, source ROM hashes |
 | [e0-baseline.md](e0-baseline.md) | Phase 0 E0: baseline build. E0a (no-ROM compile) and E0 (matching build, twice from clean) both passed |
 | [e4b-map-art.md](e4b-map-art.md) | Phase 0 E4b: new map art. Upstream refuses it; a template-append prototype ([patch](e4b-template-append.patch)) builds and plays normally in melonDS; chunk size budgets |
-| [e6-headroom.md](e6-headroom.md) | Phase 0 E6: ROM ≈ 231 MiB free; ARM9 far under the DSi limit; DS-mode RAM ≈ 213 KiB for added code and static data; E6b (runtime) defined |
+| [e6-headroom.md](e6-headroom.md) | Phase 0 E6: ROM ≈ 231 MiB free; ARM9 far under the DSi limit; DS-mode RAM ≈ 213 KiB for added code and static data; E6b (runtime) moved to Phase 1's harness spike |
 | [e1-e3.md](e1-e3.md) | Phase 0 E1–E3: text, trainer data and a battle code switch (`--define`, [patch](e3-define.patch)); built-ROM checks pass; in-game rival battle pending |
 | [e4a-new-zone.md](e4a-new-zone.md) | Phase 0 E4a: a new zone's data packs ([patch](e4a-extra-zones.patch) for the "no zone" collisions); ARM9 main changes need the DS ARM7 BIOS (R-27), solved by a dsd flag ([patch](dsd-allow-stale-secure-area.patch), ADR 0004) |
 | [e5-species.md](e5-species.md) | Phase 0 E5: species #650 builds into every archive after a matching-neutral [patch](e5-species-expansion.patch) derives the species-count numbers and lets two packers splice in a template's files; capacity 672 for the Pokédex save; known gaps |

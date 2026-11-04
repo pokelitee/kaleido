@@ -103,7 +103,10 @@ The blocks' sizes come from functions (`*_GetSize`), so the used total isn't a s
 of E6b. For Tier 1, Kanto reuses B2W2's blocks (event flags and variables, Pokédex, party, boxes), so no save growth is
 planned (R-13).
 
-## 5. E6b — runtime measurements (to do)
+## 5. E6b — runtime measurements (moved to Phase 1)
+
+The owner moved E6b into Phase 1's emulator harness spike on 2026-11-04 (`05-roadmap.md`). It is a Phase 1 exit
+criterion, and its results go in this section.
 
 | Measurement | Why | How |
 | --- | --- | --- |

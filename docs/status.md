@@ -4,14 +4,16 @@ Last updated: 2026-11-04
 
 ## Current phase
 
-**Phase 0 (experiments), started 2026-11-03** after the owner approved the plan. No game content, framework code or
-engine changes exist yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is
-in `docs/architecture.md`.
+**Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
+emulator harness spike (`docs/plan/05-roadmap.md`). No framework code, engine patches or game content are committed
+yet. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+`docs/architecture.md`.
 
-Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesystem (on the owner's machine,
-`~/kaleido-work/pokebw2`). Experiment write-ups go in `docs/research/`.
+Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
+filesystem (on the owner's machine, `~/kaleido-work/pokebw2`). Its write-ups, patches and the extractor prototype are
+in `docs/research/`. The playtest checks it deferred are listed at the end of this file.
 
-## Done in this pass
+## Done so far
 
 - Researched the foundation and verified the brief's Section 3 baseline: `docs/research/` (pokebw2 pinned at
   `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c`, 2026-10-31).
@@ -43,8 +45,10 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   ADR 0003 accepted. Details: `docs/research/e4b-map-art.md`.
 - **E6a done** (2026-11-03, static): ROM ≈ 231 MiB free of 512 MiB; ARM9 binary far under the DSi's 2.5 MB. **DS-mode
   RAM is the constraint**: the heaps are fixed and the arena starts where the last overlay ends, so all added code and
-  static data must fit in ≈ 213 KiB. Heap 1 has 288,256 B left in the field. E6b (runtime free memory, save use) is
-  defined but not run. Details: `docs/research/e6-headroom.md`.
+  static data must fit in ≈ 213 KiB. Heap 1 has 288,256 B left in the field. E6b (runtime free memory, save use) moved
+  to Phase 1's harness spike (owner, 2026-11-04). Details: `docs/research/e6-headroom.md`.
+- **Phase 0 closed** (2026-11-04): every exit criterion met (`05-roadmap.md`), with E6b in Phase 1 and E7 waiting for
+  hardware.
 - **E1–E3 built, in-game checks partly pending** (2026-11-03). E3: `configure.py --define` plus a
   `KALEIDO_E3_ALWAYS_CRIT` switch. With the switch off, the build still matches Black 2 with every check; with it on,
   the compiled crit roll is always TRUE and 15 overlays move. E2: the rival's first party unpacks from the built ROM as
@@ -102,13 +106,26 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E6b (runtime memory, save use) is the last part of Phase 0's exit criteria (`05-roadmap.md`: E0–E6 and E8–E9
-   recorded). It needs an emulator harness or a melonDS GDB session. The owner decides: run it now, or move it into
-   Phase 1's harness spike (R-16) and close Phase 0.
-2. E7 waits for hardware; the exit criteria allow that.
-3. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
-   under "Deferred to playtesting" below.
-4. Optional, E10's rest: a White 2 dump and Apicula (a third-party download, owner's go-ahead).
+Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
+
+1. Repo layout (`03-architecture.md` §3), `LICENSE`, `LICENSE-CONTENT`, `CONTRIBUTING.md`, `docs/building.md`,
+   `docs/engine-sync.md`.
+2. The engine submodule at the pin and the first patches in `engine/patches/`, from Phase 0's prototypes:
+   `configure.py --define` (E3), the dsd flags (E4a), `KALEIDO_SAVE_MAGIC` (E9), the species-count derivation (E5),
+   template-append for map art (E4b).
+3. `kaleido doctor` and `bootstrap`: tool hashes, the patched dsd built from pinned commits (until upstream takes it),
+   and ninja run until nothing compiles (R-28, until upstream takes #807).
+4. `extract`, `merge`, `validate`, `build`, `patch`, `baseline`, and the `firered` config with its tiny layer (E1's
+   text, a reused zone, E8's encounter table).
+5. The emulator harness spike (R-16), and E6b with it.
+6. CI on GitHub Actions and Dependabot, then the required check in the "Protect main" ruleset.
+
+Outside Phase 1:
+
+- E7 waits for hardware.
+- Manual in-game checks are batched into a playtest pass (owner's decision, 2026-11-03); the list is under
+  "Deferred to playtesting" below. The harness may run some of them.
+- Optional, E10's rest: a White 2 dump and Apicula (a third-party download, owner's go-ahead).
 
 The prototypes are on branches of `~/kaleido-work/pokebw2`: `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`,
 `phase0-e5`, `phase0-e8` and `phase0-e9`. E10's regenerated tree is the worktree `~/kaleido-work/e10-res`. The
