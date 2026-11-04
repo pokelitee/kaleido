@@ -213,6 +213,13 @@ Phase 2's deliverables (`05-roadmap.md`, two builds), started 2026-11-04:
    The harness can check the last two. It already showed the C-Gear byte, saving and exporting a save on Black 2, but
    the owner set harness testing aside on 2026-11-04, so these are listed under "Deferred to playtesting" for now.
 
+Phase 3 (Pallet Town to Viridian City) has a proposed plan, `docs/plan/08-phase3.md` (2026-11-04). It splits the
+phase into eight workstreams and an order of six steps. Its decisions D1–D6 wait for the owner:
+- the maps for the prototype, and who makes their art;
+- Professor Oak's look, and the player character;
+- FireRed's B2W2 switches;
+- the rule for encounter rates.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
