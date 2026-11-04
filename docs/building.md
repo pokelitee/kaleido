@@ -64,10 +64,18 @@ checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstr
 ./kaleido build firered
 ```
 
-`build` reads `content/games/<game>/game.json` and builds in the game's own engine worktree, `build/<game>/engine/`:
-a git worktree at the engine's series, with the base ROM and `engine/pokebw2/tools/` linked in. It passes the game's
-defines and `--allow-stale-secure-area`, builds the ROM target, and copies it to `build/<game>/kaleido-<game>.nds`.
-Logs go to `build/<game>/logs/`. Until `kaleido merge` exists, a game is Black 2's content with its defines.
+`build` reads `content/games/<game>/game.json`. It needs the game's source ROMs in `orig/` (FireRed:
+`orig/firered.gba`). The steps:
+
+1. **Worktree:** the game's own engine worktree, `build/<game>/engine/`, at the engine's series, with the base ROM and
+   `engine/pokebw2/tools/` linked in. It belongs to Kaleido: don't edit it by hand.
+2. **Extract:** the layers' recipes run on the source ROMs into `build/<game>/extracted/`.
+3. **Merge:** the layers, lowest first, are laid over the worktree's `res/` and `generated/`.
+   `build/<game>/merge-report.json` lists every merged file with its layers and provenance.
+4. **Build:** the game's defines and `--allow-stale-secure-area` go to `configure.py`, ninja builds the ROM target, and
+   the ROM is copied to `build/<game>/kaleido-<game>.nds`. Logs go to `build/<game>/logs/`.
+
+`./kaleido extract <game>` and `./kaleido merge <game>` run the first steps alone, to look at their output.
 
 Both commands run `ninja` again while a dry run still has something to compile (R-28).
 

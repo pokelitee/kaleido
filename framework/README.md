@@ -5,10 +5,10 @@ and §7). Run it from the repository's root with `./kaleido <command>`; nothing 
 
 | Path | What |
 | --- | --- |
-| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline` and `build` (`docs/building.md`); `extract`, `merge`, `validate` and `patch` follow in Phase 1 |
-| `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories and files, never ROM bytes) |
-| `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet |
-| `extractors/` | readers for source-game formats: not yet. The first starts from E8's prototype, `docs/research/e8-frlg-wild.py` |
+| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline`, `extract`, `merge` and `build` (`docs/building.md`); `validate` and `patch` follow in Phase 1 |
+| `extractors/` | readers for source-game formats, code only: `gba_gen3.py` reads FireRed's wild encounters by structure (from E8's prototype) |
+| `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories, files and ROM-shaped bytes, never ROM data) |
+| `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet; the code checks the files for now |
 
 Tests:
 

@@ -100,7 +100,7 @@ files and that layer's extracted files are merged together. A path that both pro
 | Layer file | Effect on the merged tree |
 | --- | --- |
 | `res/P` | Replaces `P` from lower layers (whole file). |
-| `res/P.merge.json` | Applied to the lower `P` as an RFC 7396 JSON Merge Patch. For small overrides, such as one encounter group or one learnset. Arrays are replaced whole. |
+| `res/P.merge.json` | Applied to the lower `P`. For a JSON file, an RFC 7396 JSON Merge Patch: small overrides, such as one encounter group or one learnset; arrays are replaced whole. For a text file under `res/text/`, an object of message labels and their new text, so that a layer changes single messages without committing upstream's text. |
 | `generated/<list>.txt` | Appends constants to upstream's list. Duplicates are an error. Upstream constants are never renamed or removed, because engine code refers to them. |
 
 - Content that replaces B2W2 behavior repurposes existing IDs by overriding their files (the new game's start zone, its
@@ -190,18 +190,20 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
 
 ### Game
 
+As built in Phase 1 (`content/games/firered/game.json`):
+
 ```json
 {
-  "$schema": "../../../framework/schemas/game.schema.json",
-  "id": "firered",
-  "title": "Kaleido FireRed",
+  "name": "FireRed",
   "layers": ["regions/kanto", "families/frlg", "games/firered"],
-  "engine": { "base_rom": "b2_us", "defines": { "KALEIDO_CGEAR": 0 } },
-  "sources": [{ "id": "firered", "format": "gba", "sha1": ["<one pinned revision>"] }],
-  "save": { "signature": "KLD-FR" },
-  "outputs": { "rom": "kaleido-firered.nds", "patch": "kaleido-firered.xdelta" }
+  "sources": ["firered"],
+  "defines": { "KALEIDO_SAVE_MAGIC": "0x4b465231" }
 }
 ```
+
+The game's ID is its directory. A source names a ROM that `framework/kaleido/roms.py` knows with its one pinned SHA1,
+kept at `orig/<source>.gba`. The save signature is `KALEIDO_SAVE_MAGIC` (E9). The outputs are fixed:
+`build/<game>/kaleido-<game>.nds`. A title and patch output come with later deliverables.
 
 - Each game names exactly one source ROM revision at first (Q5). Supporting a second revision means a second offset
   table, not new code.

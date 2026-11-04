@@ -1,4 +1,5 @@
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -78,6 +79,13 @@ class LayersTest(unittest.TestCase):
         self.assertEqual(layers.zone_of(stack, "route_1"), "ZONE_ROUTE_19")
         with self.assertRaisesRegex(ConfigError, "no region layer maps"):
             layers.zone_of(stack, "route_2")
+
+    def test_git_ignores_nothing_under_content(self) -> None:
+        # A rule meant for the root's extracted files once hid every layer's extract/ recipes
+        root = Path(__file__).resolve().parents[2]
+        files = [path.relative_to(root).as_posix() for path in (root / "content").rglob("*") if path.is_file()]
+        result = subprocess.run(["git", "check-ignore", "--no-index", *files], cwd=root, capture_output=True, text=True)
+        self.assertEqual(result.stdout.split(), [])
 
     def test_the_repository_layers_load(self) -> None:
         root = Paths(Path(__file__).resolve().parents[2])
