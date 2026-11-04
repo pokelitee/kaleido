@@ -213,12 +213,18 @@ Phase 2's deliverables (`05-roadmap.md`, two builds), started 2026-11-04:
    The harness can check the last two. It already showed the C-Gear byte, saving and exporting a save on Black 2, but
    the owner set harness testing aside on 2026-11-04, so these are listed under "Deferred to playtesting" for now.
 
-Phase 3 (Pallet Town to Viridian City) has a proposed plan, `docs/plan/08-phase3.md` (2026-11-04). It splits the
-phase into eight workstreams and an order of six steps. Its decisions D1–D6 wait for the owner:
-- the maps for the prototype, and who makes their art;
-- Professor Oak's look, and the player character;
-- FireRed's B2W2 switches;
-- the rule for encounter rates.
+Phase 3 (Pallet Town to Viridian City) has an accepted plan, `docs/plan/08-phase3.md`: eight workstreams in six
+steps. The owner took every recommendation on 2026-11-04:
+- D1: the story runs on existing Unova maps first, then Pallet Town (and Route 1 if possible) is rebuilt as new maps
+  for the art-cost measurement;
+- D2: the measured maps are made by the owner or an artist in Blender;
+- D3: Oak appears with Juniper's sprite as a placeholder;
+- D4: the player stays Nate or Rosa;
+- D5: FireRed switches off seasons, Pass Powers, the Unova Pokédex (for a Kanto one) and, after Phase 2's exit check,
+  the C-Gear;
+- D6: FireRed's encounter rates map to Gen 5's nearest setting by one recorded rule.
+
+Step 1, a walkable Kanto skeleton, hasn't started.
 
 Outside Phases 1 and 2:
 

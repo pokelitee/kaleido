@@ -1,7 +1,8 @@
 # 08 — Phase 3 plan: Pallet Town to Viridian City
 
-Status: **proposal** for owner review (2026-11-04). It expands the roadmap's Phase 3 (`05-roadmap.md`) into work,
-order and decisions. It estimates sizes, not time: measuring time is one of Phase 3's exits.
+Status: **accepted** (owner, 2026-11-04), with every recommendation taken for decisions D1–D6. It expands the
+roadmap's Phase 3 (`05-roadmap.md`) into work, order and decisions. It estimates sizes, not time: measuring time is
+one of Phase 3's exits.
 
 ## Goal
 
@@ -72,7 +73,9 @@ Each step lands as its own pull requests, with `kaleido build firered` and `vali
 
 ## Decisions for the owner
 
-| # | Decision | Options | Recommendation |
+The owner took each recommendation on 2026-11-04, so the last column is what Phase 3 does.
+
+| # | Decision | Options | Decided |
 | --- | --- | --- | --- |
 | D1 | **Maps for the prototype** | (a) Kanto's story on existing Unova maps first, as stand-ins, then replace them with new maps one at a time; (b) new Kanto maps before the story; (c) a converter that turns FRLG layouts from the builder's ROM into Gen 5 chunks automatically (extracted content, a large tooling bet) | (a), with Pallet Town (and Route 1 if possible) rebuilt as new maps for the art-cost measurement; (c) only as a spike if art turns out to be the bottleneck |
 | D2 | **Who makes map art** | The owner or artists, in Blender against template materials; or simple generated geometry from Kaleido's tooling, as placeholders | Owner or artist for the measured maps (the measurement is of real art); generated placeholders only where a map just needs to exist |
