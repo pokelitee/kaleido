@@ -58,6 +58,10 @@ card, B2's included, reads as empty; the header and save type stay B2's. Verifie
 still matches. Even this data-only ARM9 change needs the dsd flag (R-27). In-game check deferred; flashcarts wait for
 E7.
 
+E10 (`docs/research/e10-regenerate-res.md`): upstream's dumpers rebuild 74.7% of `res/` from the Black 2 ROM, and the
+build from those sources still matches Black 2. The rest needs a White 2 ROM, Apicula and upstream's curated message
+labels, so the mirror (ADR 0002) stays the R-03 mitigation. The White 2 and Apicula parts aren't done.
+
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
 exit Phase 3.5.

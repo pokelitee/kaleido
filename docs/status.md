@@ -68,8 +68,17 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   differ only in their magic words; switch off still matches. Found: even this data-only change to ARM9 main needs
   `--allow-stale-secure-area`, because the ROM records ARM9's compressed size in the secure area (R-27 widened).
   Details: `docs/research/e9-save-identity.md`.
-- The dsd change is offered upstream (2026-11-03): [fuddlesworth/ds-rom#1](https://github.com/fuddlesworth/ds-rom/pull/1)
-  and [fuddlesworth/ds-decomp#2](https://github.com/fuddlesworth/ds-decomp/pull/2), both open; CI hasn't run on either.
+- **E10 done, partly** (2026-11-03): upstream's dumpers rebuilt 74.7% of `res/` (104,424 of 139,732 files) from the
+  Black 2 ROM. With those files in place, the full matching build still gives Black 2's SHA1. Not rebuilt:
+  - 13% needs a White 2 ROM;
+  - 12% needs Apicula;
+  - 88 text and AI files carry upstream's curation.
+  So the mirror stays R-03's mitigation, and regeneration is a fallback. Details: `docs/research/e10-regenerate-res.md`.
+- Offered upstream (2026-11-03), all open:
+  - the dsd change: [fuddlesworth/ds-rom#1](https://github.com/fuddlesworth/ds-rom/pull/1) and
+    [fuddlesworth/ds-decomp#2](https://github.com/fuddlesworth/ds-decomp/pull/2); CI hasn't run on either;
+  - the depfile fix for R-28: [fuddlesworth/pokebw2#807](https://github.com/fuddlesworth/pokebw2/pull/807), CI waiting
+    for a maintainer to approve a first-time contributor.
 
 ## Most important findings
 
@@ -87,13 +96,17 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
 
 ## Next steps
 
-1. E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3, E4a, E5 and E9 prototypes are on
-   branches `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`, `phase0-e5` and `phase0-e9`). E6b (runtime memory,
-   save use) when an emulator harness or a melonDS GDB session is available.
-2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
+1. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target
+   (Q5). E8 is the last Phase 0 experiment the exit criteria need.
+2. E6b (runtime memory, save use) needs an emulator harness or a melonDS GDB session; it may move to Phase 1's
+   harness spike (R-16).
 3. E7 waits for hardware.
 4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
    under "Deferred to playtesting" below.
+5. Optional, E10's rest: a White 2 dump and Apicula (a third-party download, owner's go-ahead).
+
+The prototypes are on branches of `~/kaleido-work/pokebw2`: `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a`,
+`phase0-e5` and `phase0-e9`. E10's regenerated tree is the worktree `~/kaleido-work/e10-res`.
 
 ## Blockers
 
