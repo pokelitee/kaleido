@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from kaleido import dsd, engine
+from kaleido import dsd, engine, patch
 from kaleido.config import ConfigError, EngineConfig, Paths, load_engine_config
 from kaleido.hashing import file_hash, tree_digest
 from kaleido.process import CommandError, run
@@ -53,7 +53,17 @@ def check_commands(which: Callable[[str], str | None] = shutil.which) -> list[Ch
     cargo = dsd.cargo()
     checks.append(Check("command cargo", OK if cargo else WARN, cargo or "not found",
                         "" if cargo else "install Rust with rustup (https://rustup.rs): bootstrap builds dsd with it"))
+    checks.append(check_xdelta(patch.version()))
     return checks
+
+
+def check_xdelta(found: str | None) -> Check:
+    if found is None:
+        return Check("command xdelta3", WARN, "not found", "sudo apt install xdelta3: kaleido patch needs it")
+    if found != patch.XDELTA_VERSION:
+        return Check("command xdelta3", WARN, f"version {found}",
+                     f"Kaleido has checked {patch.XDELTA_VERSION}'s patches only; another version may make others")
+    return Check("command xdelta3", OK, f"version {found}")
 
 
 def check_disk(free_bytes: int) -> Check:

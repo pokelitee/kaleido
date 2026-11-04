@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from kaleido import baseline, bootstrap, build, doctor, extract, games
+from kaleido import baseline, bootstrap, build, doctor, extract, games, patch, validate
 from kaleido.config import ROOT, ConfigError, Paths
 from extractors.gba_gen3 import ExtractError
 from kaleido.engine import EngineError
@@ -20,7 +20,9 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser("baseline", help="check that the patched engine, every define off, still builds Black 2")
     for name, help_text in (("extract", "run a game's extraction recipes on your source ROMs into build/<game>/"),
                             ("merge", "merge a game's layers into its engine worktree, build/<game>/engine/"),
-                            ("build", "build a game's ROM into build/<game>/")):
+                            ("validate", "merge a game's layers, then check the merged tree's cross-references"),
+                            ("build", "build a game's ROM into build/<game>/"),
+                            ("patch", "make dist/kaleido-<game>.xdelta from the built ROM, and check it")):
         command = commands.add_parser(name, help=help_text)
         command.add_argument("game", help="a directory of content/games/, such as firered")
     args = parser.parse_args(argv)
@@ -37,6 +39,13 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "merge":
             build.prepare(paths, games.load(paths, args.game))
             return 0
+        if args.command == "validate":
+            game = games.load(paths, args.game)
+            problems = validate.run(paths, game, build.prepare(paths, game))
+            validate.report(paths, game, problems)
+            return 1 if problems else 0
+        if args.command == "patch":
+            return patch.main(paths, games.load(paths, args.game))
         return build.main(paths, args.game)
     except (ConfigError, EngineError, CommandError, ExtractError) as error:
         print(f"kaleido {args.command}: {error}", file=sys.stderr)
