@@ -149,7 +149,8 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
      wrongly counted heap 9, which lives below ARM9;
    - heap 1 has **110,696 B** free in the field, the tightest state (title 317,592; battle 512,856; bag 1,169,528);
    - the save has **92 B** free per copy.
-   R-05, R-13 and R-16 are updated. ADR 0005 (py-desmume for DS-mode checks, DSi mode manual) waits for the owner.
+   R-05, R-13 and R-16 are updated. ADR 0005 accepted by the owner (2026-11-04): py-desmume for DS-mode checks, DSi
+   mode manual in melonDS. This step is done.
 6. CI on GitHub Actions and Dependabot (2026-11-04): `.github/workflows/ci.yml` and `.github/dependabot.yml`
    (`docs/building.md` §6). Built for it:
    - `./kaleido check` (ROM-content guard, layers and games, links);

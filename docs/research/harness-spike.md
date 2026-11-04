@@ -5,7 +5,7 @@ Phase 1 spike (`docs/plan/05-roadmap.md`), run 2026-11-04 on the owner's machine
 its state without a person, well enough to run E6b now and the deferred playtest checks later?
 
 Prototype: [`e6b-harness.py`](e6b-harness.py) (GPL-3.0) and the route it replays, [`e6b-route.txt`](e6b-route.txt).
-E6b's results are in [`e6-headroom.md`](e6-headroom.md) §5. Decision proposed: ADR 0005.
+E6b's results are in [`e6-headroom.md`](e6-headroom.md) §5. Decision: ADR 0005, accepted by the owner on 2026-11-04.
 
 ## Summary
 

@@ -67,7 +67,7 @@ melonDS is the primary emulator, DeSmuME secondary (brief). Neither has a headle
   usable if the others fail.
 
 Spike result (2026-11-04): py-desmume drove Black 2 headless to the first battle and measured E6b
-(`docs/research/harness-spike.md`). ADR 0005 proposes it for DS mode, with DSi-mode checks manual in melonDS.
+(`docs/research/harness-spike.md`). ADR 0005 (accepted) picks it for DS mode, with DSi-mode checks manual in melonDS.
 
 Tests the harness runs, from scripted input and RAM reads:
 

@@ -1,6 +1,6 @@
 # 0005. Drive DS-mode emulator tests with py-desmume
 
-- Status: Proposed (2026-11-04), for the owner to accept
+- Status: Accepted (by the owner, 2026-11-04)
 - Date: 2026-11-04
 
 ## Context
@@ -24,7 +24,7 @@ about 30–100 frames per second on the owner's machine, from a pip install, wit
 
 ## Decision
 
-Option 1, proposed. Kaleido's automated emulator checks run on py-desmume, on the builder's machine, never in CI (no
+Option 1. Kaleido's automated emulator checks run on py-desmume, on the builder's machine, never in CI (no
 ROM leaves the machine, `06-testing.md`). DSi-mode checks stay manual in melonDS. Option 2 is the fallback if DSi
 automation, speed or accuracy ever needs it.
 
