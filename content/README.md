@@ -4,8 +4,8 @@ Game content, as layers over the engine's `res/` and `generated/` (`docs/plan/03
 
 ```
 regions/kanto/            shared geography; zones.json maps its locations to existing zones (ADR 0004)
-families/frlg/            one story: maps, NPCs, events, scripts, extraction recipes
-games/firered/            one ROM: game.json, its own text, save magic, B2W2-system switches
+families/frlg/, rby/      one story each: maps, NPCs, events, scripts, extraction recipes
+games/firered/, red/      one ROM each: game.json, its own text, save magic, B2W2-system switches
 ```
 
 ## A layer
@@ -28,14 +28,16 @@ replaces them with its own.
 
 - Every game has its own `KALEIDO_SAVE_MAGIC` (E9). It is never Black 2's two magics, 0 or 0xffffffff, nor another
   game's, and it never changes once a release is out: a game with a new magic finds no saves.
-- `firered`'s is `0x4b465231` ("KFR1").
+- `firered`'s is `0x4b465231` ("KFR1"); `red`'s is `0x4b524431` ("KRD1").
 
-## FireRed's test layers (Phase 1)
+## Test layers (Phases 1 and 2)
 
 | Layer | What |
 | --- | --- |
-| `regions/kanto` | `route_1` lives in `ZONE_ROUTE_19`, Aspertia's first route, for now |
+| `regions/kanto` | `route_1` lives in `ZONE_ROUTE_19`, Aspertia's first route, for now. FireRed and Red share it |
 | `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
+| `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |
+| `games/red` | A stub with no source ROM: Juniper's first line replaced with original text |
 
 Phase 3 replaces these with real Kanto content.
