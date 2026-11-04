@@ -39,6 +39,6 @@ lines, is what the DS menu shows; without one the ROM keeps Black 2's. `./kaleid
 | `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
 | `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |
-| `games/red` | A stub with no source ROM: Juniper's first line replaced with original text |
+| `games/red` | A stub with no source ROM: Juniper's first line replaced with original text, and no C-Gear (`KALEIDO_NO_CGEAR`) |
 
 Phase 3 replaces these with real Kanto content.
