@@ -147,4 +147,6 @@ whether nds-bootstrap or Unlaunch check them is **Unverified** (E7).
 
 - In-game check: walk through Aspertia's door into the new zone and back, and talk to the NPC. Deferred to the
   playtest pass (`docs/status.md`).
-- The dsd change isn't offered upstream yet. That's a public pull request, sent when the owner says so (Q10).
+- The dsd change is offered upstream since 2026-11-03:
+  [fuddlesworth/ds-rom#1](https://github.com/fuddlesworth/ds-rom/pull/1) and
+  [fuddlesworth/ds-decomp#2](https://github.com/fuddlesworth/ds-decomp/pull/2), open and not merged.

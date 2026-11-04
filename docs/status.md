@@ -55,6 +55,15 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
   fixes them, but it changes ARM9 main, which needs the DS ARM7 BIOS to finish the ROM (R-27). Resolved by ADR 0004
   (owner): Tier 1 reuses zone IDs, and Kaleido's dsd change `--allow-stale-secure-area` builds without the BIOS.
   With it, the untouched pin still matches Black 2, and E4a's ROM builds. Details: `docs/research/e4a-new-zone.md`.
+- **E5 done** (2026-11-03): a test species inserted after Genesect, as #650, builds into every archive a species
+  needs (data, text, sprites, icon, musical, footprint, cry, Pokédex, a Route 19 slot) and reads back from the ROM.
+  The engine cost is a matching-neutral patch (`docs/research/e5-species-expansion.patch`): about 40 numbers derived
+  from the species list, and a template splice in the two packers that can't add files. The Pokédex save fits 672
+  species. Known gaps: Box Search and GTS letter tables, easy-chat word numbering, forms. The Kanto regional Pokédex's
+  length is data. Found on the way: one ninja run can link stale objects after a generated header changes (R-28).
+  Details: `docs/research/e5-species.md`.
+- The dsd change is offered upstream (2026-11-03): [fuddlesworth/ds-rom#1](https://github.com/fuddlesworth/ds-rom/pull/1)
+  and [fuddlesworth/ds-decomp#2](https://github.com/fuddlesworth/ds-decomp/pull/2), both open; CI hasn't run on either.
 
 ## Most important findings
 
@@ -67,12 +76,14 @@ Phase 0 work runs in a scratch pokebw2 checkout at the pin, in WSL's own filesys
    `IREO`. DS Protect must be guarded out in source (R-25).
 4. FRLG's grass, surf and Super Rod odds, crit stages and type chart are identical to B2W2's (verified), so much of
    Gen 3 is data-exact.
+5. Upstream's incremental build can finish a ROM from objects compiled against old constants after a constant list
+   changes (R-28, E5). Until it's fixed, run ninja again until nothing is left to compile.
 
 ## Next steps
 
-1. E5, E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3 and E4a prototypes are on
-   branches `e4b-template-append`, `phase0-e1-e3` and `phase0-e4a`). E6b (runtime memory, save use) when an emulator harness or a
-   melonDS GDB session is available.
+1. E9 and E10 (`docs/plan/05-roadmap.md`), in `~/kaleido-work/pokebw2` (the E4b, E1–E3, E4a and E5 prototypes are on
+   branches `e4b-template-append`, `phase0-e1-e3`, `phase0-e4a` and `phase0-e5`). E6b (runtime memory, save use) when
+   an emulator harness or a melonDS GDB session is available.
 2. Owner copies a FireRed dump to `~/kaleido-work/roms/` for E8; its revision becomes the first extraction target (Q5).
 3. E7 waits for hardware.
 4. Manual in-game checks are batched into a playtest pass at the end (owner's decision, 2026-11-03); the list is
@@ -99,6 +110,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | E2 | The rival at the Aspertia lookout sends out a level 5 Pikachu | same |
 | E3 | Every damaging hit in that battle is "A critical hit!", with no crash, although 15 overlays moved | same |
 | E4a | Aspertia City's door (warp 6) leads into the new zone: one NPC whose line is "Kaleido E4a: you're in a new zone."; the exit leads back; DS mode with stale secure-area values boots | `~/kaleido-work/e4a/kaleido-e4a-test.nds` |
+| E5 | Kaleidomon (#650, Audino's art and cry, Steel/Psychic) appears in Route 19's grass at level 3; its battle sprite, cry, summary and icon show; it can be caught; the Pokédex lists it at #650 with its entry and finds it by search; it goes to the box and the party; it survives save and reload. Also check the egg, a Pokéstar Studios film and the musical still work, and whether Box Search by name misgroups species from K on (`e5-species.md` §8) | `~/kaleido-work/e5/kaleido-e5-test.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
 harness (R-16) could run these checks automatically.

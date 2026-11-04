@@ -60,6 +60,8 @@ None yet. Phase 1 adds `kaleido doctor`, `bootstrap`, `extract`, `merge`, `valid
 - Respect DS limits: RAM, overlays, ROM and save sizes are measured (E6), not assumed.
 - Tier 1 zones reuse existing zone IDs; don't append zones (ADR 0004). A build that changes ARM9 main code needs
   `--allow-stale-secure-area` (Kaleido's dsd) or `--arm7-bios`.
+- After changing a `generated/*.txt` list or anything else that regenerates a header, run `ninja` again until nothing is
+  left to compile. One run can link objects built against the old constants and still finish the ROM (R-28).
 
 ### Research and claims
 

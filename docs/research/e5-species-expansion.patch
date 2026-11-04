@@ -1,0 +1,436 @@
+E5 prototype for fuddlesworth/pokebw2 at 41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c, so that a species can be inserted
+after Genesect. (1) Every number in the engine and the packers that follows from the species count (the national
+Pokédex's bounds, the sprite, icon and cry slots after the species, the musical's and Join Avenue's egg) comes from
+the constants of generated/species.txt. (2) pokemon_graphics.py and pokemon_cries.py edit the extracted archives file
+by file and can't add files, so an added species first gets a copy of its template species' files (its template.txt
+names the template), which its own sources then edit. With the stock list nothing changes: every matching check passes
+with Black 2's SHA1. Modifies GPL-3.0 code, so this patch is GPL-3.0. Recorded for Phase 1
+(docs/research/e5-species.md); no build applies it. A species' own data, and its entry in sPokeIconPalettes, are
+content, not part of this patch.
+Check: git apply --check docs/research/e5-species-expansion.patch (in a pokebw2 checkout at the commit above).
+
+diff --git a/include/app/pokedex_list_main.h b/include/app/pokedex_list_main.h
+index 3118ba283..da2eb39fa 100644
+--- a/include/app/pokedex_list_main.h
++++ b/include/app/pokedex_list_main.h
+@@ -2,6 +2,7 @@
+ #define POKEBW2_APP_POKEDEX_LIST_MAIN_H
+ 
+ #include "types.h"
++#include "constants/species.h"
+ #include "app/pokedex_list.h"
+ #include "app/ui/frame_list.h"
+ #include "gfl/clact.h"
+@@ -19,7 +20,7 @@
+ #define HEAPID_POKEDEX_LIST 0x6b
+ 
+ // How many species the list can hold, and the rows it shows
+-#define POKEDEX_LIST_SPECIES_COUNT 649
++#define POKEDEX_LIST_SPECIES_COUNT (SPECIES_EGG - 1)
+ #define POKEDEX_LIST_ROW_COUNT 7
+ 
+ // The icons of the rows that a screen can show while the list scrolls
+diff --git a/src/ov036/day_care.c b/src/ov036/day_care.c
+index 072316e23..c603e2c20 100644
+--- a/src/ov036/day_care.c
++++ b/src/ov036/day_care.c
+@@ -1055,7 +1055,7 @@ static BOOL canPkmLearnTMItemNumber(HeapID heapId, u16 species, u16 form, u16 it
+     u32 bit;
+     PersonalData *personal;
+ 
+-    if (species >= SPECIES_GENESECT) {
++    if (species >= SPECIES_EGG - 1) {
+         return FALSE;
+     }
+     if (!PML_ItemIsTMHM(item)) {
+@@ -1082,7 +1082,7 @@ static BOOL canPkmLearnTMItemNumber(HeapID heapId, u16 species, u16 form, u16 it
+ static u32 validateSpeciesAndGetOffspring(u32 species) {
+     u16 baby;
+ 
+-    if (species < SPECIES_GENESECT) {
++    if (species < SPECIES_EGG - 1) {
+         GFL_ArcSysReadRange(&baby, ARCID_BABYMONS, species, 0, 2);
+         return baby;
+     }
+diff --git a/src/ov036/scrcmd_leaves.c b/src/ov036/scrcmd_leaves.c
+index 6b1ca5eda..374871ecb 100644
+--- a/src/ov036/scrcmd_leaves.c
++++ b/src/ov036/scrcmd_leaves.c
+@@ -418,7 +418,7 @@ void CheckResetKeldeoOrdinaryForme(GameSystem *gsys) {
+                 PokeParty_ChangeForme(pkm, 0);
+             }
+         }
+-        if (species > SPECIES_GENESECT) {
++        if (species > SPECIES_EGG - 1) {
+             pkm->base.contentBuffer.chunks[0].rawData[0x16] = 0xff;
+             pkm->base.contentBuffer.chunks[0].rawData[0x17] = 0xff;
+         }
+diff --git a/src/ov209/musical_mcss.c b/src/ov209/musical_mcss.c
+index e7ece3d78..9b27ffaad 100644
+--- a/src/ov209/musical_mcss.c
++++ b/src/ov209/musical_mcss.c
+@@ -111,7 +111,7 @@ typedef struct {
+ } MusicalMcssLoad;
+ 
+ // The files of Black and White's layout of the Pokémon graphics archive
+-#define MUSICAL_POKEGRA_EGG 650
++#define MUSICAL_POKEGRA_EGG SPECIES_EGG
+ #define MUSICAL_POKEGRA_FORM_FILES 0x32f0
+ #define MUSICAL_POKEGRA_FORM_PALETTES 0x37ad
+ #define MUSICAL_POKEGRA_SPINDA_BIN (SPECIES_SPINDA * POKEGRA_FILE_COUNT + POKEGRA_FILE_BIN)
+diff --git a/src/ov302/pokedex_search_engine.c b/src/ov302/pokedex_search_engine.c
+index dded36bf0..854a28132 100644
+--- a/src/ov302/pokedex_search_engine.c
++++ b/src/ov302/pokedex_search_engine.c
+@@ -1,5 +1,6 @@
+ // The ROM names this file zukan_search_engine.c.
+ #include "types.h"
++#include "constants/species.h"
+ #include "app/pokedex_search_engine.h"
+ #include "constants/arc.h"
+ #include "gfl/arc.h"
+@@ -18,7 +19,7 @@
+ // The file of the national Pokédex's species, in their order
+ #define FILE_NATIONAL_ORDER 4
+ // The number of species of the national Pokédex
+-#define NATIONAL_COUNT 649
++#define NATIONAL_COUNT (SPECIES_EGG - 1)
+ // A species' value in the regional Pokédex's table when it is not in it
+ #define REGIONAL_NONE 999
+ // The species and the form of an entry of the list
+@@ -324,7 +325,7 @@ static void PokedexSearchEngine_LoadTables(ArcTool *arc, HeapID heapId, u16 *unk
+     u32 length;
+ 
+     *regionalTable = PML_PersonalLoadRegionalDexTable(heapId, 0);
+-    *unk1c = 650;
++    *unk1c = SPECIES_EGG;
+     *initials = GFL_ArcToolReadHeapNewLZGetLen(arc, FILE_INITIALS, FALSE, heapId, &length);
+     *initialsSize = length;
+     *shapes = GFL_ArcToolReadHeapNewLZGetLen(arc, FILE_SHAPES, FALSE, heapId, &length);
+diff --git a/src/system/pm_voice.c b/src/system/pm_voice.c
+index ee80c7087..54bdac545 100644
+--- a/src/system/pm_voice.c
++++ b/src/system/pm_voice.c
+@@ -17,8 +17,8 @@
+ #define POKE_VOICE_HANDLE_MAX 3
+ #define POKE_VOICE_BUFFER_SIZE 0x5c30
+ // The last species number that has a cry; the numbers from POKE_VOICE_DIRECT_MIN are cries played by their number
+-#define POKE_VOICE_SPECIES_MAX 684
+-#define POKE_VOICE_DIRECT_MIN 652
++#define POKE_VOICE_SPECIES_MAX SPECIES_POKESTAR_SMEARGLE_2
++#define POKE_VOICE_DIRECT_MIN SPECIES_POKESTAR_UFO
+ #define POKE_VOICE_DEFAULT_RATE 13379
+ #define POKE_VOICE_DEFAULT_SPEED 25825
+ #define POKE_VOICE_PAN_CENTER 64
+@@ -103,12 +103,12 @@ static const PokeVoiceChannels POKE_VOICE_DEFAULT_CHANNEL_LIST[POKE_VOICE_HANDLE
+ 
+ // clang-format off
+ static const PokeVoiceFormEntry POKE_VOICE_EXTRA_ENTRIES[] = {
+-    { SPECIES_SHAYMIN, 1, 685 },
+-    { SPECIES_KYUREM, 1, 686 },
+-    { SPECIES_KYUREM, 2, 687 },
+-    { SPECIES_TORNADUS, 1, 688 },
+-    { SPECIES_THUNDURUS, 1, 689 },
+-    { SPECIES_LANDORUS, 1, 690 },
++    { SPECIES_SHAYMIN, 1, POKE_VOICE_SPECIES_MAX + 1 },
++    { SPECIES_KYUREM, 1, POKE_VOICE_SPECIES_MAX + 2 },
++    { SPECIES_KYUREM, 2, POKE_VOICE_SPECIES_MAX + 3 },
++    { SPECIES_TORNADUS, 1, POKE_VOICE_SPECIES_MAX + 4 },
++    { SPECIES_THUNDURUS, 1, POKE_VOICE_SPECIES_MAX + 5 },
++    { SPECIES_LANDORUS, 1, POKE_VOICE_SPECIES_MAX + 6 },
+ };
+ 
+ // clang-format on
+diff --git a/src/system/poke_icon.c b/src/system/poke_icon.c
+index 5168efcdf..e5f67b304 100644
+--- a/src/system/poke_icon.c
++++ b/src/system/poke_icon.c
+@@ -29,11 +29,11 @@ enum {
+ };
+ 
+ // The icons after the species': the egg, Manaphy's egg, and the forms, in the order of the form sprites
+-#define POKEICON_EGG 683
+-#define POKEICON_FORMS 685
++#define POKEICON_EGG (SPECIES_POKESTAR_SMEARGLE_2 - 1)
++#define POKEICON_FORMS (POKEICON_EGG + 2)
+ // The same icons in the palette table, which leaves two more entries before them
+-#define POKEICON_PALETTE_EGG 685
+-#define POKEICON_PALETTE_FORMS 686
++#define POKEICON_PALETTE_EGG (POKEICON_EGG + 2)
++#define POKEICON_PALETTE_FORMS (POKEICON_EGG + 3)
+ 
+ // The species that keep six bits of form and no sex in a packed species
+ #define POKEICON_PACK_SPECIES_MASK 0x3ff
+diff --git a/src/system/pokedex_savedata.c b/src/system/pokedex_savedata.c
+index af68a87e2..1d89664a4 100644
+--- a/src/system/pokedex_savedata.c
++++ b/src/system/pokedex_savedata.c
+@@ -127,7 +127,7 @@ static inline BOOL CheckShown(const PokeDexSave *pokedex, u16 kind, u16 species)
+ }
+ 
+ static BOOL PML_PkmIsBadMonsNo(u16 species) {
+-    if (species == 0 || species > SPECIES_GENESECT) {
++    if (species == 0 || species > SPECIES_EGG - 1) {
+         return TRUE;
+     }
+     return FALSE;
+@@ -484,7 +484,7 @@ u16 PokeDex_GetCaughtNoNational(PokeDexSave *pokedex) {
+     int count = 0;
+     int i;
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsCaught(pokedex, i) == TRUE) {
+             count++;
+         }
+@@ -497,7 +497,7 @@ u16 PokeDex_GetCaughtNoUnova(PokeDexSave *pokedex, HeapID heapId) {
+     u16 count = 0;
+     u16 *table = PML_PersonalLoadRegionalDexTable(heapId, NULL);
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsCaught(pokedex, i) == TRUE && table[i] != REGIONAL_DEX_NONE) {
+             count++;
+         }
+@@ -562,7 +562,7 @@ u16 PokeDex_GetSeenNoNational(PokeDexSave *pokedex) {
+     int count = 0;
+     int i;
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsSeen(pokedex, i) == TRUE) {
+             count++;
+         }
+@@ -575,7 +575,7 @@ u16 PokeDex_GetSeenNoUnova(PokeDexSave *pokedex, HeapID heapId) {
+     u16 count = 0;
+     u16 *table = PML_PersonalLoadRegionalDexTable(heapId, NULL);
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsSeen(pokedex, i) == TRUE && table[i] != REGIONAL_DEX_NONE) {
+             count++;
+         }
+@@ -654,7 +654,7 @@ static u16 PokeDex_GetCaughtNoPermissive(PokeDexSave *pokedex) {
+     int i;
+     u16 count = 0;
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsCaught(pokedex, i) == TRUE && PML_PkmIsNationalDexExclude(i) == TRUE) {
+             count++;
+         }
+@@ -667,7 +667,7 @@ static u16 PokeDex_GetCaughtNoUnovaPermissive(PokeDexSave *pokedex, HeapID heapI
+     u16 count = 0;
+     u16 *table = PML_PersonalLoadRegionalDexTable(heapId, NULL);
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsCaught(pokedex, i) == TRUE && table[i] != REGIONAL_DEX_NONE &&
+             PML_PkmIsRegionalDexExclude(i) == TRUE) {
+             count++;
+@@ -682,7 +682,7 @@ static u16 PokeDex_GetSeenNoUnovaPermissive(PokeDexSave *pokedex, HeapID heapId)
+     u16 count = 0;
+     u16 *table = PML_PersonalLoadRegionalDexTable(heapId, NULL);
+ 
+-    for (i = 1; i <= SPECIES_GENESECT; i++) {
++    for (i = 1; i <= SPECIES_EGG - 1; i++) {
+         if (PokeDex_IsSeen(pokedex, i) == TRUE && table[i] != REGIONAL_DEX_NONE &&
+             PML_PkmIsRegionalDexExclude(i) == TRUE) {
+             count++;
+diff --git a/src/system/pokegra.c b/src/system/pokegra.c
+index b4bd16f7b..c5c07723d 100644
+--- a/src/system/pokegra.c
++++ b/src/system/pokegra.c
+@@ -33,9 +33,9 @@ enum {
+ 
+ // The sprites after the species': an egg's and a Manaphy egg's, then the forms' with sprites of their own, then the
+ // palettes (normal and shiny) of the forms that only change the palette
+-#define POKEGRA_EGG 683
+-#define POKEGRA_FORM_FILES 0x3584
+-#define POKEGRA_FORM_PALETTES 0x3ab9
++#define POKEGRA_EGG (SPECIES_POKESTAR_SMEARGLE_2 - 1)
++#define POKEGRA_FORM_FILES ((POKEGRA_EGG + 2) * POKEGRA_FILE_COUNT)
++#define POKEGRA_FORM_PALETTES (POKEGRA_FORM_FILES + 0x535)
+ 
+ // The size of a single-cell sprite's characters, 96 by 96 pixels
+ #define POKEGRA_CHARS_SIZE 0x1200
+diff --git a/src/system/resonance_resort_data.c b/src/system/resonance_resort_data.c
+index 1f9790464..92bde9508 100644
+--- a/src/system/resonance_resort_data.c
++++ b/src/system/resonance_resort_data.c
+@@ -8,6 +8,7 @@
+ #include "types.h"
+ #include "constants/arc.h"
+ #include "constants/pokemon.h"
++#include "constants/species.h"
+ #include "constants/script_text_banks.h"
+ #include "constants/text_banks.h"
+ #include "constants/version.h"
+@@ -50,7 +51,7 @@
+ // Set once the player has entered the Hall of Fame
+ #define EVENT_FLAG_HALL_OF_FAME 0x960
+ // What a person's adventure gives as species for an egg
+-#define JOIN_AVE_SPECIES_EGG 650
++#define JOIN_AVE_SPECIES_EGG SPECIES_EGG
+ 
+ // How long a person with JoinAvenueShopChoice.unk0 set stays, in seconds (sStayDurations has the others)
+ #define JOIN_AVE_STAY_SHORT (3 * 60 * 60)
+diff --git a/tools/data/pokemon_cries.py b/tools/data/pokemon_cries.py
+index 3aa08adb8..df3fb11c4 100644
+--- a/tools/data/pokemon_cries.py
++++ b/tools/data/pokemon_cries.py
+@@ -16,7 +16,7 @@ from pathlib import Path
+ 
+ from datajson import write
+ from narc import read_narc, write_narc
+-from pokemon_graphics import ROOT, species_names
++from pokemon_graphics import ROOT, species_names, with_added_species
+ 
+ 
+ # The forms with cries of their own, after the species' (POKE_VOICE_EXTRA_ENTRIES, pm_voice.c)
+@@ -116,7 +116,7 @@ def export(root):
+ 
+ def pack(root, game, volume_output):
+     version = {"black2": "b2_us", "white2": "w2_us"}[game]
+-    volume = read_narc((ROOT / "extract" / version / "files/a/1/9/1").read_bytes())
++    volume = with_added_species("a/1/9/1", read_narc((ROOT / "extract" / version / "files/a/1/9/1").read_bytes()))
+     for cry_id in range(1, len(volume)):
+         path = volume_path(root, cry_id)
+         value = json.loads(path.read_text())["cry_volume"]
+diff --git a/tools/data/pokemon_graphics.py b/tools/data/pokemon_graphics.py
+index 4124e36e2..5ea7b5fa5 100644
+--- a/tools/data/pokemon_graphics.py
++++ b/tools/data/pokemon_graphics.py
+@@ -26,6 +26,9 @@ ROOT = Path(__file__).resolve().parents[2]
+ # The extracted files of the version being packed, which hold the originals that the sources are compared with.
+ # Exporting reads Black 2's; pack() switches to the version it packs, the only one extracted in its CI job
+ EXTRACTED = ROOT / "extract/b2_us/files"
++# The species in the extracted archives, SPECIES_NONE to Genesect. A species added after Genesect names the species
++# whose files it starts from in its template.txt
++STOCK_NATIONAL = 650
+ ARCHIVES = {"a/0/0/4": "battle", "a/0/0/7": "icons", "a/0/5/1": "musical",
+             "a/1/6/5": "footprints", "a/2/2/9": "footprint_forms"}
+ SLOT_NAMES = ("front_single", "front_single_female", "front", "front_female",
+@@ -64,6 +67,8 @@ def form_names(musical=False):
+     result = {}
+     for number, species in enumerate(species_names()[:national_species()]):
+         if musical:
++            if number >= STOCK_NATIONAL:
++                continue
+             _, sprite_offset, count = struct.unpack_from("<HHB", records[number], 0x1C)
+             palette_only = records[number][0x21] >> 7 & 1
+         else:
+@@ -80,11 +85,23 @@ def form_names(musical=False):
+ # Each sprite archive's groups of files (20 to a battle or musical group, 2 to an icon group): the egg's, the next
+ # Manaphy's egg's, and the first form's. Before them, a group is a species' (in a/0/0/4, of the species two after it
+ # past the bad egg, which has no sprites of its own, GetPokemonDataIDBase)
+-GROUPS = {"battle": (683, 685), "icons": (683, 685), "musical": (650, 652)}
++def groups(kind):
++    egg = national_species() if kind == "musical" else len(species_names()) - 2
++    return egg, egg + 2
++
++
++def added_species():
++    """Returns the directories of the species after Genesect, which the extracted archives don't have."""
++    return species_names()[STOCK_NATIONAL:national_species()]
++
++
++def sprite_end(musical):
++    """Returns the first file after the battle or musical sprite groups: the Substitute's."""
++    return (14240 if musical else 15020) + 20 * len(added_species())
+ 
+ 
+ def group_folder(root, group, kind):
+-    egg, forms = GROUPS[kind]
++    egg, forms = groups(kind)
+     names = species_names()
+     if group == egg:
+         path = root / "egg"
+@@ -110,9 +127,9 @@ EXTENSIONS = {"cells": ".ncer", "animations": ".nanr.lz11", "multi_cells": ".nmc
+ 
+ 
+ def battle_file(root, index, musical):
+-    end = 14240 if musical else 15020
++    end = sprite_end(musical)
+     if index >= end:
+-        palette_start = 14253 if musical else 15033
++        palette_start = end + len(SUBSTITUTE_SLOTS)
+         if index >= palette_start:
+             offset = index - palette_start
+             folder = root / "arceus" / f"form_{offset // 2 + 1}"
+@@ -165,7 +182,7 @@ def icon_file(root, index):
+     if group == national_species():
+         # SPECIES_EGG's own icon, a copy of SPECIES_NONE's: an egg shows the egg's, icon.png (PokeParty_GetIconIndex)
+         path = path.with_name("species_icon_female.png" if female else "species_icon.png")
+-    palette_index = group if group < GROUPS["icons"][0] else group + 2
++    palette_index = group if group < groups("icons")[0] else group + 2
+     table = icon_palettes()
+     bank = (table[palette_index] >> (4 if female else 0)) & 15 if palette_index < len(table) else 0
+     return path, "char", {"size": (32, 64), "palette_bank": bank}
+@@ -187,6 +204,26 @@ def footprint_file(root, index, forms=False):
+     return root / species_names()[index - len(FOOTPRINT_FILES)] / "footprint.png", "char", {"size": (16, 32)}
+ 
+ 
++# Where each archive's files by species start, and how many a species has
++SPECIES_FILES = {"a/0/0/4": (0, 20), "a/0/5/1": (0, 20), "a/0/0/7": (len(ICON_FILES), 2),
++                 "a/1/6/5": (len(FOOTPRINT_FILES), 1), "a/1/9/1": (0, 1)}
++
++
++def with_added_species(archive_name, archive):
++    """Returns an extracted archive with a copy of each added species' template's files at the species' place."""
++    if archive_name not in SPECIES_FILES:
++        return archive
++    start, count = SPECIES_FILES[archive_name]
++    added = []
++    for species in added_species():
++        template = species_names().index((ROOT / "res/pokemon" / species / "template.txt").read_text().strip())
++        if template >= STOCK_NATIONAL:
++            raise ValueError(f"{species}: its template must be a species up to Genesect")
++        added += archive[start + template * count:start + (template + 1) * count]
++    at = start + STOCK_NATIONAL * count
++    return archive[:at] + added + archive[at:]
++
++
+ def source_file(root, archive_name, index):
+     kind = ARCHIVES[archive_name]
+     if kind in ("battle", "musical"):
+@@ -198,7 +235,7 @@ def source_file(root, archive_name, index):
+ 
+ def palette_member(kind, index):
+     """Returns the file of a battle or musical sprite's palette: its group's normal.pal, or the Substitute's."""
+-    end = 14240 if kind == "musical" else 15020
++    end = sprite_end(kind == "musical")
+     return end + SUBSTITUTE_SLOTS.index("normal") if index >= end else index // 20 * 20 + 18
+ 
+ 
+@@ -269,7 +306,7 @@ def pack(root, game, output):
+         raise ValueError(f"unexpected Pokémon graphics archive {archive_name}")
+     global EXTRACTED
+     EXTRACTED = ROOT / "extract" / {"black2": "b2_us", "white2": "w2_us"}[game] / "files"
+-    archive = read_narc((EXTRACTED / archive_name).read_bytes())
++    archive = with_added_species(archive_name, read_narc((EXTRACTED / archive_name).read_bytes()))
+     result = []
+     for index, original in enumerate(archive):
+         path, kind, options = source_file(root, archive_name, index)
+diff --git a/tools/data/sound_data.py b/tools/data/sound_data.py
+index cbf83fa0c..11b0fe408 100644
+--- a/tools/data/sound_data.py
++++ b/tools/data/sound_data.py
+@@ -35,7 +35,7 @@ import tools.data.strm as strm  # noqa: E402
+ import tools.data.swar as swar  # noqa: E402
+ from tools.data.datajson import DataError, label, load, load_schema, write  # noqa: E402
+ from tools.data.gen_constants import load as load_list  # noqa: E402
+-from tools.data.pokemon_cries import cry_folder, read_wav, wav_bytes  # noqa: E402
++from tools.data.pokemon_cries import FORMS as CRY_FORMS, cry_folder, read_wav, species_names, wav_bytes  # noqa: E402
+ 
+ ROOT = Path(__file__).resolve().parents[2]
+ ARCHIVE = "swan_sound_data.sdat"
+@@ -47,7 +47,7 @@ KIND_LISTS = {"sequences": "sound", "sequence_archives": None, "banks": "sound_b
+ FILE_KINDS = {"sequences": (("SEQ_",), "sequence.s"), "banks": (("BANK_",), None),
+               "wave_archives": (("WAVE_",), None), "streams": (("STRM_",), "stream.wav")}
+ # The wave archives of the Pokémon cries, the slots after the empty first, and the cries' wave format: PCM8, unlooped
+-CRIES = range(1, 691)
++CRIES = range(1, len(species_names()) + len(CRY_FORMS))
+ CRY_FORMAT = 0
+ # The buffer that the game plays a cry's wave archive from
+ CRY_BUFFER = 0x5C30

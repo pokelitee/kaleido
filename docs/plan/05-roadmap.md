@@ -49,6 +49,10 @@ E4a (`docs/research/e4a-new-zone.md`): a new zone's data packs and reads back co
 ADR 0004: Tier 1 reuses zone IDs, and a dsd flag (`--allow-stale-secure-area`) builds without the BIOS. E4a's ROM
 now builds.
 
+E5 (`docs/research/e5-species.md`): a species inserted after Genesect, as #650, builds into every archive and reads
+back from the ROM. That takes a matching-neutral patch (about 40 numbers derived from the species list, and a template
+splice in two packers). The Pokédex save fits 672 species. Its in-game check is deferred to the playtest pass.
+
 **Change (2026-11-03)**: the owner has no hardware yet (Q4), so E7 runs when devices are available, not as a Phase 0
 gate. Until then, E7's checks run on melonDS in DS mode and DSi direct boot. Hardware validation is still required to
 exit Phase 3.5.
