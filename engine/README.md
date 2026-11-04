@@ -5,7 +5,7 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 
 | Path | What |
 | --- | --- |
-| `pokebw2/` | git submodule pointing at upstream at the pin (`41f42ca`, 2026-10-31). It records only a commit ID; no Nintendo data is in this repository. `git submodule update --init` fetches it, shallow |
+| `pokebw2/` | git submodule pointing at upstream at the pin (`41f42ca`, 2026-10-31). It records only a commit ID; no Nintendo data is in this repository. `git submodule update --init --depth 1` fetches it |
 | `patches/` | Kaleido's engine changes, `NNNN-topic.patch`, applied in order with `git am` |
 | `engine.toml` | upstream URL, optional mirror URL, the Black 2 baseline SHA1, and how Kaleido's dsd is built |
 | `dsd/` | Kaleido's change to dsd (MIT, as dsd is), until upstream takes it |

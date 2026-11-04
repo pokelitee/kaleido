@@ -24,7 +24,7 @@ Clone Kaleido in WSL's filesystem, fetch the engine at the pin, and apply Kaleid
 
 ```bash
 cd ~ && git clone https://github.com/pokelitee/kaleido.git && cd kaleido
-git submodule update --init
+git submodule update --init --depth 1
 cd engine/pokebw2
 git switch -c kaleido
 git am ../patches/*.patch
@@ -32,8 +32,9 @@ cp /path/to/your/black2.nds orig/baserom_b2_us.nds
 sha1sum orig/baserom_b2_us.nds
 ```
 
-The submodule is shallow (`.gitmodules`), so the fetch is one commit, about 2 minutes. `git am` needs a git identity
-(`user.name`, `user.email`).
+`--depth 1` fetches only the pinned commit: 79 s and 1.2 GB on the owner's machine. Without it, git fetches the pin's
+whole history (4,179 commits), because the pin isn't upstream's latest commit. `git am` needs a git identity
+(`user.name`, `user.email`); with it, the engine's tree is the one Kaleido tested.
 
 ## 2. Kaleido's dsd
 
