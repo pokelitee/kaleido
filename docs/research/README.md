@@ -18,6 +18,7 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [e4a-new-zone.md](e4a-new-zone.md) | Phase 0 E4a: a new zone's data packs ([patch](e4a-extra-zones.patch) for the "no zone" collisions); ARM9 main changes need the DS ARM7 BIOS (R-27), solved by a dsd flag ([patch](dsd-allow-stale-secure-area.patch), ADR 0004) |
 | [e5-species.md](e5-species.md) | Phase 0 E5: species #650 builds into every archive after a matching-neutral [patch](e5-species-expansion.patch) derives the species-count numbers and lets two packers splice in a template's files; capacity 672 for the Pokédex save; known gaps |
 | [e9-save-identity.md](e9-save-identity.md) | Phase 0 E9: a per-game save magic ([patch](e9-save-magic.patch)) makes another game's card, B2's included, read as empty; header and save type unchanged; any ARM9 main change can touch the secure area |
+| [e10-regenerate-res.md](e10-regenerate-res.md) | Phase 0 E10: upstream's dumpers rebuild 74.7% of `res/` from a Black 2 ROM, build-equivalent; the rest needs White 2, Apicula and upstream's curated labels, so the mirror stays the plan |
 
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 

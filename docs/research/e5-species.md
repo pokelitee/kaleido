@@ -194,4 +194,5 @@ Wi-Fi, C-Gear and Entralink features, switched per game (Q7).
   box and the party, save and reload. Deferred to the playtest pass (`docs/status.md`).
 - New sprite art for an added species (§3), and a species with forms.
 - The gaps in §8.
-- The `fix_depfile.py` fix (§6) isn't offered upstream yet; that's a public pull request, sent when the owner says so.
+- The `fix_depfile.py` fix (§6) is offered upstream since 2026-11-03 as
+  [fuddlesworth/pokebw2#807](https://github.com/fuddlesworth/pokebw2/pull/807), open and not merged.
