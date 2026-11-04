@@ -38,7 +38,7 @@ one or the other. `./kaleido build <game>` reads it.
 | Layer | What |
 | --- | --- |
 | `regions/kanto` | Phase 3's stand-ins (`docs/plan/08-phase3.md`, D1): nine Kanto locations on Unova zones in `zones.json`. Pallet Town is on Aspertia City, Route 1 on Route 19 and Viridian City on Floccesy Town, which Unova's maps already join. Each stand-in, and Aspertia's gate to Route 19, loses Black 2's NPCs, triggers, signs and map scripts and keeps its warps. FireRed and Red share it |
-| `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table |
+| `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table. `extract/place_names.json`: Pallet Town, Viridian City and Route 1's names from FireRed's map sections, onto their stand-ins' places (Red, with no FireRed source, keeps Unova's) |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
 | `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |
 | `games/red` | A stub with no source ROM: Juniper's first line replaced with original text, and no C-Gear (`KALEIDO_NO_CGEAR`) |

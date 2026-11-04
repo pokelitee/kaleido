@@ -9,10 +9,10 @@ holds the rules sessions get wrong and points into `docs/`.
 
 ## Current phase
 
-**Phase 2** (two builds) since 2026-11-04: FireRed and a Red stub, which differ by family, title, save identity and a
-B2W2-system switch (`docs/plan/05-roadmap.md`). Phase 1's framework is built; its last exit check (a second machine)
-is the owner's. **No region content beyond the tiny test layers until Phase 3.** Phase 0's prototypes and findings are
-in `docs/research/`. Read `docs/status.md` first.
+**Phase 3** (Pallet Town to Viridian City) since 2026-11-04, by the accepted plan `docs/plan/08-phase3.md`: Kanto's
+story on Unova stand-in maps first (D1), then new maps for the art-cost measurement. Phase 2's build work is done;
+its in-game exit checks, and Phase 1's second-machine check, wait for the owner (`docs/status.md`). Phase 0's
+prototypes and findings are in `docs/research/`. Read `docs/status.md` first.
 
 ## Where things are
 
