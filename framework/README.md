@@ -5,7 +5,7 @@ and §7). Run it from the repository's root with `./kaleido <command>`; nothing 
 
 | Path | What |
 | --- | --- |
-| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline`, `extract`, `merge` and `build` (`docs/building.md`); `validate` and `patch` follow in Phase 1 |
+| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline`, `extract`, `merge`, `validate`, `build` and `patch` (`docs/building.md`) |
 | `extractors/` | readers for source-game formats, code only: `gba_gen3.py` reads FireRed's wild encounters by structure (from E8's prototype) |
 | `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories, files and ROM-shaped bytes, never ROM data) |
 | `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet; the code checks the files for now |

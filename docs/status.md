@@ -7,7 +7,7 @@ Last updated: 2026-11-04
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
 (2026-11-04), and so are the engine submodule with its first three patches, and `./kaleido doctor`, `bootstrap`,
-`baseline`, `extract`, `merge` and `build`. `firered` has its first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+`baseline`, `extract`, `merge`, `validate`, `build` and `patch`. `firered` has its first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -135,7 +135,11 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - the merge report records each file's layer and category;
    - the built ROM's Route 19 table and intro line are FireRed's;
    - a rebuild writes and compiles nothing.
-   74 unit tests. Still to do: `validate` and `patch`.
+   Then `./kaleido validate` (warps, encounter tables, species and levels, region zones; no problems on the full
+   merged tree) and `./kaleido patch`:
+   - `dist/kaleido-firered.xdelta` (420 KB) rebuilds the built ROM from Black 2, including from a renamed copy;
+   - a second patch is byte-identical (xdelta3 3.0.11 with `-A`).
+   83 unit tests. This step is done.
 5. The emulator harness spike (R-16), and E6b with it.
 6. CI on GitHub Actions and Dependabot, then the required check in the "Protect main" ruleset.
 
