@@ -30,7 +30,8 @@ in `docs/research/`. The playtest checks it deferred are listed at the end of th
   unblock GitHub features. That settles the brief's [CONFIRM] default; see the table in `07-open-questions.md`.
 - Repository settings: squash merges only; branches deleted after merge; secret scanning with push protection; a
   "Protect main" ruleset (pull request required, no force-push, no deletion, squash only, no bypass). Since
-  2026-11-04 it also requires the `CI` check, from GitHub Actions only (owner's go-ahead).
+  2026-11-04 it also requires the `CI` check, from GitHub Actions only, and auto-merge is allowed, so a pull request
+  with it on merges once `CI` passes (owner's go-ahead).
 - Repo records: `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/glossary.md`, `.gitignore` (ROMs, saves, build output,
   agent-local settings), `.gitattributes` (LF everywhere).
 - **E0a passed** (Phase 0, 2026-11-03): upstream's `compile_all.py` at the pin compiled 3,584 of 3,584 (every C file,
