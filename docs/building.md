@@ -1,8 +1,7 @@
 # Building
 
-`./kaleido bootstrap` and `./kaleido doctor` set up and check a checkout. Building is still by hand until Phase 1 adds
-`kaleido build` and `baseline` (`docs/plan/03-architecture.md` §7). Every step here was run on the owner's machine
-(`docs/research/e0-baseline.md`, `e4a-new-zone.md`, `docs/status.md`).
+`./kaleido` sets up, checks and builds a checkout (`docs/plan/03-architecture.md` §7). `extract`, `merge`, `validate`
+and `patch` follow later in Phase 1. Every step here was run on the owner's machine (`docs/status.md`).
 
 ## Requirements
 
@@ -50,16 +49,29 @@ each problem and exits 1 if anything fails.
 ## 2. The matching baseline
 
 ```bash
-cd ~/kaleido/engine/pokebw2
-python3 configure.py b2_us --dsd ~/kaleido/.cache/dsd/ds-decomp/target/release/dsd
-ninja
-sha1sum build/pokeblack2_us.nds    # e51e6dfb8678a3d19dcd2a10691b96a569ca0abb
+./kaleido baseline
 ```
 
-`configure.py` downloads the other tools into `tools/`. `ninja` extracts the ROM, compiles, links and rebuilds it, and
-fails unless every matching check passes. A clean build takes 10–12 minutes.
+The patched engine, every define off, must still rebuild Black 2 byte for byte (`e51e6dfb…`). `baseline` runs
+`configure.py b2_us` in `engine/pokebw2` with Kaleido's dsd, then `ninja` with every one of upstream's matching
+checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstream's other tools into
+`engine/pokebw2/tools/`, which `doctor` then checks. A clean build takes about 10 minutes. Logs go to
+`build/baseline/logs/`.
 
-## 3. Modified builds
+## 3. A game
+
+```bash
+./kaleido build firered
+```
+
+`build` reads `content/games/<game>/game.json` and builds in the game's own engine worktree, `build/<game>/engine/`:
+a git worktree at the engine's series, with the base ROM and `engine/pokebw2/tools/` linked in. It passes the game's
+defines and `--allow-stale-secure-area`, builds the ROM target, and copies it to `build/<game>/kaleido-<game>.nds`.
+Logs go to `build/<game>/logs/`. Until `kaleido merge` exists, a game is Black 2's content with its defines.
+
+Both commands run `ninja` again while a dry run still has something to compile (R-28).
+
+## 4. Options behind the commands
 
 With Kaleido's patch series applied, `configure.py` also takes:
 
@@ -73,9 +85,9 @@ The defines the series knows so far are listed in [`engine/README.md`](../engine
 
 ## Checks and pitfalls
 
-- **Run `ninja` again until nothing is left to compile** after anything regenerates a header (a `generated/*.txt`
-  list, a branch switch). One run can link objects built against the old constants and still finish the ROM (R-28,
-  fix offered as fuddlesworth/pokebw2#807).
+- **Running `ninja` by hand, run it again until nothing is left to compile** after anything regenerates a header (a
+  `generated/*.txt` list, a branch switch). One run can link objects built against the old constants and still finish
+  the ROM (R-28, fix offered as fuddlesworth/pokebw2#807). `baseline` and `build` do this themselves.
 - `python3 tools/build/verify_dsi_rom.py build/pokeblack2_us.nds` checks the DSi digests and HMACs. It skips the
   secure area's values by design.
 - From Git Bash on Windows, a `/mnt/c/...` argument to `wsl.exe` is rewritten into a Windows path. Call `wsl.exe` from

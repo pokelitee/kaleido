@@ -180,9 +180,10 @@ kaleido baseline          patched engine, every flag off, no layers → must equ
   second machine builds the same ROM hash.
 - **Working copy location**: build in WSL's own filesystem, not `/mnt/c`. **Assumption**: 9P file access makes a
   140k-file build much slower; measured in E0.
-- **Tool cache**: upstream's downloaded tools (wibo, sjiswrap, objdiff, dsd, mwccarm) are cached once under
-  `.cache/tools/` with recorded hashes. `doctor` checks them, because the Metrowerks package comes from a third-party
-  host (R-12). dsd is the exception: until upstream takes Kaleido's change, bootstrap builds it with Rust from
+- **Tool cache**: upstream's downloaded tools (wibo, sjiswrap, objdiff, mwccarm) are downloaded once, into
+  `engine/pokebw2/tools/` by `kaleido baseline`'s first run, and each game's worktree links to them. Their hashes are
+  recorded in `engine/engine.toml`, and `doctor` checks them, because the Metrowerks package comes from a third-party
+  host (R-12). (Built in Phase 1 in place of a separate `.cache/tools/`.) dsd is the exception: until upstream takes Kaleido's change, bootstrap builds it with Rust from
   `ds-decomp` and `ds-rom` at pinned commits plus `--allow-stale-secure-area` (ADR 0004).
 
 ## 8. Configuration

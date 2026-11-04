@@ -1,0 +1,6 @@
+{
+    "name": "FireRed",
+    "defines": {
+        "KALEIDO_SAVE_MAGIC": "0x4b465231"
+    }
+}

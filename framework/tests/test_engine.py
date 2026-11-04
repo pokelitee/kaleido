@@ -94,6 +94,44 @@ class SeriesTest(unittest.TestCase):
 
 
 @unittest.skipIf(os.name == "nt", "symbolic links need Linux, where Kaleido builds")
+class WorktreeTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fixture = Fixture()
+        self.paths = Paths(self.fixture.root)
+        self.fixture.make_patch("one", "1\n")
+        engine.apply_series(self.paths)
+        self.head = git("rev-parse", "HEAD", cwd=self.paths.engine)
+        self.directory = self.fixture.root / "build" / "game" / "engine"
+
+    def tearDown(self) -> None:
+        self.fixture.cleanup()
+
+    def test_checks_out_the_series_detached_with_shared_tools(self) -> None:
+        (self.paths.engine / "tools").mkdir()
+        (self.paths.engine / "tools" / "wibo").write_bytes(b"tool")
+        self.assertEqual(engine.worktree(self.paths, self.directory, ["wibo", "objdiff-cli"]), self.head)
+        self.assertEqual(git("rev-parse", "HEAD", cwd=self.directory), self.head)
+        self.assertEqual((self.directory / "one.txt").read_text(), "1\n")
+        self.assertTrue((self.directory / "tools" / "wibo").is_symlink())
+        self.assertFalse((self.directory / "tools" / "objdiff-cli").exists())
+
+    def test_follows_a_new_series(self) -> None:
+        engine.worktree(self.paths, self.directory, [])
+        self.fixture.make_patch("two", "2\n")
+        engine.apply_series(self.paths)
+        engine.worktree(self.paths, self.directory, [])
+        self.assertEqual((self.directory / "two.txt").read_text(), "2\n")
+
+    def test_refuses_to_discard_tracked_changes(self) -> None:
+        engine.worktree(self.paths, self.directory, [])
+        self.fixture.make_patch("two", "2\n")
+        engine.apply_series(self.paths)
+        (self.directory / "one.txt").write_text("edited\n")
+        with self.assertRaisesRegex(engine.EngineError, "has changes"):
+            engine.worktree(self.paths, self.directory, [])
+
+
+@unittest.skipIf(os.name == "nt", "symbolic links need Linux, where Kaleido builds")
 class BaseRomTest(unittest.TestCase):
     def setUp(self) -> None:
         self.fixture = Fixture()
@@ -112,7 +150,7 @@ class BaseRomTest(unittest.TestCase):
         link = self.paths.engine / ENGINE_BASEROM
         self.assertFalse(os.path.isabs(os.readlink(link)))
         self.assertEqual(link.read_bytes(), b"synthetic")
-        self.assertEqual(engine.link_base_rom(self.paths), "already linked")
+        self.assertIn("already linked", engine.link_base_rom(self.paths))
 
     def test_leaves_a_copied_rom_alone(self) -> None:
         self.paths.orig.mkdir()
@@ -120,7 +158,7 @@ class BaseRomTest(unittest.TestCase):
         link = self.paths.engine / ENGINE_BASEROM
         link.parent.mkdir(parents=True)
         link.write_bytes(b"copy")
-        self.assertIn("a file, not a link", engine.link_base_rom(self.paths))
+        self.assertIn("not a link", engine.link_base_rom(self.paths))
         self.assertEqual(link.read_bytes(), b"copy")
 
 

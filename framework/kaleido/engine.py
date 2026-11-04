@@ -120,19 +120,42 @@ def apply_series(paths: Paths, force: bool = False) -> bool:
     return True
 
 
-def link_base_rom(paths: Paths) -> str:
-    """Links the engine's base ROM to the player's orig/black2.nds. Returns what it did."""
-    target = paths.orig / BASE.file
-    link = paths.engine / ENGINE_BASEROM
-    if not target.exists():
-        return f"no {target.relative_to(paths.root)} yet"
+def _link(link: Path, target: Path) -> str:
+    """Points link at target, relatively. Leaves a real file or directory there alone. Returns what it did."""
     relative = os.path.relpath(target, link.parent)
     if link.is_symlink() and os.readlink(link) == relative:
         return "already linked"
     if link.exists() and not link.is_symlink():
-        return f"left {ENGINE_BASEROM} as it is: a file, not a link"
+        return f"left {link.name} as it is: not a link"
     link.parent.mkdir(parents=True, exist_ok=True)
     if link.is_symlink():
         link.unlink()
     link.symlink_to(relative)
-    return f"linked {ENGINE_BASEROM} to {relative}"
+    return f"linked to {relative}"
+
+
+def link_base_rom(paths: Paths, engine_dir: Path | None = None) -> str:
+    """Links an engine checkout's base ROM to the player's orig/black2.nds. Returns what it did."""
+    target = paths.orig / BASE.file
+    if not target.exists():
+        return f"no {target.relative_to(paths.root)} yet"
+    return f"{ENGINE_BASEROM}: {_link((engine_dir or paths.engine) / ENGINE_BASEROM, target)}"
+
+
+def worktree(paths: Paths, directory: Path, tools: list[str]) -> str:
+    """A git worktree of the engine at branch kaleido's commit, detached (the branch stays checked out in
+    engine/pokebw2), with the base ROM and engine/pokebw2's downloaded tools linked in. Returns its commit."""
+    head = run(["git", "rev-parse", BRANCH], cwd=paths.engine).strip()
+    if not (directory / ".git").exists():
+        directory.parent.mkdir(parents=True, exist_ok=True)
+        run(["git", "worktree", "add", "--quiet", "--detach", str(directory), head], cwd=paths.engine)
+    elif run(["git", "rev-parse", "HEAD"], cwd=directory).strip() != head:
+        if run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=directory).strip():
+            raise EngineError(f"{directory} has changes to tracked files; remove the directory to start it again")
+        run(["git", "checkout", "-q", "--detach", head], cwd=directory)
+    link_base_rom(paths, directory)
+    for name in tools:
+        shared = paths.engine / "tools" / name
+        if shared.exists():
+            _link(directory / "tools" / name, shared)
+    return head

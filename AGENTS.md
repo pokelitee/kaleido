@@ -42,10 +42,12 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | --- | --- |
 | `./kaleido bootstrap` | engine at the pin, the patch series on branch `kaleido`, the base ROM linked, Kaleido's dsd built |
 | `./kaleido doctor` | checks the machine, engine, dsd, ROMs and downloaded tools; exits 1 on a failure |
+| `./kaleido baseline` | the patched engine, every define off, must rebuild Black 2 byte for byte |
+| `./kaleido build <game>` | a game's ROM, `build/<game>/kaleido-<game>.nds`, from `content/games/<game>/game.json` |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
 
-`extract`, `merge`, `validate`, `build`, `patch` and `baseline` follow in Phase 1 (`docs/plan/03-architecture.md`
-§7); until then, building is by hand (`docs/building.md`).
+`extract`, `merge`, `validate` and `patch` follow in Phase 1 (`docs/plan/03-architecture.md` §7). Details:
+`docs/building.md`.
 
 ## Rules
 
