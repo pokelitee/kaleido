@@ -86,6 +86,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Story, progression, event order | Exact | Scripts are rewritten by hand (category 3) in upstream's assembly, using B2W2's flag and variable ranges | Phase 3–4 |
 | Dialogue wording | Exact | Extracted from the builder's ROM | E8 |
 | Dialogue layout | Approximate | Reflowed to Gen 5 text boxes; Gen 3 control codes mapped to Gen 5's | E1, E8 |
+| Place names | Exact wording, Approximate case | Extracted from the source's map sections; Gen 3's capitals ("PALLET TOWN") become Gen 5's title case ("Pallet Town") | Phase 3 (`extract.py`, `gba_gen3_place_names`) |
 | Characters (battle sprites) | Approximate | Gen 5-style art; 11 Kanto characters already exist in B2W2 | **Verified** sprite list |
 | Map layouts and interiors | Approximate | Same layouts on Gen 5's tile grid and 3D models; generic interiors (Pokémon Center, Mart) use B2W2's | R-01, E4b |
 | Grass encounters: slots and odds | Exact | Both 12 slots, `20,20,10,10,10,10,5,5,4,4,1,1` | **Verified** both sources |

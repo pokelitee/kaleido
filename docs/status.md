@@ -4,17 +4,22 @@ Last updated: 2026-11-04
 
 ## Current phase
 
-**Phase 2 (two builds), started 2026-11-04** at the owner's word, with one Phase 1 exit check still open: the same
-SHA1s from a clean clone on a second machine. Phase 1 built:
+**Phase 3 (Pallet Town to Viridian City), started 2026-11-04** by the accepted plan `docs/plan/08-phase3.md`. Exit
+checks still open from earlier phases:
+- Phase 1's: the same SHA1s from a clean clone on a second machine;
+- Phase 2's: in game.
+
+Phase 1 built:
 - the repository layout, licenses and contributor docs;
 - the engine submodule and its patch series;
 - `./kaleido doctor`, `bootstrap`, `check`, `baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch`;
 - CI with Dependabot;
 - the emulator harness spike with E6b.
 
-Phase 2 so far adds a second game, `red`, beside `firered`, each with its own DS-menu title and save magic, and the
-first B2W2-system switch (Red has no C-Gear). The owner's answers are in `docs/plan/07-open-questions.md`, and what is
-decided so far is in `docs/architecture.md`.
+Phase 2 added a second game, `red`, beside `firered`, each with its own DS-menu title and save magic, and the first
+B2W2-system switch (Red has no C-Gear). Phase 3 has so far laid a walkable Kanto skeleton on Unova stand-ins (step 1)
+and is extracting FireRed's content onto it (step 2). The owner's answers are in `docs/plan/07-open-questions.md`, and
+what is decided so far is in `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
 filesystem (on the owner's machine, `~/kaleido-work/pokebw2`). Its write-ups, patches and the extractor prototype are
@@ -242,6 +247,22 @@ Step 1, a walkable Kanto skeleton (2026-11-04):
   their patches apply back to them. The patches are now about 5.7 MB each, since `0007` changes ARM9 main too.
 
 Not seen in game yet: the playtest list has it, since harness testing is set aside.
+
+Step 2, FireRed's content on the skeleton, started 2026-11-04 with place names:
+- The extractor now decodes Gen 3 text and finds FireRed's table of map section names by its shape.
+- The FRLG family's `place_names` recipe names Pallet Town, Viridian City and Route 1 from FireRed's map sections
+  88, 89 and 101, onto their stand-ins' places, title-cased as Gen 5 writes them. Red keeps Unova's names until it
+  has a source ROM.
+- On the way it fixed E8's name lookup, which gave the wrong section for 35 of FireRed's 109 names (Route 1's was
+  right).
+
+**Verified** on the WSL clone:
+- the merged places read "Pallet Town", "Viridian City" and "Route 1";
+- Route 1's encounter table is unchanged (`488c6a6c…`);
+- `validate` is clean for both games;
+- FireRed builds (`a52ef1cc…`) and its patch applies back to it.
+
+Next in step 2: the dialogue and events of each map, then the rival's parties.
 
 Outside Phases 1 and 2:
 

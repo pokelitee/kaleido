@@ -73,6 +73,14 @@ copied. The extractor:
   scan, which the prototype has too. After a run of header-shaped entries without the terminator, the scan went on
   from the run's end. That can skip a real table starting inside the false run. On the owner's ROM the scan still
   found the right table, so the results above stand. The framework's version goes on from the next word instead.
+- Phase 3 (2026-11-04) found a second flaw, in naming a map's section. The lookup took the longest run of pointers
+  that holds the name. The owner's FireRed also has a longer run of the same names, in another order (**Verified**:
+  109 and 174 names, both starting with Pallet Town). So 35 of the 109 names gave the wrong section. Route 1's came
+  out right (`0x65`), so the results above stand.
+
+  The framework now finds the table of section names by its shape, the one run of exactly 109 names, a name per
+  section from `0x58` to `MAPSEC_NONE`, and looks names up in it. That run gives Pallet Town at `0x58`, Viridian City
+  at `0x59` and Route 1 at `0x65`.
 
 ## Not done
 
