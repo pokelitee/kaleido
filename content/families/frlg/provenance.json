@@ -1,0 +1,9 @@
+{
+    "entries": [
+        {
+            "paths": ["res/field/encounters/route_19.json"],
+            "category": "extracted",
+            "recipe": "extract/route_1_encounters.json"
+        }
+    ]
+}

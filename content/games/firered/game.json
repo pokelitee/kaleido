@@ -1,5 +1,7 @@
 {
     "name": "FireRed",
+    "layers": ["regions/kanto", "families/frlg", "games/firered"],
+    "sources": ["firered"],
     "defines": {
         "KALEIDO_SAVE_MAGIC": "0x4b465231"
     }
