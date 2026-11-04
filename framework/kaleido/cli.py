@@ -2,7 +2,7 @@
 import argparse
 import sys
 
-from kaleido import bootstrap, doctor
+from kaleido import baseline, bootstrap, build, doctor
 from kaleido.config import ROOT, ConfigError, Paths
 from kaleido.engine import EngineError
 from kaleido.process import CommandError
@@ -16,12 +16,19 @@ def main(argv: list[str] | None = None) -> int:
     boot.add_argument("--force", action="store_true",
                       help="re-apply the series even if engine/pokebw2 has commits bootstrap didn't make")
     boot.add_argument("--skip-dsd", action="store_true", help="don't build Kaleido's dsd")
+    commands.add_parser("baseline", help="check that the patched engine, every define off, still builds Black 2")
+    game = commands.add_parser("build", help="build a game's ROM into build/<game>/")
+    game.add_argument("game", help="a directory of content/games/, such as firered")
     args = parser.parse_args(argv)
     paths = Paths(ROOT)
     try:
         if args.command == "doctor":
             return doctor.main(paths)
-        return bootstrap.main(paths, force=args.force, skip_dsd=args.skip_dsd)
+        if args.command == "bootstrap":
+            return bootstrap.main(paths, force=args.force, skip_dsd=args.skip_dsd)
+        if args.command == "baseline":
+            return baseline.main(paths)
+        return build.main(paths, args.game)
     except (ConfigError, EngineError, CommandError) as error:
         print(f"kaleido {args.command}: {error}", file=sys.stderr)
         return 1
