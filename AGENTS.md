@@ -47,7 +47,7 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | `./kaleido compile` | no ROM needed: every C file of the patched engine, once per define set (baseline, each game) |
 | `./kaleido extract <game>` | the game's layers' recipes, run on your source ROMs, into `build/<game>/extracted/` |
 | `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
-| `./kaleido validate <game>` | extracts, merges, then checks the merged tree's cross-references; `--no-extract` merges only committed files, as CI does |
+| `./kaleido validate <game>` | extracts, merges, then checks the merged tree: layer JSON against pokebw2's schemas, and cross-references; `--no-extract` merges only committed files, as CI does |
 | `./kaleido build <game>` | extracts, merges, validates and builds the ROM: `build/<game>/kaleido-<game>.nds` |
 | `./kaleido patch <game>` | `dist/kaleido-<game>.xdelta` against your Black 2, checked by applying it (xdelta3 3.0.11) |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
