@@ -5,7 +5,7 @@ and §7). Run it from the repository's root with `./kaleido <command>`; nothing 
 
 | Path | What |
 | --- | --- |
-| `kaleido/` | the package and its commands. So far `doctor` and `bootstrap` (`docs/building.md`); `extract`, `merge`, `validate`, `build`, `patch` and `baseline` follow in Phase 1 |
+| `kaleido/` | the package and its commands: `doctor`, `bootstrap`, `baseline` and `build` (`docs/building.md`); `extract`, `merge`, `validate` and `patch` follow in Phase 1 |
 | `tests/` | host-side unit tests with synthetic fixtures (synthetic git repositories and files, never ROM bytes) |
 | `schemas/` | Kaleido's JSON schemas (game, layer, provenance): not yet |
 | `extractors/` | readers for source-game formats: not yet. The first starts from E8's prototype, `docs/research/e8-frlg-wild.py` |

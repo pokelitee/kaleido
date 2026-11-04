@@ -148,7 +148,7 @@ def worktree(paths: Paths, directory: Path, tools: list[str]) -> str:
     head = run(["git", "rev-parse", BRANCH], cwd=paths.engine).strip()
     if not (directory / ".git").exists():
         directory.parent.mkdir(parents=True, exist_ok=True)
-        stream(["git", "worktree", "add", "--detach", str(directory), head], cwd=paths.engine)
+        run(["git", "worktree", "add", "--quiet", "--detach", str(directory), head], cwd=paths.engine)
     elif run(["git", "rev-parse", "HEAD"], cwd=directory).strip() != head:
         if run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=directory).strip():
             raise EngineError(f"{directory} has changes to tracked files; remove the directory to start it again")

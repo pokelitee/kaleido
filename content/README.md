@@ -16,5 +16,14 @@ and `extract/` (extraction recipes, never extracted data).
 - Black 2/White 2 data comes from the engine. Other games' content is extracted on the builder's machine from their
   own ROMs and is never committed: only the recipe that extracts it.
 
-Phase 1 adds the `firered` game with a tiny test layer: E1's text change, a reused zone (ADR 0004), and E8's encounter
+## Games
+
+`games/<game>/game.json` names the game and the `KALEIDO_*` defines it builds with, all strings (`""` for a define
+without a value). `./kaleido build <game>` reads it.
+
+- Every game has its own `KALEIDO_SAVE_MAGIC` (E9). It is never Black 2's two magics, 0 or 0xffffffff, nor another
+  game's, and it never changes once a release is out: a game with a new magic finds no saves.
+- `firered`'s is `0x4b465231` ("KFR1").
+
+Phase 1 adds the `firered` layers: a tiny test layer with E1's text change, a reused zone (ADR 0004), and E8's encounter
 table.

@@ -20,7 +20,7 @@ def main(paths: Paths, game_id: str) -> int:
         raise CommandError("Kaleido's dsd isn't built: run ./kaleido bootstrap")
     out = paths.root / "build" / game.id
     worktree = out / "engine"
-    say(f"{game.id}: engine worktree {worktree.relative_to(paths.root)}")
+    say(f"{game.id}: engine worktree {worktree.relative_to(paths.root)} (a first checkout takes a minute or two)")
     commit = engine.worktree(paths, worktree, sorted(config.tool_hashes))
     say(f"{game.id}: at {commit[:12]}; configure.py with {', '.join(sorted(game.defines)) or 'no defines'}")
     # A game's defines can change ARM9 main, so the stale secure-area values are allowed (R-27); DS mode ignores them
