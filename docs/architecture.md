@@ -12,7 +12,8 @@ Phase 1 (`docs/plan/05-roadmap.md`) is building the skeleton. So far:
 | Repository layout (`03-architecture.md` §3) | `engine/`, `framework/` and `content/` exist with READMEs; their contents come next |
 | Licenses | `LICENSE` (GNU GPL v3.0, the same text as pokebw2's) and `LICENSE-CONTENT` (CC BY-SA 4.0) |
 | Framework | `./kaleido doctor`, `bootstrap`, `baseline` and `build <game>` (`framework/kaleido/`, Python 3.11+, standard library only) with `unittest` tests in `framework/tests/`; `pyproject.toml` holds Ruff's settings. Games build in worktrees under `build/<game>/engine/`, sharing `engine/pokebw2/tools/` |
-| Games | `content/games/firered/game.json`: its name and `KALEIDO_SAVE_MAGIC` `0x4b465231`. No layers yet |
+| Layers | `extract` (recipes on SHA1-checked source ROMs into `build/<game>/extracted/`) and `merge` (replace, JSON merge patch, message overrides, constant appends; provenance checked per file; a merge report). Extractors in `framework/extractors/`: Gen 3 wild encounters |
+| Games | `firered`: `KALEIDO_SAVE_MAGIC` `0x4b465231`, and test layers `regions/kanto` (`route_1` → `ZONE_ROUTE_19`), `families/frlg` (Route 1's encounters, extracted), `games/firered` (one original text line) |
 | Contributor and build docs | `CONTRIBUTING.md`, `docs/building.md` (the manual procedure until `kaleido` exists), `docs/engine-sync.md` |
 | Engine | `engine/pokebw2`, a submodule at the pin `41f42ca` (fetched with `--depth 1`); `engine/patches/` with three patches (`--define`, the dsd flags, `KALEIDO_SAVE_MAGIC`); `engine/engine.toml`; Kaleido's dsd change in `engine/dsd/`. With every define off the patched engine matches Black 2 (verified 2026-11-04) |
 
