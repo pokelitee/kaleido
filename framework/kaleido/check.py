@@ -113,6 +113,7 @@ def layer_problems(paths: Paths) -> list[str]:
     for game in game_list:
         try:
             layers.load_stack(paths, list(game.layers))
+            games.build_defines(paths, game)
         except ConfigError as error:
             problems[str(error)] = None
     for directory in layers.DIRECTORIES.values():

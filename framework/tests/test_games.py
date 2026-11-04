@@ -35,6 +35,23 @@ class GamesTest(unittest.TestCase):
             with self.assertRaisesRegex(ConfigError, "DS menu's title"):
                 games.load_all(paths)
 
+    def test_a_start_location_becomes_the_new_game_zone(self) -> None:
+        content = self.paths.root / "content"
+        (content / "regions/r").mkdir(parents=True)
+        (content / "regions/r/layer.json").write_text('{"kind": "region"}', encoding="utf-8")
+        (content / "regions/r/zones.json").write_text('{"locations": {"home": "ZONE_A_2"}}', encoding="utf-8")
+        magic = {"KALEIDO_SAVE_MAGIC": "0x54455354"}
+        self.add("started", {"name": "S", "defines": magic, "layers": ["regions/r"], "start": "home"})
+        game = games.load(self.paths, "started")
+        self.assertEqual(games.build_defines(self.paths, game), {**magic, "KALEIDO_NEW_GAME_ZONE": "ZONE_A_2"})
+        unmapped = games.Game("g", "G", magic, ("regions/r",), start="nowhere")
+        with self.assertRaisesRegex(ConfigError, "'nowhere'"):
+            games.build_defines(self.paths, unmapped)
+        both = Paths(Path(self._temp.name) / "both")
+        self.add("both", {"name": "B", "defines": {**magic, "KALEIDO_NEW_GAME_ZONE": "ZONE_A"}, "start": "home"}, both)
+        with self.assertRaisesRegex(ConfigError, "don't define it as well"):
+            games.load_all(both)
+
     def test_names_unknown_games(self) -> None:
         self.add("one", {"name": "One", "defines": {"KALEIDO_SAVE_MAGIC": "0x1"}})
         with self.assertRaisesRegex(ConfigError, r"no game 'two'.*games: one"):

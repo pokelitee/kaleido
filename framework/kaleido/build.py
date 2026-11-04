@@ -40,9 +40,10 @@ def main(paths: Paths, game_id: str) -> int:
     validate.report(paths, game, result)
     if result.problems:
         return 1
-    say(f"{game.id}: configure.py with {', '.join(sorted(game.defines)) or 'no defines'}")
+    defines = games.build_defines(paths, game)
+    say(f"{game.id}: configure.py with {', '.join(sorted(defines)) or 'no defines'}")
     # A game's defines can change ARM9 main, so the stale secure-area values are allowed (R-27); DS mode ignores them
-    options = enginebuild.Options(game.defines, allow_stale_secure_area=True, banner_title=game.title)
+    options = enginebuild.Options(defines, allow_stale_secure_area=True, banner_title=game.title)
     enginebuild.configure(worktree, paths, options)
     say(f"{game.id}: ninja (about 10 minutes from clean)")
     out = paths.root / "build" / game.id
