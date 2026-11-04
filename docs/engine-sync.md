@@ -1,8 +1,8 @@
 # Syncing the engine with upstream
 
 How the pin moves (ADR 0002, `docs/plan/03-architecture.md` §4). A sync is deliberate: chosen for a reason, never
-automatic (R-02). `kaleido bootstrap` and `doctor` exist; `baseline` and `engine export` arrive later in Phase 1. Until then, run
-their manual equivalents from [`building.md`](building.md).
+automatic (R-02). `kaleido engine export` doesn't exist yet: until it does, export the series with
+`git format-patch --zero-commit --no-signature --no-numbered` and fixed dates ([`engine/README.md`](../engine/README.md)).
 
 The pin is `41f42ca1afe6291f00b0ba0ec3f6099b9ff1346c` (2026-10-31), recorded in `engine/pokebw2` (the submodule),
 `docs/plan/02-foundation.md` and `docs/research/pokebw2.md`.
@@ -29,7 +29,8 @@ All on a branch:
    patch onto its new `ds-rom` and `ds-decomp` commits and rebuild it.
 4. `kaleido baseline`: with every define off, the build must give Black 2's SHA1 `e51e6dfb…`. Run ninja until nothing
    is left to compile (R-28).
-5. Build every game, and run the tests and validation. The validator reports content that names a renamed constant.
+5. Build every game, and run `kaleido compile`, the tests and validation. The validator reports content that names a
+   renamed constant. CI runs the checks that need no ROM, and its tool cache follows `engine/engine.toml`'s hashes.
 
 ## After
 

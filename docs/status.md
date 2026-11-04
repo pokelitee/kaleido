@@ -6,8 +6,9 @@ Last updated: 2026-11-04
 
 **Phase 1 (framework skeleton), started 2026-11-04**, when the owner closed Phase 0 and moved E6b into Phase 1's
 emulator harness spike (`docs/plan/05-roadmap.md`). The repository layout, licenses and contributor docs are in
-(2026-11-04), and so are the engine submodule with its first three patches, and `./kaleido doctor`, `bootstrap`,
-`baseline`, `extract`, `merge`, `validate`, `build` and `patch`. `firered` has its first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
+(2026-11-04), and so are the engine submodule with its first four patches, `./kaleido doctor`, `bootstrap`, `check`,
+`baseline`, `compile`, `extract`, `merge`, `validate`, `build` and `patch`, and CI with Dependabot. `firered` has its
+first test layers. The owner's answers are in `docs/plan/07-open-questions.md`, and what is decided so far is in
 `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -141,7 +142,14 @@ Phase 1's deliverables (`05-roadmap.md`), in a proposed order:
    - a second patch is byte-identical (xdelta3 3.0.11 with `-A`).
    83 unit tests. This step is done.
 5. The emulator harness spike (R-16), and E6b with it.
-6. CI on GitHub Actions and Dependabot, then the required check in the "Protect main" ruleset.
+6. CI on GitHub Actions and Dependabot (2026-11-04): `.github/workflows/ci.yml` and `.github/dependabot.yml`
+   (`docs/building.md` §6). Built for it:
+   - `./kaleido check` (ROM-content guard, layers and games, links);
+   - `./kaleido compile`, with engine patch `0004` (`compile_all.py --define`);
+   - `validate --no-extract`.
+   The framework is now formatted with Ruff. Still to do: the `CI` check in the "Protect main" ruleset.
+   Not in CI yet (`06-testing.md`): schema validation of layer files (no schemas of ours yet), and a pre-commit hook
+   (only after doing it by hand three times).
 
 Outside Phase 1:
 
@@ -161,7 +169,8 @@ FireRed dump is `~/kaleido-work/roms/firered.gba`.
 ## Not verified yet
 
 - Hardware facts come from GBATEK, emulator and loader sources, not from devices.
-- xdelta determinism, and the determinism of modified builds and Kaleido's own tooling, are untested (see `risks.md`).
+- Determinism on a second machine: same ROM and patch SHA1s from a clean clone (Phase 1's exit). On one machine,
+  rebuilds and patches are already byte-identical (2026-11-04).
 
 ## Deferred to playtesting
 

@@ -78,6 +78,7 @@ checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstr
 Between merge and build, `validate` checks the merged tree's cross-references and stops the build on a problem.
 
 `./kaleido extract <game>`, `merge <game>` and `validate <game>` run the first steps alone, to look at their output.
+`validate <game> --no-extract` skips extraction and merges only the committed layer files, as CI does (section 6).
 
 ## 4. A patch
 
@@ -104,6 +105,39 @@ With Kaleido's patch series applied, `configure.py` also takes:
 | `--arm7-bios PATH` | Instead of the flag above, if you have a DS ARM7 BIOS dump: every DSi value is then correct |
 
 The defines the series knows so far are listed in [`engine/README.md`](../engine/README.md).
+
+## 6. The checks CI runs
+
+CI ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs on every pull request and every push to `main`,
+and never sees a ROM. Its `CI` check passes only when both of its jobs do:
+
+- **Framework**, on Python 3.11 (the oldest Kaleido supports): Ruff's format and lint checks, the unit tests (with
+  xdelta3 installed, so the real round trip runs), and `./kaleido check`.
+- **Engine**, on Python 3.12 (as upstream's CI): `./kaleido bootstrap --skip-dsd`, clang-format 23.1.1 on the C files
+  the series changes, `./kaleido compile`, and `./kaleido validate <game> --no-extract` for each game. It caches
+  `engine/pokebw2/tools/`, keyed on `engine/engine.toml`.
+
+The same checks on your machine:
+
+```bash
+./kaleido check
+python3 -m unittest discover -s framework -t framework
+./kaleido compile
+./kaleido validate firered --no-extract
+```
+
+- `check` needs neither a ROM nor the engine. Its ROM-content guard reads every tracked file: nothing under `orig/`,
+  `extract/`, `build/` or `dist/`; no ROM, save or patch by extension, or by a DS, GBA, Game Boy or VCDIFF header;
+  nothing over 1 MiB. It also loads every layer (provenance, recipes) and game config, and follows every link between
+  Markdown files.
+- `compile` runs upstream's `tools/decomp/compile_all.py` for Black 2, once with every define off and once per distinct
+  set of game defines (patch `0004`). It needs the engine but no ROM: about 90 seconds per set on 12 cores once the tools
+  are downloaded.
+- Ruff and clang-format: in a virtual environment, `pip install -r framework/requirements-ci.txt`, then `ruff format
+  framework` and `ruff check framework`.
+
+Dependabot ([`.github/dependabot.yml`](../.github/dependabot.yml)) proposes weekly, grouped updates of the actions
+and of Ruff. clang-format stays at upstream's 23.1.1, and the engine pin moves only through `docs/engine-sync.md`.
 
 ## Checks and pitfalls
 
