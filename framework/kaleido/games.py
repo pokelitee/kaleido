@@ -2,6 +2,7 @@
 
 A game's config has its name, its layers (lowest first), the source ROMs its layers extract from, and the KALEIDO_*
 defines it builds with."""
+
 import json
 import re
 from dataclasses import dataclass
@@ -12,8 +13,12 @@ from kaleido.roms import SOURCES
 
 SAVE_MAGIC = "KALEIDO_SAVE_MAGIC"
 # A game's save magic must not be Black 2's footer or outside-data magic, nor what a zeroed or erased card holds (E9)
-RESERVED_MAGICS = {0x31053527: "Black 2's save footers'", 0xA10F49AE: "Black 2's outside data's",
-                   0: "a zeroed card's", 0xFFFFFFFF: "an erased card's"}
+RESERVED_MAGICS = {
+    0x31053527: "Black 2's save footers'",
+    0xA10F49AE: "Black 2's outside data's",
+    0: "a zeroed card's",
+    0xFFFFFFFF: "an erased card's",
+}
 DEFINE_NAME = re.compile(r"KALEIDO_[A-Z0-9_]+")
 GAME_ID = re.compile(r"[a-z0-9_]+")
 
@@ -51,7 +56,7 @@ def _load(path: Path) -> Game:
         if not DEFINE_NAME.fullmatch(define):
             raise ConfigError(f"{where}: define {define!r} isn't a KALEIDO_* name")
         if not isinstance(value, str):
-            raise ConfigError(f"{where}: define {define} must be a string, \"\" for one without a value")
+            raise ConfigError(f'{where}: define {define} must be a string, "" for one without a value')
     layers, sources = data.get("layers", []), data.get("sources", [])
     for key, value in (("layers", layers), ("sources", sources)):
         if not isinstance(value, list) or not all(isinstance(item, str) for item in value):

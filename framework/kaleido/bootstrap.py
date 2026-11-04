@@ -1,5 +1,6 @@
 """kaleido bootstrap: checks the engine out at the pin, applies Kaleido's patch series, links the base ROM into the
 engine and builds Kaleido's dsd. Each step is skipped when it is already done."""
+
 from functools import partial
 
 from kaleido import dsd, engine

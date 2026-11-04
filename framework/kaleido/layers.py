@@ -3,6 +3,7 @@
 A layer holds layer.json (its kind), provenance.json (a category for every content file), content at upstream's paths
 under res/ and generated/, extraction recipes under extract/, and, for a region, zones.json: which existing zone ID
 holds each of its locations (ADR 0004)."""
+
 import fnmatch
 import json
 from dataclasses import dataclass
@@ -58,8 +59,9 @@ class Layer:
         if recipe is None and entry.category == "extracted":
             raise ConfigError(f"{self.id}: {path} is extracted content and must not be committed")
         if recipe is not None and (entry.category != "extracted" or entry.recipe != recipe):
-            raise ConfigError(f"{self.id}: {path} comes from {recipe}; its provenance entry must be extracted, "
-                              f"with that recipe")
+            raise ConfigError(
+                f"{self.id}: {path} comes from {recipe}; its provenance entry must be extracted, with that recipe"
+            )
         return entry.category
 
 

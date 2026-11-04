@@ -9,8 +9,9 @@ from kaleido.enginebuild import Options
 class OptionsTest(unittest.TestCase):
     def test_defines_are_sorted_and_valued(self) -> None:
         options = Options({"KALEIDO_B": "", "KALEIDO_A": "0x1"}, allow_stale_secure_area=True)
-        self.assertEqual(options.arguments(), ["--define", "KALEIDO_A=0x1", "--define", "KALEIDO_B",
-                                               "--allow-stale-secure-area"])
+        self.assertEqual(
+            options.arguments(), ["--define", "KALEIDO_A=0x1", "--define", "KALEIDO_B", "--allow-stale-secure-area"]
+        )
 
     def test_the_baseline_passes_nothing(self) -> None:
         self.assertEqual(Options().arguments(), [])

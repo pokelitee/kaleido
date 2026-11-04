@@ -7,6 +7,7 @@ A recipe, extract/<name>.json in a layer:
 
 `map` is the map's name as the source ROM shows it; `location` is the region's name for it, which the region layer's
 zones.json maps to the zone that holds it (ADR 0004). That zone's header names the encounter table to write."""
+
 import json
 import shutil
 from dataclasses import dataclass
@@ -72,10 +73,14 @@ def _wild_land(paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[s
         roms[source] = gba_gen3.Rom(_source_rom(paths, game, source))
     land = gba_gen3.land_encounters(roms[source], recipe["map"])
     names = _species_names(paths)
-    table = {"$schema": "encounters.schema.json", "all_year": {
-        "rates": {"grass": GEN5_GRASS_SETTING, **{group: 0 for group in EMPTY_GROUPS}, "flags": 0},
-        "grass": [[names[slot.species], slot.min_level, slot.max_level] for slot in land.slots],
-        **{group: [] for group in EMPTY_GROUPS}}}
+    table = {
+        "$schema": "encounters.schema.json",
+        "all_year": {
+            "rates": {"grass": GEN5_GRASS_SETTING, **{group: 0 for group in EMPTY_GROUPS}, "flags": 0},
+            "grass": [[names[slot.species], slot.min_level, slot.max_level] for slot in land.slots],
+            **{group: [] for group in EMPTY_GROUPS},
+        },
+    }
     path = encounter_table_path(paths, layer_module.zone_of(stack, recipe["location"]))
     return path, json.dumps(table, indent=4) + "\n"
 

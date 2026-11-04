@@ -1,5 +1,6 @@
 """kaleido build <game>: builds a game's ROM in its own engine worktree, build/<game>/engine/: its layers extracted
 and merged in, its defines passed, the ROM copied to build/<game>/kaleido-<game>.nds (03-architecture.md §7)."""
+
 import shutil
 from functools import partial
 from pathlib import Path
@@ -21,8 +22,10 @@ def prepare(paths: Paths, game: games.Game) -> Path:
     say(f"{game.id}: engine worktree {worktree.relative_to(paths.root)} (a first checkout takes a minute or two)")
     commit = engine.worktree(paths, worktree, sorted(config.tool_hashes))
     files, written, restored = merge.merge(paths, game, worktree)
-    say(f"{game.id}: at {commit[:12]}; {len(game.layers)} layers merged into {files} files "
-        f"({written} written, {restored} restored); report {merge.report_path(paths, game).relative_to(paths.root)}")
+    say(
+        f"{game.id}: at {commit[:12]}; {len(game.layers)} layers merged into {files} files "
+        f"({written} written, {restored} restored); report {merge.report_path(paths, game).relative_to(paths.root)}"
+    )
     return worktree
 
 

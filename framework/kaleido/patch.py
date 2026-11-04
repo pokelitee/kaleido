@@ -5,6 +5,7 @@ The patch is the same however the files are named and wherever they are: xdelta3
 names into the patch's application header, and -A leaves the header out (verified 2026-11-04). The source window
 covers the whole base ROM. Before writing the checksums, the patch is applied to the base ROM, and the result must be
 the built ROM."""
+
 import shutil
 import subprocess
 import tempfile
@@ -45,10 +46,12 @@ def version() -> str | None:
 
 
 def checksums(game: Game, base_sha1: str, patch_sha1: str, rom_sha1: str) -> str:
-    return (f"# Kaleido {game.name}: apply kaleido-{game.id}.xdelta to your own {BASE.name} ROM with xdelta3\n"
-            f"{base_sha1}  base ROM, {BASE.name}\n"
-            f"{patch_sha1}  kaleido-{game.id}.xdelta\n"
-            f"{rom_sha1}  kaleido-{game.id}.nds, the result\n")
+    return (
+        f"# Kaleido {game.name}: apply kaleido-{game.id}.xdelta to your own {BASE.name} ROM with xdelta3\n"
+        f"{base_sha1}  base ROM, {BASE.name}\n"
+        f"{patch_sha1}  kaleido-{game.id}.xdelta\n"
+        f"{rom_sha1}  kaleido-{game.id}.nds, the result\n"
+    )
 
 
 def make(paths: Paths, game: Game) -> tuple[Path, str]:
@@ -83,6 +86,8 @@ def main(paths: Paths, game: Game) -> int:
         say(f"xdelta3 {found}: Kaleido has checked {XDELTA_VERSION}'s output only; the patch may differ elsewhere")
     patch, rom_sha1 = make(paths, game)
     say(f"{game.id}: {patch.relative_to(paths.root)} ({patch.stat().st_size} bytes), SHA1 {file_hash(patch, 'sha1')}")
-    say(f"{game.id}: applying it to {BASE.file} gives the built ROM, SHA1 {rom_sha1}; checksums in "
-        f"dist/kaleido-{game.id}.sha1")
+    say(
+        f"{game.id}: applying it to {BASE.file} gives the built ROM, SHA1 {rom_sha1}; checksums in "
+        f"dist/kaleido-{game.id}.sha1"
+    )
     return 0

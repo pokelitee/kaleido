@@ -11,6 +11,7 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
 - the map section names: a table of pointers to strings, from the first Kanto section, KANTO_MAPSEC_START;
 - text: capital letters from 0xBB, digits from 0xA1, space 0x00, ended by 0xFF;
 - species 1 to 251 are in national Pokédex order."""
+
 import struct
 from dataclasses import dataclass
 
@@ -77,7 +78,7 @@ def encode(text: str) -> bytes:
 
 
 def _is_wild_header(rom: Rom, offset: int) -> bool:
-    if rom.data[offset + 2:offset + 4] != b"\0\0":
+    if rom.data[offset + 2 : offset + 4] != b"\0\0":
         return False
     fields = [rom.u32(offset + 4 + 4 * i) for i in range(4)]
     return any(fields) and all(f == 0 or (rom.is_pointer(f) and f % 4 == 0) for f in fields)
@@ -88,10 +89,12 @@ def find_wild_headers(rom: Rom) -> int:
     best, best_count, offset = None, 0, 0
     while offset + HEADER_SIZE <= len(rom.data):
         count = 0
-        while offset + (count + 1) * HEADER_SIZE <= len(rom.data) and _is_wild_header(rom, offset + count * HEADER_SIZE):
+        while offset + (count + 1) * HEADER_SIZE <= len(rom.data) and _is_wild_header(
+            rom, offset + count * HEADER_SIZE
+        ):
             count += 1
         end = offset + count * HEADER_SIZE
-        if count and rom.data[end:end + 2] == b"\xff\xff":
+        if count and rom.data[end : end + 2] == b"\xff\xff":
             if count > best_count:
                 best, best_count = offset, count
             offset = end + 4
@@ -126,7 +129,9 @@ def _is_map_header(rom: Rom, offset: int) -> bool:
     if offset % 4 or offset < 0 or offset + MAP_HEADER_SIZE > len(rom.data):
         return False
     layout, events, scripts, connections = (rom.u32(offset + 4 * i) for i in range(4))
-    return all(rom.is_pointer(p) for p in (layout, events, scripts)) and (connections == 0 or rom.is_pointer(connections))
+    return all(rom.is_pointer(p) for p in (layout, events, scripts)) and (
+        connections == 0 or rom.is_pointer(connections)
+    )
 
 
 def _points_to_map_header(rom: Rom, slot: int) -> bool:
@@ -167,7 +172,7 @@ def land_encounters(rom: Rom, map_name: str) -> LandEncounters:
     maps = map_ids(rom, map_section(rom, map_name))
     headers = find_wild_headers(rom)
     entries, offset = [], headers
-    while rom.data[offset:offset + 2] != b"\xff\xff":
+    while rom.data[offset : offset + 2] != b"\xff\xff":
         if (rom.data[offset], rom.data[offset + 1]) in maps:
             entries.append(offset)
         offset += HEADER_SIZE
@@ -182,7 +187,9 @@ def land_encounters(rom: Rom, map_name: str) -> LandEncounters:
     for i in range(LAND_SLOTS):
         low, high, species = struct.unpack_from("<BBH", rom.data, rom.at(slots_pointer) + 4 * i)
         if not 1 <= species <= LAST_NATIONAL_ORDER_SPECIES:
-            raise ExtractError(f"{map_name}: species {species} isn't in national order; reading the ROM's own "
-                               "national order table isn't written yet")
+            raise ExtractError(
+                f"{map_name}: species {species} isn't in national order; reading the ROM's own "
+                "national order table isn't written yet"
+            )
         slots.append(Slot(species, low, high))
     return LandEncounters(rate, tuple(slots))

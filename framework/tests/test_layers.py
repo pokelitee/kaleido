@@ -30,26 +30,36 @@ class LayersTest(unittest.TestCase):
             write(self.content / layer_id / path, data)
 
     def test_every_content_file_has_exactly_one_category(self) -> None:
-        self.layer("games/g", "game", [{"paths": ["res/text/*"], "category": "original"}],
-                   {"res/text/a.txt.merge.json": "{}"})
+        self.layer(
+            "games/g", "game", [{"paths": ["res/text/*"], "category": "original"}], {"res/text/a.txt.merge.json": "{}"}
+        )
         self.assertEqual(layers.load(self.paths, "games/g").category_of("res/text/a.txt.merge.json"), "original")
         self.layer("games/h", "game", [], {"res/x.json": "{}"})
         with self.assertRaisesRegex(ConfigError, "no provenance entry"):
             layers.load(self.paths, "games/h")
-        self.layer("games/i", "game", [{"paths": ["res/*"], "category": "original"},
-                                       {"paths": ["res/x*"], "category": "original"}], {"res/x.json": "{}"})
+        self.layer(
+            "games/i",
+            "game",
+            [{"paths": ["res/*"], "category": "original"}, {"paths": ["res/x*"], "category": "original"}],
+            {"res/x.json": "{}"},
+        )
         with self.assertRaisesRegex(ConfigError, "2 provenance entries"):
             layers.load(self.paths, "games/i")
 
     def test_extracted_content_is_never_committed(self) -> None:
-        self.layer("families/f", "family", [{"paths": ["res/e.json"], "category": "extracted",
-                                             "recipe": "extract/e.json"}], {"res/e.json": "{}"})
+        self.layer(
+            "families/f",
+            "family",
+            [{"paths": ["res/e.json"], "category": "extracted", "recipe": "extract/e.json"}],
+            {"res/e.json": "{}"},
+        )
         with self.assertRaisesRegex(ConfigError, "must not be committed"):
             layers.load(self.paths, "families/f")
 
     def test_an_extracted_path_names_its_recipe(self) -> None:
-        self.layer("families/f", "family", [{"paths": ["res/e.json"], "category": "extracted",
-                                             "recipe": "extract/e.json"}])
+        self.layer(
+            "families/f", "family", [{"paths": ["res/e.json"], "category": "extracted", "recipe": "extract/e.json"}]
+        )
         layer = layers.load(self.paths, "families/f")
         self.assertEqual(layer.category_of("res/e.json", "extract/e.json"), "extracted")
         with self.assertRaisesRegex(ConfigError, "with that recipe"):
@@ -68,8 +78,9 @@ class LayersTest(unittest.TestCase):
     def test_stacks_go_region_family_game(self) -> None:
         self.layer("regions/r", "region")
         self.layer("games/g", "game")
-        self.assertEqual([layer.kind for layer in layers.load_stack(self.paths, ["regions/r", "games/g"])],
-                         ["region", "game"])
+        self.assertEqual(
+            [layer.kind for layer in layers.load_stack(self.paths, ["regions/r", "games/g"])], ["region", "game"]
+        )
         with self.assertRaisesRegex(ConfigError, "regions come before"):
             layers.load_stack(self.paths, ["games/g", "regions/r"])
 

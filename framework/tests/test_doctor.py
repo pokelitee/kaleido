@@ -11,8 +11,7 @@ from kaleido.roms import RomSpec
 
 def config_with_tools(tool_hashes: dict[str, str]) -> EngineConfig:
     repo = Repo("https://example.invalid/repo.git", "0" * 40)
-    return EngineConfig("https://example.invalid/engine.git", "", "0" * 40, Path("dsd.patch"), repo, repo,
-                        tool_hashes)
+    return EngineConfig("https://example.invalid/engine.git", "", "0" * 40, Path("dsd.patch"), repo, repo, tool_hashes)
 
 
 class EnvironmentChecksTest(unittest.TestCase):
@@ -71,8 +70,11 @@ class FileChecksTest(unittest.TestCase):
         self.put("engine/pokebw2/tools/wibo", b"wibo")
         self.put("engine/pokebw2/tools/mwccarm/dsi/mwccarm.exe", b"compiler")
         tools = self.paths.engine / "tools"
-        recorded = {"wibo": hashlib.sha256(b"wibo").hexdigest(), "mwccarm": tree_digest(tools / "mwccarm"),
-                    "objdiff-cli": "0" * 64}
+        recorded = {
+            "wibo": hashlib.sha256(b"wibo").hexdigest(),
+            "mwccarm": tree_digest(tools / "mwccarm"),
+            "objdiff-cli": "0" * 64,
+        }
         checks = {check.name: check for check in doctor.check_tools(self.paths, config_with_tools(recorded))}
         self.assertEqual(checks["tool wibo"].status, doctor.OK)
         self.assertEqual(checks["tool mwccarm"].status, doctor.OK)

@@ -1,5 +1,6 @@
 """kaleido doctor: checks the machine, the engine, Kaleido's dsd, the ROMs and the downloaded tools, and says how to
 fix what's wrong. Exits 1 if anything fails; warnings don't."""
+
 import platform
 import shutil
 import sys
@@ -10,7 +11,7 @@ from pathlib import Path
 from kaleido import dsd, engine, patch
 from kaleido.config import ConfigError, EngineConfig, Paths, load_engine_config
 from kaleido.hashing import file_hash, tree_digest
-from kaleido.process import CommandError, run
+from kaleido.process import CommandError
 from kaleido.roms import BASE, ENGINE_BASEROM, SOURCES, RomSpec, identify
 
 OK, WARN, FAIL = "ok", "warn", "FAIL"
@@ -32,8 +33,12 @@ def check_platform(system: str, root: Path) -> Check:
     if system != "Linux":
         return Check("platform", FAIL, f"{system}", "build in Linux or WSL2; upstream's build doesn't run elsewhere")
     if root.as_posix().startswith("/mnt/"):
-        return Check("platform", WARN, f"Linux, checkout on {root}",
-                     "clone into WSL's own filesystem (~/…): /mnt/ is far slower (R-23)")
+        return Check(
+            "platform",
+            WARN,
+            f"Linux, checkout on {root}",
+            "clone into WSL's own filesystem (~/…): /mnt/ is far slower (R-23)",
+        )
     return Check("platform", OK, f"Linux, {platform.release()}")
 
 
@@ -48,11 +53,23 @@ def check_commands(which: Callable[[str], str | None] = shutil.which) -> list[Ch
     checks = []
     for name in COMMANDS:
         found = which(name)
-        checks.append(Check(f"command {name}", OK if found else FAIL, found or "not found",
-                            "" if found else "sudo apt install ninja-build clang llvm git coreutils"))
+        checks.append(
+            Check(
+                f"command {name}",
+                OK if found else FAIL,
+                found or "not found",
+                "" if found else "sudo apt install ninja-build clang llvm git coreutils",
+            )
+        )
     cargo = dsd.cargo()
-    checks.append(Check("command cargo", OK if cargo else WARN, cargo or "not found",
-                        "" if cargo else "install Rust with rustup (https://rustup.rs): bootstrap builds dsd with it"))
+    checks.append(
+        Check(
+            "command cargo",
+            OK if cargo else WARN,
+            cargo or "not found",
+            "" if cargo else "install Rust with rustup (https://rustup.rs): bootstrap builds dsd with it",
+        )
+    )
     checks.append(check_xdelta(patch.version()))
     return checks
 
@@ -61,8 +78,12 @@ def check_xdelta(found: str | None) -> Check:
     if found is None:
         return Check("command xdelta3", WARN, "not found", "sudo apt install xdelta3: kaleido patch needs it")
     if found != patch.XDELTA_VERSION:
-        return Check("command xdelta3", WARN, f"version {found}",
-                     f"Kaleido has checked {patch.XDELTA_VERSION}'s patches only; another version may make others")
+        return Check(
+            "command xdelta3",
+            WARN,
+            f"version {found}",
+            f"Kaleido has checked {patch.XDELTA_VERSION}'s patches only; another version may make others",
+        )
     return Check("command xdelta3", OK, f"version {found}")
 
 
@@ -81,11 +102,19 @@ def check_engine(paths: Paths) -> Check:
     if not current.initialized:
         return Check("engine", WARN, "engine/pokebw2 isn't checked out", "run ./kaleido bootstrap")
     if current.dirty:
-        return Check("engine", WARN, "engine/pokebw2 has uncommitted changes",
-                     "export engine changes to engine/patches/; builds must use the series")
+        return Check(
+            "engine",
+            WARN,
+            "engine/pokebw2 has uncommitted changes",
+            "export engine changes to engine/patches/; builds must use the series",
+        )
     if not current.applied:
-        return Check("engine", WARN, f"engine/pokebw2 at {current.head[:12]} isn't the pin with the current series",
-                     "run ./kaleido bootstrap")
+        return Check(
+            "engine",
+            WARN,
+            f"engine/pokebw2 at {current.head[:12]} isn't the pin with the current series",
+            "run ./kaleido bootstrap",
+        )
     return Check("engine", OK, f"pin {engine.pin(paths)[:12]} + {len(engine.series(paths))} patches")
 
 
@@ -97,8 +126,12 @@ def check_pointer(paths: Paths) -> Check:
     except (CommandError, engine.EngineError) as error:
         return Check("engine pointer", FAIL, str(error), "check engine/pokebw2 in .gitmodules and the index")
     if staged != committed:
-        return Check("engine pointer", FAIL, f"staged {staged[:12]}, committed {committed[:12]}",
-                     "git restore --staged engine/pokebw2, unless you are syncing the engine (docs/engine-sync.md)")
+        return Check(
+            "engine pointer",
+            FAIL,
+            f"staged {staged[:12]}, committed {committed[:12]}",
+            "git restore --staged engine/pokebw2, unless you are syncing the engine (docs/engine-sync.md)",
+        )
     return Check("engine pointer", OK, f"{committed[:12]}")
 
 
@@ -106,8 +139,9 @@ def check_dsd(paths: Paths, config: EngineConfig) -> Check:
     if dsd.is_current(paths, config):
         return Check("dsd", OK, str(dsd.binary(paths).relative_to(paths.root)))
     if not dsd.binary(paths).exists():
-        return Check("dsd", WARN, "Kaleido's dsd isn't built",
-                     "run ./kaleido bootstrap (about 35 minutes the first time)")
+        return Check(
+            "dsd", WARN, "Kaleido's dsd isn't built", "run ./kaleido bootstrap (about 35 minutes the first time)"
+        )
     if not dsd.has_flag(dsd.binary(paths)):
         return Check("dsd", WARN, f"the built dsd doesn't take {dsd.FLAG}", "run ./kaleido bootstrap")
     return Check("dsd", WARN, "built from other commits or another patch", "run ./kaleido bootstrap")
@@ -123,8 +157,12 @@ def check_rom(paths: Paths, spec: RomSpec) -> Check:
     sha1 = file_hash(path, "sha1")
     if sha1 != spec.sha1:
         actual = identify(sha1)
-        return Check(name, FAIL, f"SHA1 {sha1}" + (f", which is {actual}" if actual else ", unknown"),
-                     f"Kaleido needs {spec.name}, SHA1 {spec.sha1}")
+        return Check(
+            name,
+            FAIL,
+            f"SHA1 {sha1}" + (f", which is {actual}" if actual else ", unknown"),
+            f"Kaleido needs {spec.name}, SHA1 {spec.sha1}",
+        )
     return Check(name, OK, spec.name)
 
 
@@ -146,22 +184,39 @@ def check_tools(paths: Paths, config: EngineConfig) -> list[Check]:
             continue
         actual = tree_digest(path) if path.is_dir() else file_hash(path)
         if actual != expected:
-            checks.append(Check(f"tool {name}", FAIL, f"SHA256 {actual}, recorded {expected}",
-                                "delete it so the next build downloads it again, and compare (R-12)"))
+            checks.append(
+                Check(
+                    f"tool {name}",
+                    FAIL,
+                    f"SHA256 {actual}, recorded {expected}",
+                    "delete it so the next build downloads it again, and compare (R-12)",
+                )
+            )
         else:
             checks.append(Check(f"tool {name}", OK, "hash matches"))
     return checks
 
 
 def run_checks(paths: Paths) -> list[Check]:
-    checks = [check_platform(platform.system(), paths.root), check_python(sys.version_info[:2]), *check_commands(),
-              check_disk(shutil.disk_usage(paths.root).free)]
+    checks = [
+        check_platform(platform.system(), paths.root),
+        check_python(sys.version_info[:2]),
+        *check_commands(),
+        check_disk(shutil.disk_usage(paths.root).free),
+    ]
     try:
         config = load_engine_config(paths)
     except ConfigError as error:
         return [*checks, Check("engine.toml", FAIL, str(error), "fix engine/engine.toml")]
-    checks += [check_pointer(paths), check_engine(paths), check_dsd(paths, config), check_rom(paths, BASE),
-               *(check_rom(paths, spec) for spec in SOURCES), check_engine_rom(paths), *check_tools(paths, config)]
+    checks += [
+        check_pointer(paths),
+        check_engine(paths),
+        check_dsd(paths, config),
+        check_rom(paths, BASE),
+        *(check_rom(paths, spec) for spec in SOURCES),
+        check_engine_rom(paths),
+        *check_tools(paths, config),
+    ]
     return checks
 
 

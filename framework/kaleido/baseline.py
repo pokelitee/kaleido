@@ -1,5 +1,6 @@
 """kaleido baseline: the patched engine with every define off and no layers must rebuild Black 2 byte for byte
 (03-architecture.md §1). It builds in engine/pokebw2 itself, with every one of upstream's matching checks."""
+
 from functools import partial
 
 from kaleido import dsd, engine, enginebuild
