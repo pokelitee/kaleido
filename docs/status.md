@@ -295,7 +295,20 @@ Then the people and signs (`frlg-dialogue.md` §5):
 - FireRed builds (`e5f593ec…`), its nine new script files assembling without a warning, and its patch applies back to
   it.
 
-Next in step 2: the rival's parties.
+Then the rival's parties (`docs/research/frlg-trainers.md`), which finish step 2:
+- The `trainers` recipe finds FireRed's trainers and prize money table by structure.
+- It puts the rival's three Oak's Lab parties (trainers 326 to 328) on Black 2's three first rival battles, each on
+  the one whose starter shares its type.
+- Each gets its party, the prize and its losing and winning lines. IVs and prize money carry over exactly.
+- Black 2's name, class, sprite and AI stay. Items aren't mapped yet, and the rival's parties have none.
+
+**Verified** on the WSL clone:
+- `validate` is clean for both games;
+- FireRed builds (`bda143d9…`) and its patch applies back to it;
+- pokebw2's own `trainer_data.py dump` of the built archives reads the three FireRed parties, prizes and lines back.
+
+Nothing starts the battles until step 3's lab script, which is next: Oak's escort, the starter, the rival battle, the
+Parcel errand and the Pokédex (W3, W4).
 
 Outside Phases 1 and 2:
 

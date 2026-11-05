@@ -108,6 +108,12 @@ class MapsTest(unittest.TestCase):
             ],
         )
 
+    def test_lists_trainer_battles_with_their_lines_by_role(self) -> None:
+        self.assertEqual(
+            gba_gen3_maps.map_battles(gba_gen3.Rom(synthetic_rom()), 0, 0),
+            [gba_gen3_maps.Battle(5, {"intro": TEXTS["e"], "lose": TEXTS["f"]})],
+        )
+
     def test_an_unknown_opcode_is_an_error(self) -> None:
         rom = gba_gen3.Rom(synthetic_rom(npc_script=bytes([0x6A, 0xFF, 0x02])))
         with self.assertRaisesRegex(gba_gen3.ExtractError, "opcode 0xff at 0x501"):

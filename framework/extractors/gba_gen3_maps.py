@@ -28,10 +28,14 @@ LOAD_WORD, MESSAGE, MESSAGE_AUTOSCROLL, TRAINER_BATTLE = 0x0F, 0x67, 0x9B, 0x5C
 STOPS = {END, RETURN, GOTO, STANDARD_GOTO, RAM_RETURN, RAM_END}
 JUMPS = {CALL: 0, GOTO: 0, GOTO_IF: 1, CALL_IF: 1}
 MESSAGES = {MESSAGE: 0, MESSAGE_AUTOSCROLL: 0}
-# A trainer battle's type, a trainer and an NPC (u8, u16, u16), then pointers by type: "m" a message, "s" a script that
-# runs after the battle
+# A trainer battle's type, a trainer and an NPC (u8, u16, u16), then pointers by type, as the event macros name them:
+# the trainer's lines before the battle, on losing and on winning it, the line when the player can't take a double
+# battle, and a script that runs after the battle
+SCRIPT = "script"
 TRAINER_BATTLE_POINTERS = {
-    0: "mm", 1: "mms", 2: "mms", 3: "m", 4: "mmm", 5: "mm", 6: "mmms", 7: "mmm", 8: "mmms", 9: "mm",
+    0: ("intro", "lose"), 1: ("intro", "lose", SCRIPT), 2: ("intro", "lose", SCRIPT), 3: ("lose",),
+    4: ("intro", "lose", "not_enough"), 5: ("intro", "lose"), 6: ("intro", "lose", "not_enough", SCRIPT),
+    7: ("intro", "lose", "not_enough"), 8: ("intro", "lose", "not_enough", SCRIPT), 9: ("lose", "win"),
 }  # fmt: skip
 ARGUMENTS = {
     0x00: (), 0x01: (), END: (), RETURN: (), CALL: (4,), GOTO: (4,), GOTO_IF: (1, 4), CALL_IF: (1, 4),
@@ -55,6 +59,14 @@ class Entry:
 
     name: str
     script: int
+
+
+@dataclass(frozen=True)
+class Battle:
+    """A trainer battle that a script starts: the trainer's number and the offset of each of its lines, by role."""
+
+    trainer: int
+    lines: dict[str, int]
 
 
 def _offset(rom: Rom, pointer: int, what: str) -> int:
@@ -104,10 +116,11 @@ def entries(rom: Rom, header: int) -> list[Entry]:
     return found
 
 
-def messages(rom: Rom, start: int) -> list[int]:
-    """The offsets of the messages that the script at start can show, following its jumps and calls, in the order of
-    the instructions that show them."""
+def _walk(rom: Rom, start: int) -> tuple[dict[int, int], dict[int, Battle]]:
+    """What the script at start can do, following its jumps and calls: the messages it shows, each with the first
+    instruction that shows it, and the trainer battles it starts, by instruction."""
     shown: dict[int, int] = {}
+    battles: dict[int, Battle] = {}
     pending, seen = [start], set()
     while pending:
         pc = pending.pop()
@@ -117,17 +130,21 @@ def messages(rom: Rom, start: int) -> list[int]:
                 raise ExtractError(f"a script runs past the ROM's end from {start:#x}")
             op, at = rom.data[pc], pc + 1
             if op == TRAINER_BATTLE:
-                kinds = TRAINER_BATTLE_POINTERS.get(rom.data[at])
-                if kinds is None:
+                roles = TRAINER_BATTLE_POINTERS.get(rom.data[at])
+                if roles is None:
                     raise ExtractError(f"trainer battle type {rom.data[at]} at {pc:#x} isn't one Kaleido reads")
+                trainer = struct.unpack_from("<H", rom.data, at + 1)[0]
                 at += 5
-                for kind in kinds:
+                lines = {}
+                for role in roles:
                     target = _offset(rom, rom.u32(at), f"the trainer battle at {pc:#x}")
-                    if kind == "s":
+                    if role == SCRIPT:
                         pending.append(target)
                     else:
                         shown.setdefault(target, pc)
+                        lines[role] = target
                     at += 4
+                battles[pc] = Battle(trainer, lines)
             elif op in ARGUMENTS:
                 arguments = []
                 for size in ARGUMENTS[op]:
@@ -145,6 +162,13 @@ def messages(rom: Rom, start: int) -> list[int]:
             else:
                 raise ExtractError(f"script opcode {op:#04x} at {pc:#x} isn't one Kaleido reads yet")
             pc = at
+    return shown, battles
+
+
+def messages(rom: Rom, start: int) -> list[int]:
+    """The offsets of the messages that the script at start can show, following its jumps and calls, in the order of
+    the instructions that show them."""
+    shown, _ = _walk(rom, start)
     return sorted(shown, key=lambda message: shown[message])
 
 
@@ -157,3 +181,11 @@ def map_messages(rom: Rom, group: int, number: int) -> list[tuple[str, list[int]
         listed.update(own)
         result.append((entry.name, own))
     return result
+
+
+def map_battles(rom: Rom, group: int, number: int) -> list[Battle]:
+    """The trainer battles that a map's scripts start, each once, in the order of their instructions."""
+    found: dict[int, Battle] = {}
+    for entry in entries(rom, map_header(rom, group, number)):
+        found.update(_walk(rom, entry.script)[1])
+    return [found[pc] for pc in sorted(found)]

@@ -1,0 +1,9 @@
+{
+    "kind": "gba_gen3_trainers",
+    "source": "firered",
+    "trainers": {
+        "TRAINER_RIVAL": {"trainer": 328, "map": [4, 3]},
+        "TRAINER_RIVAL_2": {"trainer": 326, "map": [4, 3]},
+        "TRAINER_RIVAL_3": {"trainer": 327, "map": [4, 3]}
+    }
+}
