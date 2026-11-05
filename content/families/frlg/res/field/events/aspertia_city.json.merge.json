@@ -1,0 +1,102 @@
+{
+    "npcs": [
+        {
+            "id": 1,
+            "model": "OBJ_CODE_14",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 1,
+            "direction": "DIR_RIGHT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 1,
+                "height": 1
+            },
+            "grid": {
+                "x": 51,
+                "z": 717,
+                "y": 65536
+            }
+        },
+        {
+            "id": 2,
+            "model": "OBJ_CODE_POKEFAN_M",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 2,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 1,
+                "height": 1
+            },
+            "grid": {
+                "x": 59,
+                "z": 736,
+                "y": 65536
+            }
+        }
+    ],
+    "bg_events": [
+        {
+            "script": 3,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 37,
+                "y": 739,
+                "z": 16
+            }
+        },
+        {
+            "script": 4,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 41,
+                "y": 750,
+                "z": 16
+            }
+        },
+        {
+            "script": 5,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 36,
+                "y": 761,
+                "z": 16
+            }
+        },
+        {
+            "script": 6,
+            "condition": 0,
+            "direction": 6,
+            "grid": {
+                "x": 56,
+                "y": 739,
+                "z": 16
+            }
+        },
+        {
+            "script": 7,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 49,
+                "y": 723,
+                "z": 16
+            }
+        }
+    ]
+}
