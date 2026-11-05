@@ -17,7 +17,7 @@ entry points are traced when its switch is built; so far, only the C-Gear's.
 | Pokéstar Studios | `ov062/pokewood_*.c`, `ov023/event_pokewood.c`, `system/pokewood_savedata.c` | `SAVE_BLOCK_POKEWOOD` | — |
 | Memory Link | `system/memory_link_savedata.c`, `system/high_link_savedata.c` | `SAVE_BLOCK_HIGH_LINK` | — |
 | Seasons | `system/season.c`, `ov012/season_form.c`, `ov035/event_season_banner.c` | — | **`KALEIDO_NO_SEASONS`** (patch `0009`), traced below |
-| Unova Pokédex | `ov296`–`ov299` (`pokedex_*.c`) | `SAVE_BLOCK_POKEDEX` | — |
+| Unova Pokédex | `ov296`–`ov299` (`pokedex_*.c`) | `SAVE_BLOCK_POKEDEX` | **`KALEIDO_KANTO_POKEDEX`** (patch `0010`), traced below |
 | Musical | `ov012/musical_*.c`, `ov209`, `ov210`, `system/musical_savedata.c` | `SAVE_BLOCK_MUSICAL` | — |
 | Key System | `ov332/key_system_*.c`, `ov012/scrcmd_keysystem.c`, `system/key_data_savedata.c` | `SAVE_BLOCK_KEY_DATA` | — |
 | Dream Radar | `ov018/event_research_radar.c`, `ov310/research_radar.c` | `SAVE_BLOCK_DREAM_RADAR` | — |
@@ -82,3 +82,26 @@ Traced at `41f42ca`, 2026-11-05 (**Verified** in the code):
 - **So a game without the C-Gear has no Pass Powers.** `KALEIDO_NO_CGEAR` already covers them.
 - **FireRed today:** its scripts never run `CGearPowerOn`, since Black 2's Aspertia scene that did is replaced.
   So FireRed has neither already. D5's C-Gear switch, due after Phase 2's exit check, will make that certain.
+
+## The Kanto Pokédex (`KALEIDO_KANTO_POKEDEX`)
+
+Traced at `41f42ca`, 2026-11-05 (**Verified** in the code), following E5's finding that the regional Pokédex is data:
+
+- **The regional table.** `PML_PersonalLoadRegionalDexTable` (`src/system/poke_personal.c`) loads it from the
+  personal archive: each species' Unova number (#000 Victini to #300), or 999 for one outside the Unova Pokédex.
+- **Its readers:**
+  - the Pokédex's list and info screens (`ov299`, `ov296`);
+  - the seen and caught counts and completion (`pokedex_savedata.c`);
+  - the summary (`ov207`), the boxes (`ov255`) and the trade messages (`ov194`).
+- **Completion** leaves out the species in `UNOVA_DEX_COMPLETION_EXCLUSIONS` (Victini, Keldeo, Meloetta, Genesect).
+- **The search's "regional" order** (`res/pokedex/orders.json`) is already national order, which is Kanto's too.
+
+With `KALEIDO_KANTO_POKEDEX`, the loader keeps the archive's table for its size and rewrites every entry: species 1
+to 151 get their national number, and every other species 999. Completion leaves out Mew alone, as FireRed's
+`HasAllKantoMons` does (pret, read for behavior). FireRed's text names it "KANTO POKÉDEX" (`game_start_3`, the
+Pokédex's bank).
+
+Not changed yet, all of it Approximate until a later pass:
+- the Pokédex's area and habitat pages, which show where species live in Unova;
+- the PC's Pokédex rating, whose scale is Unova's;
+- any graphic with "Unova" drawn in it.

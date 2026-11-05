@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] =?UTF-8?q?pokedex:=20add=20KALEIDO=5FKANTO=5FPOKEDEX=20fo?=
+ =?UTF-8?q?r=20a=20Kanto=20Pok=C3=A9dex=20in=20place=20of=20Unova's?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+With KALEIDO_KANTO_POKEDEX defined, the regional Pokédex is Kanto's: species
+1 to 151, numbered as in the national Pokédex, which the screens, the search,
+the counts and the boxes all read from the regional table. Its completion
+leaves out Mew, as FireRed's does, instead of Unova's four.
+---
+ src/system/poke_personal.c    | 10 ++++++++++
+ src/system/pokedex_savedata.c |  5 +++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/src/system/poke_personal.c b/src/system/poke_personal.c
+index d150ad1bb..12ca295e3 100644
+--- a/src/system/poke_personal.c
++++ b/src/system/poke_personal.c
+@@ -166,6 +166,16 @@ u16 *PML_PersonalLoadRegionalDexTable(HeapID heapId, u16 *count) {
+         GFL_ArcToolReadHeapNewLZGetLen(g_PMLPersonalArcBW2[0], PERSONAL_FILE_REGIONAL_DEX, FALSE, heapId, &size);
+     u16 entries = size / sizeof(u16);
+ 
++#ifdef KALEIDO_KANTO_POKEDEX
++    {
++        u16 i;
++
++        // The Kanto Pokédex in place of Unova's: its 151 species, numbered as in the national one
++        for (i = 0; i < entries; i++) {
++            table[i] = (i >= SPECIES_BULBASAUR && i <= SPECIES_MEW) ? i : REGIONAL_DEX_NONE;
++        }
++    }
++#endif
+     if (count != NULL) {
+         u16 i;
+ 
+diff --git a/src/system/pokedex_savedata.c b/src/system/pokedex_savedata.c
+index af68a87e2..239a84e46 100644
+--- a/src/system/pokedex_savedata.c
++++ b/src/system/pokedex_savedata.c
+@@ -46,10 +46,15 @@ static u16 PokeDex_GetSeenNoUnovaPermissive(PokeDexSave *pokedex, HeapID heapId)
+ static u16 PokeDex_LookupEvaluation(const PokeDexEvaluation *table, int count);
+ 
+ static const u16 UNOVA_DEX_COMPLETION_EXCLUSIONS[] = {
++#ifdef KALEIDO_KANTO_POKEDEX
++    // The Kanto Pokédex is complete without Mew, as FireRed's is
++    SPECIES_MEW,
++#else
+     SPECIES_KELDEO,
+     SPECIES_MELOETTA,
+     SPECIES_GENESECT,
+     SPECIES_VICTINI,
++#endif
+ };
+ 
+ // clang-format off
