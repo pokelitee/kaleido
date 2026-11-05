@@ -4,11 +4,13 @@ something fails here, naming the file, the field, and the layers that wrote the 
 - Each JSON file the layers wrote is checked against the schema its "$schema" names, with pokebw2's own checker
   (tools/data/datajson.py), as the packers check it at build time. That also runs where nothing builds: CI, with
   --no-extract. A file whose "$schema" is missing or names no file is listed as unchecked.
-- Cross-references, which span files: warps lead to a zone that has the target warp; zone headers name encounter
-  tables that exist; encounter slots name species and sane levels; regions map their locations to zones that exist."""
+- Cross-references, which span files: warps lead to a zone that has the target warp; events name scripts that their
+  zone's script file has; zone headers name encounter tables that exist; encounter slots name species and sane levels;
+  regions map their locations to zones that exist."""
 
 import importlib
 import json
+import re
 import sys
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -24,6 +26,8 @@ from kaleido.games import Game
 NO_ZONE = 0xFFFF
 SEASONS = ("all_year", "spring", "summer", "autumn", "winter")
 MAX_LEVEL = 100
+GLOBAL_SCRIPTS = 2000
+SCRIPT_ENTRY = re.compile(r"^\s*ScriptEntry\s", re.MULTILINE)
 
 say = partial(print, flush=True)
 
@@ -173,6 +177,32 @@ def check_encounter_tables(tree: Path) -> list[Problem]:
     return problems
 
 
+def check_event_scripts(tree: Path) -> list[Problem]:
+    """Each zone's NPCs, signs and triggers name a script of the zone's own file, which lists them by ScriptEntry in
+    order from 1, or a global one from GLOBAL_SCRIPTS up (pokebw2's docs/scripts.md); 0 is none."""
+    problems = []
+    for path in _data_files(tree / "res" / "field" / "zones"):
+        scripts = json.loads(path.read_text(encoding="utf-8")).get("scripts")
+        events = tree / "res" / "field" / "events" / path.name
+        if not isinstance(scripts, str) or not events.exists():
+            continue
+        source = tree / "res" / "field" / "scripts" / (scripts.removeprefix("SCRIPTS_").lower() + ".s")
+        count = len(SCRIPT_ENTRY.findall(source.read_text(encoding="utf-8"))) if source.exists() else 0
+        data = json.loads(events.read_text(encoding="utf-8"))
+        for kind in ("npcs", "bg_events", "triggers"):
+            for i, event in enumerate(data.get(kind, [])):
+                script = event.get("script", 0)
+                if 0 < script < GLOBAL_SCRIPTS and script > count:
+                    problems.append(
+                        Problem(
+                            f"res/field/events/{path.name}",
+                            f"{kind}[{i}].script",
+                            f"{source.relative_to(tree).as_posix()} has scripts 1 to {count}, not {script}",
+                        )
+                    )
+    return problems
+
+
 def check_region_zones(paths: Paths, game: Game, tree: Path) -> list[Problem]:
     zones = constants(tree, "zones")
     return [
@@ -195,6 +225,7 @@ def run(paths: Paths, game: Game, tree: Path, schema_check: SchemaCheck | None =
         *schemas.problems,
         *check_region_zones(paths, game, tree),
         *check_warps(tree),
+        *check_event_scripts(tree),
         *check_zone_encounters(tree),
         *check_encounter_tables(tree),
     ]
