@@ -86,6 +86,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Story, progression, event order | Exact | Scripts are rewritten by hand (category 3) in upstream's assembly, using B2W2's flag and variable ranges | Phase 3–4 |
 | Dialogue wording | Exact | Extracted from the builder's ROM, FRLG's capitals included ("POKéMON") | E8; Phase 3 (`gba_gen3_map_text`, `docs/research/frlg-dialogue.md`) |
 | Dialogue layout | Approximate | Line and box breaks, scrolls and names mapped to Gen 5's codes; text colors and voice fonts dropped. The path's lines need no reflow: its widest is narrower than 1% of Black 2's own | E1; Phase 3 (`docs/research/frlg-dialogue.md`) |
+| Choosing the starter | Approximate | Black 2's starter screen offers Kanto's three, its sub screen drawing their own sprites. FireRed's lines for each ball on the table aren't shown | Phase 3 D8, engine patch `0008` |
 | Place names | Exact wording, Approximate case | Extracted from the source's map sections; Gen 3's capitals ("PALLET TOWN") become Gen 5's title case ("Pallet Town") | Phase 3 (`extract.py`, `gba_gen3_place_names`) |
 | Characters (battle sprites) | Approximate | Gen 5-style art; 11 Kanto characters already exist in B2W2 | **Verified** sprite list |
 | Map layouts and interiors | Approximate | Same layouts on Gen 5's tile grid and 3D models; generic interiors (Pokémon Center, Mart) use B2W2's | R-01, E4b |
