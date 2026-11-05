@@ -262,7 +262,25 @@ Step 2, FireRed's content on the skeleton, started 2026-11-04 with place names:
 - `validate` is clean for both games;
 - FireRed builds (`a52ef1cc…`) and its patch applies back to it.
 
-Next in step 2: the dialogue and events of each map, then the rival's parties.
+Then the dialogue (`docs/research/frlg-dialogue.md`):
+- The `map_text` recipe reads every message that the nine maps' scripts show, 174 in all. It finds each map by its
+  group and number and walks its scripts' bytecode.
+- It converts them to Gen 5 text: breaks, scrolls and new boxes, and names as word placeholders. Voice fonts are
+  dropped.
+- It appends them to the stand-ins' text banks, with IDs that say where each comes from (`OaksLab_Text_Npc4_0`).
+- A text merge's new `"$append"` object adds messages.
+- No reflow was needed: the path's widest line is narrower than 1% of Black 2's own.
+
+**Verified** on the WSL clone:
+- `validate firered` is clean, and the merged banks end with FireRed's messages;
+- FireRed builds (`3dc66e8e…`) and its patch applies back to it;
+- `validate red --no-extract` is clean.
+
+Not on screen yet: nothing names the messages until NPCs, signs and their scripts arrive. E8's `map_ids` also lists two
+unrelated maps for Pallet Town's section (Route 1's is right); the note records it for a separate fix.
+
+Next in step 2: the maps' NPCs and signs on the stand-ins, with scripts that show these messages, then the rival's
+parties.
 
 Outside Phases 1 and 2:
 

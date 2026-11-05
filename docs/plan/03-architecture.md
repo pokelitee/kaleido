@@ -100,7 +100,7 @@ files and that layer's extracted files are merged together. A path that both pro
 | Layer file | Effect on the merged tree |
 | --- | --- |
 | `res/P` | Replaces `P` from lower layers (whole file). |
-| `res/P.merge.json` | Applied to the lower `P`. For a JSON file, an RFC 7396 JSON Merge Patch: small overrides, such as one encounter group or one learnset; arrays are replaced whole. For a text file under `res/text/`, an object of message labels and their new text, so that a layer changes single messages without committing upstream's text. |
+| `res/P.merge.json` | Applied to the lower `P`. For a JSON file, an RFC 7396 JSON Merge Patch: small overrides, such as one encounter group or one learnset; arrays are replaced whole. For a text file under `res/text/`, an object of message labels and their new text, so that a layer changes single messages without committing upstream's text; its `"$append"` object adds new messages after the last. |
 | `generated/<list>.txt` | Appends constants to upstream's list. Duplicates are an error. Upstream constants are never renamed or removed, because engine code refers to them. |
 
 - Content that replaces B2W2 behavior repurposes existing IDs by overriding their files (the new game's start zone, its

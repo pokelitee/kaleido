@@ -21,6 +21,8 @@ Findings that plans and decisions rest on. Every finding is tagged:
 | [e9-save-identity.md](e9-save-identity.md) | Phase 0 E9: a per-game save magic ([patch](e9-save-magic.patch)) makes another game's card, B2's included, read as empty; header and save type unchanged; any ARM9 main change can touch the secure area |
 | [e10-regenerate-res.md](e10-regenerate-res.md) | Phase 0 E10: upstream's dumpers rebuild 74.7% of `res/` from a Black 2 ROM, build-equivalent; the rest needs White 2, Apicula and upstream's curated labels, so the mirror stays the plan |
 
+| [frlg-dialogue.md](frlg-dialogue.md) | Phase 3 W2: the path's 174 messages read from FireRed's map scripts by structure, converted to Gen 5 text (breaks, names, fonts) and appended to the stand-ins' banks; no reflow needed |
+
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 
 ## Section 3 baseline, re-verified 2026-11-03

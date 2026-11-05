@@ -14,7 +14,7 @@ games/firered/, red/      one ROM each: game.json, its own text, save magic, B2W
 | --- | --- |
 | `layer.json` | `{"kind": "region" \| "family" \| "game"}`, matching its directory |
 | `provenance.json` | `{"entries": [{"paths": [patterns], "category": …}]}`: every file under `res/` and `generated/` matches exactly one entry. `original` content is CC BY-SA 4.0 ([`LICENSE-CONTENT`](../LICENSE-CONTENT)); `third-party` entries add `license`, `author` and `source`; `extracted` entries name their `recipe` and are never committed |
-| `res/`, `generated/` | content at upstream's paths. `res/P` replaces upstream's file; `res/P.merge.json` patches it (RFC 7396 for JSON; message labels and their text for `res/text/`); `generated/<list>.txt` appends constants |
+| `res/`, `generated/` | content at upstream's paths. `res/P` replaces upstream's file; `res/P.merge.json` patches it (RFC 7396 for JSON; message labels and their text for `res/text/`, with new messages under `"$append"`); `generated/<list>.txt` appends constants |
 | `extract/<name>.json` | a recipe: what to read from the player's source ROM (`kaleido extract`). The output lands in `build/<game>/extracted/`, never in git |
 | `zones.json` (regions) | `{"locations": {"route_1": "ZONE_ROUTE_19"}}`: which existing zone holds each location |
 
@@ -38,7 +38,7 @@ one or the other. `./kaleido build <game>` reads it.
 | Layer | What |
 | --- | --- |
 | `regions/kanto` | Phase 3's stand-ins (`docs/plan/08-phase3.md`, D1): nine Kanto locations on Unova zones in `zones.json`. Pallet Town is on Aspertia City, Route 1 on Route 19 and Viridian City on Floccesy Town, which Unova's maps already join. Each stand-in, and Aspertia's gate to Route 19, loses Black 2's NPCs, triggers, signs and map scripts and keeps its warps. FireRed and Red share it |
-| `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table. `extract/place_names.json`: Pallet Town, Viridian City and Route 1's names from FireRed's map sections, onto their stand-ins' places (Red, with no FireRed source, keeps Unova's) |
+| `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table. `extract/place_names.json`: Pallet Town, Viridian City and Route 1's names from FireRed's map sections, onto their stand-ins' places (Red, with no FireRed source, keeps Unova's). `extract/map_text.json`: the messages of the nine maps' scripts, appended to their stand-ins' text banks for the scripts to come |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
 | `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |
 | `games/red` | A stub with no source ROM: Juniper's first line replaced with original text, and no C-Gear (`KALEIDO_NO_CGEAR`) |
