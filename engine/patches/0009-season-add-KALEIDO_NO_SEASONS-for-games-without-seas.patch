@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] season: add KALEIDO_NO_SEASONS for games without seasons
+
+With KALEIDO_NO_SEASONS defined, the season is always spring, whatever the
+month, so the maps, encounters and forms that follow it stay in spring and the
+banner that announces a new season never shows. A new game also skips the
+banner of the season it starts in.
+---
+ src/ov035/event_mapchange.c | 5 +++++
+ src/system/season.c         | 5 +++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/src/ov035/event_mapchange.c b/src/ov035/event_mapchange.c
+index d9063d592..4b4109145 100644
+--- a/src/ov035/event_mapchange.c
++++ b/src/ov035/event_mapchange.c
+@@ -174,7 +174,9 @@ GameEventReturnCode EventGameOpening_Callback(GameEvent *event, u32 *state, void
+     GameSystem *gsys = wk->gsys;
+     GameData *gameData = GSYS_GetGameData(gsys);
+     u32 realSeason;
++#ifndef KALEIDO_NO_SEASONS
+     u8 season;
++#endif
+ 
+     switch (*state) {
+     case 0:
+@@ -184,8 +186,11 @@ GameEventReturnCode EventGameOpening_Callback(GameEvent *event, u32 *state, void
+     case 1:
+         realSeason = Season_GetRealTime();
+         Season_Set(gameData, realSeason);
++#ifndef KALEIDO_NO_SEASONS
++        // The banner of the season a new game starts in; a game without seasons has none
+         season = GameData_GetSeason(gameData);
+         GameEvent_ChainNext(event, EventSeasonBanner_CreateStandalone(gsys, season, season));
++#endif
+         (*state)++;
+         break;
+     case 2:
+diff --git a/src/system/season.c b/src/system/season.c
+index 9b7c88421..71cf92f09 100644
+--- a/src/system/season.c
++++ b/src/system/season.c
+@@ -27,12 +27,17 @@ BOOL GameData_GetSeasons(GameData *gameData, u16 *prevSeason, u16 *season) {
+ }
+ 
+ u8 Season_GetRealTime(void) {
++#ifdef KALEIDO_NO_SEASONS
++    // A game without seasons stays in spring, the first, whatever the month
++    return SEASON_SPRING;
++#else
+     RTCDate date;
+     u8 season;
+ 
+     RTC_GetCachedDate(&date);
+     season = (date.month - 1) % SEASON_COUNT;
+     return season;
++#endif
+ }
+ 
+ u8 Season_GetNext(u8 season) {
