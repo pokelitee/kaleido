@@ -12,7 +12,9 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
   KANTO_MAPSEC_START, up to MAPSEC_NONE (0xC5), so KANTO_MAPSEC_COUNT of them. The owner's FireRed holds exactly one
   such run; a longer run of names that also starts with Pallet Town (the region map's) is another table;
 - text: capital letters from 0xBB, digits from 0xA1, space 0x00, ended by 0xFF; the rest of CHARACTERS from pret's
-  charmap.txt, read on 2026-11-04;
+  charmap.txt, read on 2026-11-04. In messages, 0xFA scrolls a line and 0xFB starts a new box; 0xFD and a byte is a
+  name (the player's, the rival's or a string the script buffered); 0xFC and a code is a command whose arguments'
+  length the code gives (GetExtCtrlCodeLength), the font command 0x06 taking one byte;
 - species 1 to 251 are in national Pokédex order."""
 
 import struct
@@ -26,9 +28,14 @@ HEADER_SIZE, MAP_HEADER_SIZE, LAND_SLOTS = 20, 28, 12
 MAP_SECTION_OFFSET = 0x14
 LAST_NATIONAL_ORDER_SPECIES = 251
 STRING_END = 0xFF
-NEWLINE = 0xFE
-# The characters of the English text encoding that names and plain lines use. Control codes (0xFA scroll, 0xFB new
-# box, 0xFC and 0xFD with arguments) aren't decoded yet, so a string that holds one is refused
+NEWLINE, SCROLL, NEW_BOX = 0xFE, 0xFA, 0xFB
+NAME, COMMAND, FONT = 0xFD, 0xFC, 0x06
+# Gen 5 shows a name through a word set buffer that the script fills before the message. Black 2's scripts put the
+# player's name in buffer 0 and the rival's in buffer 1; the script's own strings (Gen 3's STR_VAR_1 to 3) take 2 to 4.
+# The engine expands a placeholder by its buffer alone (wordset.c), so every name is a word placeholder, {0100:n}
+NAME_BUFFERS = {0x01: 0, 0x06: 1, 0x02: 2, 0x03: 3, 0x04: 4}
+# The characters of the English text encoding. Names and plain lines (decode) hold only these; messages (message) may
+# also hold the control codes above
 CHARACTERS = {
     0x00: " ", 0x1B: "é", 0x2D: "&", 0x2E: "+", 0x5C: "(", 0x5D: ")", 0xAB: "!", 0xAC: "?", 0xAD: ".", 0xAE: "-",
     0xB0: "…", 0xB1: "“", 0xB2: "”", 0xB3: "‘", 0xB4: "’", 0xB5: "♂", 0xB6: "♀", 0xB8: ",", 0xBA: "/", 0xF0: ":",
@@ -106,6 +113,38 @@ def decode(data: bytes, offset: int, limit: int = 1024) -> str:
             raise ExtractError(f"byte {byte:#04x} at {i:#x} isn't a character Kaleido decodes")
         out.append(CHARACTERS[byte])
     raise ExtractError(f"no end of string within {limit} bytes of {offset:#x}")
+
+
+def message(data: bytes, offset: int, limit: int = 1024) -> str:
+    """The message at offset as a line of Gen 5 text, escaped as pokebw2's res/text/ files are: a line break, a scroll
+    and a new box become `\\n`, `{be00}\\n` and `{be01}\\n` (the stream's scroll and clear, printsys.c), a name becomes
+    its buffer's placeholder, and a font change is dropped, Gen 5 having no voice fonts. Any other control code is an
+    error."""
+    out, i = [], offset
+    end = min(offset + limit, len(data))
+    while i < end:
+        byte = data[i]
+        argument = data[i + 1] if i + 1 < end else None
+        if byte == STRING_END:
+            return "".join(out)
+        if byte == NEWLINE:
+            out.append("\\n")
+        elif byte == SCROLL:
+            out.append("{be00}\\n")
+        elif byte == NEW_BOX:
+            out.append("{be01}\\n")
+        elif byte == NAME and argument in NAME_BUFFERS:
+            out.append(f"{{0100:{NAME_BUFFERS[argument]}}}")
+            i += 1
+        elif byte == COMMAND and argument == FONT:
+            i += 2
+        elif byte in CHARACTERS:
+            out.append(CHARACTERS[byte])
+        else:
+            code = f"{byte:#04x}" + (f" {argument:#04x}" if byte in (NAME, COMMAND) and argument is not None else "")
+            raise ExtractError(f"{code} at {i:#x} isn't a character or control code Kaleido converts")
+        i += 1
+    raise ExtractError(f"no end of message within {limit} bytes of {offset:#x}")
 
 
 def _is_name(data: bytes, offset: int) -> bool:
