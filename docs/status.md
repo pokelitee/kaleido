@@ -276,8 +276,12 @@ Then the dialogue (`docs/research/frlg-dialogue.md`):
 - FireRed builds (`3dc66e8e…`) and its patch applies back to it;
 - `validate red --no-extract` is clean.
 
-Not on screen yet: nothing names the messages until NPCs, signs and their scripts arrive. E8's `map_ids` also lists two
-unrelated maps for Pallet Town's section (Route 1's is right); the note records it for a separate fix.
+Not on screen yet: nothing names the messages until NPCs, signs and their scripts arrive.
+
+E8's `map_ids` listed two unrelated maps for Pallet Town's section (Route 1's was right). Fixed: it now reads the maps
+of the table of map groups (`docs/research/frlg-dialogue.md` §1). **Verified** on the WSL clone: section 0x58 gives
+only 3.0 and 4.0 to 4.3, and `extract firered` writes the same files as before, Route 1's encounters (`488c6a6c…`)
+included.
 
 Next in step 2: the maps' NPCs and signs on the stand-ins, with scripts that show these messages, then the rival's
 parties.

@@ -23,12 +23,13 @@ by Gen 5's text system, with nothing ROM-derived committed?
 
 ## 1. Finding the messages
 
-The formats come from reading pret/pokefirered at `ce6406d8`. `framework/extractors/gba_gen3_maps.py`'s docstring
-lists them; nothing was copied.
+The formats come from reading pret/pokefirered at `ce6406d8`. The docstrings of `framework/extractors/gba_gen3.py`
+(map headers and groups) and `gba_gen3_maps.py` (the rest) list them; nothing was copied.
 
 1. **The table of map groups.** It is the longest run of words that point to a table whose first word points to a map
    header. On the owner's ROM it finds 43 groups in 2.2 s. **Verified**.
-2. **A map's header** is its group's table at its number. A group's table ends where the next one starts.
+2. **A map's header** is its group's table at its number. A group's table ends where the next one or the table of
+   groups starts.
 3. **Where scripts start**, in the ROM's order:
    - NPCs with a script;
    - triggers;
@@ -43,11 +44,13 @@ lists them; nothing was copied.
 5. **Order and ownership.** Messages are numbered in the order of the instructions that show them. A message that an
    earlier entry also shows belongs to that entry.
 
-**E8's `map_ids` lists two extra maps for Pallet Town's section.** Its bottom-up search accepts another table shaped
-like map groups, so section 0x58 also gives 0.0 and 0.2. **Verified** on the owner's ROM.
-- Route 1's lookup is unaffected, since it gives only 3.19, so E8's and Phase 1's encounters stand.
-- The walk above doesn't use that search.
-- A fix, finding maps through `map_groups`, is a separate change.
+**E8's `map_ids` listed two extra maps for Pallet Town's section; fixed.** Its bottom-up search accepted another table
+shaped like map groups, so section 0x58 also gave 0.0 and 0.2. It now reads the maps of the table of map groups (step
+1) and keeps those in the section, so 0x58 gives 3.0 and 4.0 to 4.3. **Verified** on the owner's ROM, 2026-11-04.
+- Route 1's lookup gave only 3.19 before and after. E8's and Phase 1's encounters stand: the extracted table is
+  unchanged (`488c6a6c…`).
+- The table of groups starts right after the last group's table. Its pointers to groups' tables also pass for
+  pointers to map headers, and would add 43 maps to group 42, so a group's table ends there too. **Verified**.
 
 ## 2. Converting the text
 
