@@ -73,7 +73,10 @@ class ValidateTest(unittest.TestCase):
             "npcs": [{"script": 2}, {"script": 3}, {"script": 2100}],
             "bg_events": [{"script": 0}, {"script": 5}],
             "triggers": [{"script": 1}],
-            "init_scripts": [{"type": 2, "script": 4}, {"type": 1, "conditions": [{"var": 1, "value": 0, "script": 6}]}],
+            "init_scripts": [
+                {"type": 2, "script": 4},
+                {"type": 1, "conditions": [{"var": 1, "value": 0, "script": 6}]},
+            ],
         }
         put(self.tree / "res/field/events/a.json", events)
         self.assertEqual(

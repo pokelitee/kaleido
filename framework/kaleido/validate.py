@@ -199,12 +199,12 @@ def check_event_scripts(tree: Path) -> list[Problem]:
             for i, table in enumerate(data.get("init_scripts", []))
             for j, condition in enumerate(table.get("conditions", []))
         ]
-        for field, script in named:
+        for where, script in named:
             if 0 < script < GLOBAL_SCRIPTS and script > count:
                 problems.append(
                     Problem(
                         f"res/field/events/{path.name}",
-                        field,
+                        where,
                         f"{source.relative_to(tree).as_posix()} has scripts 1 to {count}, not {script}",
                     )
                 )
