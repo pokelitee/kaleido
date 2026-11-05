@@ -160,5 +160,35 @@
                 "z": 16
             }
         }
+    ],
+    "triggers": [
+        {
+            "script": 9,
+            "var": "0x404e",
+            "value": 3,
+            "type": 0,
+            "grid": {
+                "x": 112,
+                "z": 670,
+                "width": 4,
+                "height": 1,
+                "y": 32
+            },
+            "unk14": 0
+        },
+        {
+            "script": 9,
+            "var": "0x404e",
+            "value": 4,
+            "type": 0,
+            "grid": {
+                "x": 112,
+                "z": 670,
+                "width": 4,
+                "height": 1,
+                "y": 32
+            },
+            "unk14": 0
+        }
     ]
 }

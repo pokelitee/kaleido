@@ -356,6 +356,29 @@ Nothing opens the starter screen until 3a's lab script.
 **Verified** on the WSL clone: `validate` is clean for both games, and FireRed builds with the scripts (`e3999055…`),
 its patch applying back to it. Nothing of 3a has been seen in game: the playtest row below lists each beat.
 
+3b, the Parcel errand:
+- **The Mart's parcel.** On first entering the Viridian Mart after the rival's battle, the clerk calls out and gives
+  Oak's Parcel, which is Black 2's Parcel (`ITEM_PARCEL`). It keeps Black 2's name, "Parcel", until item names are
+  extracted. After that the clerk asks the player to deliver it, and once it's delivered he runs Black 2's own Mart
+  (global script 10110) with its standard, badge-based list. FireRed's own list waits for item extraction.
+- **The delivery.** With the parcel, talking to Oak runs the delivery:
+  - he takes it and the rival comes back;
+  - both get a Pokédex, as Black 2's starter scene gives it: its flag 0x962 and the player-by-gender animation;
+  - the player gets five Poké Balls;
+  - the rival leaves for his sister's Town Map, with FireRed's lines throughout.
+- **Viridian's old man.** Until the delivery he forbids the way north, at the row where Black 2's own story blocks
+  Floccesy's upper town, and the player steps back. His granddaughter's lines follow.
+- **Daisy** gives the Town Map once the player has the Pokédex, through Black 2's item-receiving script (global 2805),
+  if the bag has room.
+- **The Pokémon Center's nurse** runs Black 2's healing script (global 2100), so her lines are Black 2's, and the
+  Center's PC (global 2108) is back. Its other map scripts stay out: they set up Black 2's Memory Link visitors, and
+  one deletes NPCs by number.
+- **Not in Phase 3's beats:** FireRed's catching tutorial with the old man, and the Mom-and-Oak lines after the
+  delivery.
+
+**Verified** on the WSL clone: `validate` is clean for both games, and FireRed builds with 3b (`96eb2d90…`), its patch
+applying back to it. Not seen in game: the playtest row below lists each beat.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
@@ -396,6 +419,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | Phase 3, step 1 | A new game goes from the intro straight to the player's room upstairs, with no flight over Unova and no opening scene, standing on open floor. The stairs lead down. The front door leads out into "Pallet Town" (Aspertia City, still with Unova's names), with no NPCs or scenes. The other doors reach the rival's house and the lab (the Trainers' School). The gate leads through to Route 1 (Route 19), and Route 1 to Viridian City (Floccesy Town), with its Pokémon Center and Mart (a house). Nothing stops the player on the way | `build/firered/kaleido-firered.nds` or `build/red/kaleido-red.nds` (rebuild them) |
 | Phase 3, step 2 | The stand-ins show FireRed's names: "Pallet Town", "Route 1" and "Viridian City" as each is entered. Its people stand on the stand-ins, each with a placeholder model, and talking to one shows its FireRed line in a speech box, the player's name filled in. Mom's line differs for a boy and a girl. Pallet Town's five signs read FireRed's text: the town sign as a town board, the houses' and the lab's as building signs, and Trainer Tips. Route 1's sign is a route board, and the upstairs room's, the lab's and Viridian's read too. FireRed's capitals ("POKéMON") show as written. Check line breaks, scrolls and new boxes, and whether the rival's name (`{0100:1}`, Daisy's line and the rival's house sign) shows, since the new game skips the intro that may set it | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 3, step 3a | From a new game, walk to Route 1's gate in "Pallet Town": Oak calls out, appears with Juniper's look, walks up, warns, and a fade brings both into the lab facing up. The rival-naming screen opens, then Oak and the rival (Hugh's look) speak. Black 2's starter screen offers Bulbasaur, Charmander and Squirtle; check that its lower screen draws them, scaling cleanly and dimming the two not picked. The chosen one joins at level 5 with FireRed's "received" line and a nickname offer, the party menu works, and the rival takes the starter strong against it. Walking toward the door starts his challenge and battle; check his losing and winning lines (and his name in the winning one). Win or lose, the party is healed and he's gone. Mom heals afterwards. Route 1's clerk gives one Potion, which the Bag shows, and only once | `build/firered/kaleido-firered.nds` (rebuild it) |
+| Phase 3, step 3b | After 3a's battle, walking north in "Viridian City" (Floccesy Town's way up) stops at the old man's warning and steps the player back; his granddaughter apologizes. Entering the Mart (a house) has the clerk call out and give the Parcel, which the Bag's Key Items show as "Parcel"; talking to him again asks the player to deliver it. Talking to Oak with it runs the delivery: the rival comes back, the Pokédex animation and FireRed's line play, five Poké Balls arrive, and the rival leaves; the Pokédex then works from the menu. Afterwards the old man lets the player by, the Mart sells (Black 2's list), Daisy gives the Town Map once, the Center's nurse heals with Black 2's sequence, and its PC opens. Note where losing all Pokémon wakes the player, which nothing here sets | `build/firered/kaleido-firered.nds` (rebuild it) |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
