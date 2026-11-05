@@ -178,8 +178,8 @@ def check_encounter_tables(tree: Path) -> list[Problem]:
 
 
 def check_event_scripts(tree: Path) -> list[Problem]:
-    """Each zone's NPCs, signs and triggers name a script of the zone's own file, which lists them by ScriptEntry in
-    order from 1, or a global one from GLOBAL_SCRIPTS up (pokebw2's docs/scripts.md); 0 is none."""
+    """Each zone's NPCs, signs, triggers and init scripts name a script of the zone's own file, which lists them by
+    ScriptEntry in order from 1, or a global one from GLOBAL_SCRIPTS up (pokebw2's docs/scripts.md); 0 is none."""
     problems = []
     for path in _data_files(tree / "res" / "field" / "zones"):
         scripts = json.loads(path.read_text(encoding="utf-8")).get("scripts")
@@ -189,17 +189,25 @@ def check_event_scripts(tree: Path) -> list[Problem]:
         source = tree / "res" / "field" / "scripts" / (scripts.removeprefix("SCRIPTS_").lower() + ".s")
         count = len(SCRIPT_ENTRY.findall(source.read_text(encoding="utf-8"))) if source.exists() else 0
         data = json.loads(events.read_text(encoding="utf-8"))
-        for kind in ("npcs", "bg_events", "triggers"):
-            for i, event in enumerate(data.get(kind, [])):
-                script = event.get("script", 0)
-                if 0 < script < GLOBAL_SCRIPTS and script > count:
-                    problems.append(
-                        Problem(
-                            f"res/field/events/{path.name}",
-                            f"{kind}[{i}].script",
-                            f"{source.relative_to(tree).as_posix()} has scripts 1 to {count}, not {script}",
-                        )
+        named = [
+            (f"{kind}[{i}].script", event.get("script", 0))
+            for kind in ("npcs", "bg_events", "triggers", "init_scripts")
+            for i, event in enumerate(data.get(kind, []))
+        ]
+        named += [
+            (f"init_scripts[{i}].conditions[{j}].script", condition.get("script", 0))
+            for i, table in enumerate(data.get("init_scripts", []))
+            for j, condition in enumerate(table.get("conditions", []))
+        ]
+        for where, script in named:
+            if 0 < script < GLOBAL_SCRIPTS and script > count:
+                problems.append(
+                    Problem(
+                        f"res/field/events/{path.name}",
+                        where,
+                        f"{source.relative_to(tree).as_posix()} has scripts 1 to {count}, not {script}",
                     )
+                )
     return problems
 
 
