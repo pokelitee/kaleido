@@ -21,7 +21,7 @@ the script text bank that the location's zone header names. Each message's ID sa
 says: `PalletTown_Text_Npc2_0` is the first message of the NPC whose local ID is 2, and `Sign`, `Trigger` and
 `MapScript` count the map's signs, triggers and map scripts from 0.
 
-    { "kind": "gba_gen3_trainers", "source": "firered", "trainers": { "TRAINER_RIVAL": {"trainer": 328, "map": [4, 3]} } }
+    { "kind": "gba_gen3_trainers", "source": "firered", "trainers": { "TRAINER_RIVAL": {"trainer": 328, "map": [4, 3]}}}
 
 Each Gen 5 trainer's party, battle style and prize from the source's trainer of that number, and its battle lines from
 the battle that the source map's scripts start with it, as a merge patch on the Gen 5 trainer's file. Its name, class
