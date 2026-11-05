@@ -208,11 +208,15 @@ def _trainers(
             raise ConfigError(f"{constant} isn't a trainer of generated/trainers.txt")
         number = source.get("trainer") if isinstance(source, dict) else None
         if not isinstance(number, int):
-            raise ConfigError(f"{constant}: name the source's trainer number and its map, as {{'trainer': 1, 'map': ...}}")
+            raise ConfigError(
+                f"{constant}: name the source's trainer number and its map, as {{'trainer': 1, 'map': ...}}"
+            )
         found = gba_gen3_trainers.trainer(rom, number)
         party = _trainer_party(paths, constant, found)
         lines: dict[str, str] = {}
-        battles = [b for b in gba_gen3_maps.map_battles(rom, *_map_id(constant, source.get("map"))) if b.trainer == number]
+        battles = [
+            b for b in gba_gen3_maps.map_battles(rom, *_map_id(constant, source.get("map"))) if b.trainer == number
+        ]
         if not battles:
             raise ConfigError(f"{constant}: no script of map {source['map']} starts a battle with trainer {number}")
         for battle in battles:
