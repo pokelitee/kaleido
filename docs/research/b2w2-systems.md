@@ -8,7 +8,7 @@ entry points are traced when its switch is built; so far, only the C-Gear's.
 | System | Code | Save block | Switch |
 | --- | --- | --- | --- |
 | C-Gear | `ov079/c_gear_sw.c` (the bottom screen), `ov080/no_gear.c` (the screen before it), `ov088/c_gear_power_onoff.c`, `ov012/event_cgear_poweron.c`, `system/c_gear_savedata.c` | `SAVE_BLOCK_CGEAR` | **`KALEIDO_NO_CGEAR`** (patch `0006`), traced below |
-| Pass Powers | `system/pass_power.c`, `ov156/field_pass_power.c`, `ov328/gpower_app.c`, `ov014/event_pass_power.c`, `ov012/pass_power_check.c` | none named for it | — |
+| Pass Powers | `system/pass_power.c`, `ov156/field_pass_power.c`, `ov328/gpower_app.c`, `ov014/event_pass_power.c`, `ov012/pass_power_check.c` | none named for it | None needed: only the C-Gear's screens reach them, traced below |
 | Entralink and Funfest missions | `ov036/field_palace_sys.c`, `ov033/entralink_warp.c`, `ov033/event_funfest_mission.c`, `ov085/fmission_view*.c`, `ov309/fmission_app*.c`, `ov024`–`ov027` and `ov071`/`ov072` (`fest_mission_*.c`) | `SAVE_BLOCK_FUNFEST` | — |
 | Join Avenue | `system/join_avenue_savedata.c`, `ov012/scrcmd_join_avenue_store.c` (its other code is unnamed so far) | `SAVE_BLOCK_JOIN_AVENUE` | — |
 | Hidden Grottoes | `ov012/hidden_hollow.c`, `ov036/hidden_hollow_generate.c`, `ov036/scrcmd_hidden_hollow.c` | none named for it | — |
@@ -16,8 +16,8 @@ entry points are traced when its switch is built; so far, only the C-Gear's.
 | Medal Rally | `system/medal_box.c`, `ov145/medalbox*.c`, `ov187/medal_info_*.c`, `ov036/scrcmd_medal.c` | `SAVE_BLOCK_MEDAL_BOX` | — |
 | Pokéstar Studios | `ov062/pokewood_*.c`, `ov023/event_pokewood.c`, `system/pokewood_savedata.c` | `SAVE_BLOCK_POKEWOOD` | — |
 | Memory Link | `system/memory_link_savedata.c`, `system/high_link_savedata.c` | `SAVE_BLOCK_HIGH_LINK` | — |
-| Seasons | `system/season.c`, `ov012/season_form.c`, `ov035/event_season_banner.c` | — | — |
-| Unova Pokédex | `ov296`–`ov299` (`pokedex_*.c`) | `SAVE_BLOCK_POKEDEX` | — |
+| Seasons | `system/season.c`, `ov012/season_form.c`, `ov035/event_season_banner.c` | — | **`KALEIDO_NO_SEASONS`** (patch `0009`), traced below |
+| Unova Pokédex | `ov296`–`ov299` (`pokedex_*.c`) | `SAVE_BLOCK_POKEDEX` | **`KALEIDO_KANTO_POKEDEX`** (patch `0010`), traced below |
 | Musical | `ov012/musical_*.c`, `ov209`, `ov210`, `system/musical_savedata.c` | `SAVE_BLOCK_MUSICAL` | — |
 | Key System | `ov332/key_system_*.c`, `ov012/scrcmd_keysystem.c`, `system/key_data_savedata.c` | `SAVE_BLOCK_KEY_DATA` | — |
 | Dream Radar | `ov018/event_research_radar.c`, `ov310/research_radar.c` | `SAVE_BLOCK_DREAM_RADAR` | — |
@@ -47,3 +47,61 @@ C-Gear's code and data stay in the build.
 2026-11-04). Red's patch went from about 420 KB to 5.9 MB, and its build needs `--allow-stale-secure-area` (R-27),
 which every game build passes. Its DSi checks still pass. Taking them out, which would free RAM (R-05), is later work. Black 2's
 script still says the C-Gear was obtained: a Kaleido game's own scripts won't hand it out.
+
+## Seasons (`KALEIDO_NO_SEASONS`)
+
+Traced at `41f42ca`, 2026-11-05 (**Verified** in the code):
+
+- **The season comes from the DS clock.** `Season_GetRealTime` (`src/system/season.c`) is `(month − 1) % 4`, so Black
+  2's season changes every month.
+- **When the game updates it:**
+  - at a new game, which also shows the season's banner (`EventGameOpening_Callback`, `src/ov035/event_mapchange.c`);
+  - when the game data is created (`src/system/game_data.c`);
+  - on entering an outdoor zone, when the clock's season differs from the stored one. That shows the banner and
+    changes seasonal forms (`event_mapchange.c`).
+- **What reads it:** the maps (`fieldmap.c`, `map_replace.c`), encounters, sound, field effects, weather, forms and
+  the Pokédex's habitats, among some 30 files.
+
+With `KALEIDO_NO_SEASONS`, `Season_GetRealTime` always says spring, the first season. The stored season then never
+differs from it, so no banner shows and nothing changes with the month. A new game also skips its banner. Every reader
+sees spring.
+- **Why spring:** FireRed has no seasons. Spring is Black 2's first, and its look is the one with no snow or autumn
+  colors; summer is the other green season.
+- **ARM9 main:** `season.c` is in it, so the switch moves code there, as `KALEIDO_NO_CGEAR` does (R-27, handled by
+  every build).
+
+## Pass Powers: no switch needed
+
+Traced at `41f42ca`, 2026-11-05 (**Verified** in the code):
+
+- **Activation:** `PassPower_Activate` (`src/system/pass_power.c`) is the only way a power takes effect. Its one
+  caller is the field event in `src/ov156/field_pass_power.c`.
+- **Entry points:** that event, the power list and the event that offers a power start only from two of the C-Gear's
+  screens: the wireless beacon view (`src/ov084/beacon_view_setup.c`) and the Funfest mission view
+  (`src/ov085/fmission_view_setup.c`).
+- **So a game without the C-Gear has no Pass Powers.** `KALEIDO_NO_CGEAR` already covers them.
+- **FireRed today:** its scripts never run `CGearPowerOn`, since Black 2's Aspertia scene that did is replaced.
+  So FireRed has neither already. D5's C-Gear switch, due after Phase 2's exit check, will make that certain.
+
+## The Kanto Pokédex (`KALEIDO_KANTO_POKEDEX`)
+
+Traced at `41f42ca`, 2026-11-05 (**Verified** in the code), following E5's finding that the regional Pokédex is data:
+
+- **The regional table.** `PML_PersonalLoadRegionalDexTable` (`src/system/poke_personal.c`) loads it from the
+  personal archive: each species' Unova number (#000 Victini to #300), or 999 for one outside the Unova Pokédex.
+- **Its readers:**
+  - the Pokédex's list and info screens (`ov299`, `ov296`);
+  - the seen and caught counts and completion (`pokedex_savedata.c`);
+  - the summary (`ov207`), the boxes (`ov255`) and the trade messages (`ov194`).
+- **Completion** leaves out the species in `UNOVA_DEX_COMPLETION_EXCLUSIONS` (Victini, Keldeo, Meloetta, Genesect).
+- **The search's "regional" order** (`res/pokedex/orders.json`) is already national order, which is Kanto's too.
+
+With `KALEIDO_KANTO_POKEDEX`, the loader keeps the archive's table for its size and rewrites every entry: species 1
+to 151 get their national number, and every other species 999. Completion leaves out Mew alone, as FireRed's
+`HasAllKantoMons` does (pret, read for behavior). FireRed's text names it "KANTO POKÉDEX" (`game_start_3`, the
+Pokédex's bank).
+
+Not changed yet, all of it Approximate until a later pass:
+- the Pokédex's area and habitat pages, which show where species live in Unova;
+- the PC's Pokédex rating, whose scale is Unova's;
+- any graphic with "Unova" drawn in it.

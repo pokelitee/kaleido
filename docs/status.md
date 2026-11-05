@@ -379,6 +379,23 @@ its patch applying back to it. Nothing of 3a has been seen in game: the playtest
 **Verified** on the WSL clone: `validate` is clean for both games, and FireRed builds with 3b (`96eb2d90…`), its patch
 applying back to it. Not seen in game: the playtest row below lists each beat.
 
+Step 4, FireRed's B2W2-system switches (D5), traced in `docs/research/b2w2-systems.md`:
+- **Seasons**, patch `0009` (`KALEIDO_NO_SEASONS`): the season follows the DS clock's month and some 30 files read
+  it. With the switch it stays spring, so no season banner shows, a new game included.
+- **Pass Powers** need no switch. They start only from two of the C-Gear's screens, so a game without the C-Gear has
+  none. FireRed's scripts never power the C-Gear on, so it has neither already.
+- **The Pokédex**, patch `0010` (`KALEIDO_KANTO_POKEDEX`): the regional Pokédex is Kanto's 151 at their national
+  numbers, complete without Mew, and FireRed calls it "KANTO POKÉDEX". Its area, habitat and rating pages stay
+  Unova's for now.
+- **The C-Gear's switch** (`KALEIDO_NO_CGEAR`, patch `0006`) goes into FireRed after the owner's Phase 2 exit check,
+  as D5 says.
+
+**Verified** on the WSL clone, with `0009` and `0010`:
+- `baseline` still matches Black 2 (`e51e6dfb…`);
+- `compile` compiles every game's defines;
+- FireRed builds (`d3e00b92…`) and its patch applies back to it;
+- clang-format leaves both patches' files unchanged.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
@@ -420,6 +437,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | Phase 3, step 2 | The stand-ins show FireRed's names: "Pallet Town", "Route 1" and "Viridian City" as each is entered. Its people stand on the stand-ins, each with a placeholder model, and talking to one shows its FireRed line in a speech box, the player's name filled in. Mom's line differs for a boy and a girl. Pallet Town's five signs read FireRed's text: the town sign as a town board, the houses' and the lab's as building signs, and Trainer Tips. Route 1's sign is a route board, and the upstairs room's, the lab's and Viridian's read too. FireRed's capitals ("POKéMON") show as written. Check line breaks, scrolls and new boxes, and whether the rival's name (`{0100:1}`, Daisy's line and the rival's house sign) shows, since the new game skips the intro that may set it | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 3, step 3a | From a new game, walk to Route 1's gate in "Pallet Town": Oak calls out, appears with Juniper's look, walks up, warns, and a fade brings both into the lab facing up. The rival-naming screen opens, then Oak and the rival (Hugh's look) speak. Black 2's starter screen offers Bulbasaur, Charmander and Squirtle; check that its lower screen draws them, scaling cleanly and dimming the two not picked. The chosen one joins at level 5 with FireRed's "received" line and a nickname offer, the party menu works, and the rival takes the starter strong against it. Walking toward the door starts his challenge and battle; check his losing and winning lines (and his name in the winning one). Win or lose, the party is healed and he's gone. Mom heals afterwards. Route 1's clerk gives one Potion, which the Bag shows, and only once | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 3, step 3b | After 3a's battle, walking north in "Viridian City" (Floccesy Town's way up) stops at the old man's warning and steps the player back; his granddaughter apologizes. Entering the Mart (a house) has the clerk call out and give the Parcel, which the Bag's Key Items show as "Parcel"; talking to him again asks the player to deliver it. Talking to Oak with it runs the delivery: the rival comes back, the Pokédex animation and FireRed's line play, five Poké Balls arrive, and the rival leaves; the Pokédex then works from the menu. Afterwards the old man lets the player by, the Mart sells (Black 2's list), Daisy gives the Town Map once, the Center's nurse heals with Black 2's sequence, and its PC opens. Note where losing all Pokémon wakes the player, which nothing here sets | `build/firered/kaleido-firered.nds` (rebuild it) |
+| Phase 3, step 4 | With the DS clock's month set to any of the year's, FireRed shows no season banner (at a new game or on going outside) and the maps look as in spring. After the delivery, the Pokédex is "KANTO POKÉDEX": its list runs from Bulbasaur to Mew numbered 001 to 151, and the seen and caught counts count only those | `build/firered/kaleido-firered.nds` (rebuild it) |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator

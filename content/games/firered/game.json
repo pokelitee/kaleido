@@ -5,7 +5,9 @@
     "sources": ["firered"],
     "start": "players_house_2f",
     "defines": {
+        "KALEIDO_KANTO_POKEDEX": "",
         "KALEIDO_KANTO_STARTERS": "",
+        "KALEIDO_NO_SEASONS": "",
         "KALEIDO_SAVE_MAGIC": "0x4b465231"
     }
 }

@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "paths": ["res/text/system/game_start.txt.merge.json"],
+            "paths": ["res/text/system/game_start.txt.merge.json", "res/text/system/game_start_3.txt.merge.json"],
             "category": "original"
         }
     ]

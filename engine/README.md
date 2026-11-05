@@ -22,6 +22,8 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 | `0006` | `KALEIDO_NO_CGEAR`: a game without the C-Gear, the first B2W2-system switch (`docs/research/b2w2-systems.md`) | Phase 2 |
 | `0007` | `KALEIDO_NEW_GAME_ZONE`: where a new game starts (a zone's Fly position), without Black 2's flight over Unova and opening scene | Phase 3 |
 | `0008` | `KALEIDO_KANTO_STARTERS`: Black 2's starter screen offers Bulbasaur, Charmander and Squirtle, its sub screen drawing their own sprites | Phase 3 |
+| `0009` | `KALEIDO_NO_SEASONS`: the season stays spring, so it never changes and no season banner shows (`docs/research/b2w2-systems.md`) | Phase 3 |
+| `0010` | `KALEIDO_KANTO_POKEDEX`: the regional Pokédex is Kanto's 151, numbered as in the national one, complete without Mew | Phase 3 |
 
 - Every behavior change sits behind a `KALEIDO_*` define. With all defines off, the patched engine must still rebuild
   Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).
