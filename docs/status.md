@@ -376,6 +376,9 @@ its patch applying back to it. Nothing of 3a has been seen in game: the playtest
 - **Not in Phase 3's beats:** FireRed's catching tutorial with the old man, and the Mom-and-Oak lines after the
   delivery.
 
+**Verified** on the WSL clone: `validate` is clean for both games, and FireRed builds with 3b (`96eb2d90…`), its patch
+applying back to it. Not seen in game: the playtest row below lists each beat.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
