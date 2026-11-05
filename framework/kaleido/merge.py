@@ -4,7 +4,8 @@ worktree (03-architecture.md §5).
 What a layer's file does to the merged tree:
 - res/P: replaces P.
 - res/P.merge.json: patches the lower P. For a JSON file, an RFC 7396 merge patch (arrays are replaced whole); for a
-  text file (res/text/), an object of message labels and their new text, in the text file's own escaping.
+  text file (res/text/), an object of message labels and their new text, in the text file's own escaping, whose
+  "$append" object holds new messages, added after the lower file's last.
 - generated/<list>.txt: appends its constants to upstream's list; a name that's already there is an error.
 
 The lower file is always the layers below over upstream's file at the worktree's commit, never the worktree's current
@@ -26,6 +27,8 @@ from kaleido.process import run
 
 MERGE_SUFFIX = ".merge.json"
 CONSTANT = re.compile(r"[A-Z][A-Z0-9_]*")
+# In a text merge, the key whose object holds new messages, which the lower file mustn't have yet
+APPEND = "$append"
 
 
 @dataclass(frozen=True)
@@ -55,14 +58,33 @@ def merge_patch(target, patch):
 
 
 def override_messages(text: str, overrides: dict, where: str) -> str:
+    """Replaces each labelled message, and adds the messages under APPEND after the file's last one."""
     lines = text.split("\n")
-    for label, message in overrides.items():
-        if not isinstance(message, str):
+
+    def labelled(label: str) -> list[int]:
+        return [i for i, line in enumerate(lines) if line.startswith(f"{label} = ")]
+
+    added = overrides.get(APPEND, {})
+    if not isinstance(added, dict):
+        raise ConfigError(f"{where}: {APPEND} is an object of new labels and their text")
+    for label, message in [*overrides.items(), *added.items()]:
+        if label != APPEND and not isinstance(message, str):
             raise ConfigError(f"{where}: {label}'s text must be a string")
-        found = [i for i, line in enumerate(lines) if line.startswith(f"{label} = ")]
+    for label, message in overrides.items():
+        if label == APPEND:
+            continue
+        found = labelled(label)
         if len(found) != 1:
             raise ConfigError(f"{where}: the lower file has {len(found)} messages labelled {label}; expected one")
         lines[found[0]] = f"{label} = {message}"
+    for label in added:
+        if labelled(label):
+            raise ConfigError(f"{where}: the lower file already has a message labelled {label}")
+    # After the last message: before the closing newline, and before a last \pad line, which isn't a message
+    end = len(lines) - 1 if lines[-1] == "" else len(lines)
+    if end and lines[end - 1].startswith("\\pad{"):
+        end -= 1
+    lines[end:end] = [f"{label} = {message}" for label, message in added.items()]
     return "\n".join(lines)
 
 

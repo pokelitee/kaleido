@@ -101,7 +101,10 @@ class LayersTest(unittest.TestCase):
     def test_the_repository_layers_load(self) -> None:
         root = Paths(Path(__file__).resolve().parents[2])
         stack = layers.load_stack(root, ["regions/kanto", "families/frlg", "games/firered"])
-        self.assertEqual(stack[1].recipes(), ["extract/place_names.json", "extract/route_1_encounters.json"])
+        self.assertEqual(
+            stack[1].recipes(),
+            ["extract/map_text.json", "extract/place_names.json", "extract/route_1_encounters.json"],
+        )
 
 
 if __name__ == "__main__":

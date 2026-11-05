@@ -12,14 +12,21 @@ the source ROM shows it.
     { "kind": "gba_gen3_place_names", "source": "firered", "places": { "pallet_town": 88 } }
 
 Each location's name, from the source's map section of that number, as a merge patch on the place that its zone's
-header names. Gen 3's capitals become Gen 5's title case ("PALLET TOWN" becomes "Pallet Town")."""
+header names. Gen 3's capitals become Gen 5's title case ("PALLET TOWN" becomes "Pallet Town").
+
+    { "kind": "gba_gen3_map_text", "source": "firered", "maps": { "pallet_town": [3, 0] } }
+
+The messages that the scripts of the source's map (its group and number) show, converted to Gen 5 text and appended to
+the script text bank that the location's zone header names. Each message's ID says where it comes from, not what it
+says: `PalletTown_Text_Npc2_0` is the first message of the NPC whose local ID is 2, and `Sign`, `Trigger` and
+`MapScript` count the map's signs, triggers and map scripts from 0."""
 
 import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
-from extractors import gba_gen3
+from extractors import gba_gen3, gba_gen3_maps
 from kaleido import layers as layer_module
 from kaleido.config import ConfigError, Paths
 from kaleido.games import Game
@@ -85,6 +92,14 @@ def place_path(paths: Paths, zone: str) -> str:
     return f"res/field/places/{place.removeprefix('PLACE_').lower()}.json"
 
 
+def text_bank_path(paths: Paths, zone: str) -> str:
+    """The script text bank a zone's header names, as its file under res/."""
+    bank = _zone_header(paths, zone).get("text")
+    if not bank:
+        raise ConfigError(f"{zone} has no script text bank to take the source's messages")
+    return f"res/text/script/{bank.removeprefix('SCRIPT_TEXT_').lower()}.txt"
+
+
 def _rom(paths: Paths, game: Game, recipe: dict, roms: dict[str, gba_gen3.Rom]) -> gba_gen3.Rom:
     source = recipe["source"]
     if source not in roms:
@@ -123,11 +138,30 @@ def _place_names(
     return outputs
 
 
-KINDS = {"gba_gen3_wild_land": _wild_land, "gba_gen3_place_names": _place_names}
+def _map_text(
+    paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[str, gba_gen3.Rom]
+) -> list[tuple[str, str]]:
+    rom = _rom(paths, game, recipe, roms)
+    outputs = []
+    for location, map_id in sorted(recipe["maps"].items()):
+        if not (isinstance(map_id, list) and len(map_id) == 2 and all(isinstance(n, int) for n in map_id)):
+            raise ConfigError(f"{location}: a map is its group and number, as [3, 0]; not {map_id!r}")
+        prefix = "".join(word.capitalize() for word in location.split("_"))
+        messages = {}
+        for entry, offsets in gba_gen3_maps.map_messages(rom, *map_id):
+            for number, offset in enumerate(offsets):
+                messages[f"{prefix}_Text_{entry}_{number}"] = gba_gen3.message(rom.data, offset)
+        path = text_bank_path(paths, layer_module.zone_of(stack, location)) + ".merge.json"
+        outputs.append((path, json.dumps({"$append": messages}, ensure_ascii=False, indent=4) + "\n"))
+    return outputs
+
+
+KINDS = {"gba_gen3_wild_land": _wild_land, "gba_gen3_place_names": _place_names, "gba_gen3_map_text": _map_text}
 # Each kind's fields and their types
 FIELDS = {
     "gba_gen3_wild_land": {"source": str, "map": str, "location": str},
     "gba_gen3_place_names": {"source": str, "places": dict},
+    "gba_gen3_map_text": {"source": str, "maps": dict},
 }
 
 

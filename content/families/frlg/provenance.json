@@ -9,6 +9,11 @@
             "paths": ["res/field/places/*.json.merge.json"],
             "category": "extracted",
             "recipe": "extract/place_names.json"
+        },
+        {
+            "paths": ["res/text/script/*.txt.merge.json"],
+            "category": "extracted",
+            "recipe": "extract/map_text.json"
         }
     ]
 }
