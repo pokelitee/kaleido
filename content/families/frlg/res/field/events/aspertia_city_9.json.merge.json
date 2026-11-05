@@ -68,6 +68,52 @@
                 "z": 3,
                 "y": 0
             }
+        },
+        {
+            "id": 4,
+            "model": "OBJ_CODE_105",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": "0x01f3",
+            "script": 7,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 9,
+                "z": 2,
+                "y": 0
+            }
+        },
+        {
+            "id": 8,
+            "model": "OBJ_CODE_291",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": "0x01f4",
+            "script": 8,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 15,
+                "z": 2,
+                "y": 0
+            }
         }
     ],
     "bg_events": [
@@ -100,6 +146,38 @@
                 "y": 7,
                 "z": 0
             }
+        }
+    ],
+    "triggers": [
+        {
+            "script": 10,
+            "var": "0x404e",
+            "value": 2,
+            "type": 0,
+            "grid": {
+                "x": 1,
+                "z": 24,
+                "width": 17,
+                "height": 1,
+                "y": 0
+            },
+            "unk14": 0
+        }
+    ],
+    "init_scripts": [
+        {
+            "type": 2,
+            "script": 11
+        },
+        {
+            "type": 1,
+            "conditions": [
+                {
+                    "var": "0x404e",
+                    "value": 1,
+                    "script": 9
+                }
+            ]
         }
     ]
 }

@@ -7,19 +7,19 @@
             "type": "ACTOR_EVENT_TYPE_NONE",
             "flag": 0,
             "script": 1,
-            "direction": "DIR_RIGHT",
+            "direction": "DIR_LEFT",
             "params": [
                 0,
                 0,
                 0
             ],
             "area": {
-                "width": 1,
+                "width": 0,
                 "height": 1
             },
             "grid": {
-                "x": 51,
-                "z": 717,
+                "x": 57,
+                "z": 742,
                 "y": 65536
             }
         },
@@ -43,6 +43,29 @@
             "grid": {
                 "x": 59,
                 "z": 736,
+                "y": 65536
+            }
+        },
+        {
+            "id": 3,
+            "model": "OBJ_CODE_105",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": "0x01f2",
+            "script": 0,
+            "direction": "DIR_UP",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 51,
+                "z": 717,
                 "y": 65536
             }
         }
@@ -97,6 +120,28 @@
                 "y": 723,
                 "z": 16
             }
+        }
+    ],
+    "triggers": [
+        {
+            "script": 8,
+            "var": "0x404e",
+            "value": 0,
+            "type": 0,
+            "grid": {
+                "x": 52,
+                "z": 712,
+                "width": 3,
+                "height": 1,
+                "y": 16
+            },
+            "unk14": 0
+        }
+    ],
+    "init_scripts": [
+        {
+            "type": 2,
+            "script": 9
         }
     ]
 }

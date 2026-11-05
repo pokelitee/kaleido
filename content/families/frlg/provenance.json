@@ -1,7 +1,7 @@
 {
     "entries": [
         {
-            "paths": ["res/field/events/*.json.merge.json", "res/field/scripts/*.s"],
+            "paths": ["res/field/events/*.json.merge.json", "res/field/scripts/*.s", "res/field/scripts/*.inc"],
             "category": "original"
         },
         {
