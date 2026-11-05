@@ -79,15 +79,101 @@ Script_6:
     ActorsUnpauseAll
     VMHalt
 
-// Oak
+// Oak: with the parcel, its delivery; before, a word on raising the starter; after, his send-off
 Script_7:
     ActorsPauseAll
     SEPlay SEQ_SE_MESSAGE
     ActorSetEyeToEye
     WordSetPlayerName 0
+    WordSetLoadRivalName 1
+    KantoUnlessEqual KANTO_VAR_STORY, KANTO_STORY_HAS_PARCEL, Lab_OakNoParcel
+    VMJump Lab_Delivery
+
+Lab_OakNoParcel:
+    KantoUnlessAtLeast KANTO_VAR_STORY, KANTO_STORY_HAS_POKEDEX, Lab_OakRaise
+    ParentActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_30, 0, 0
+    VMJump Lab_OakTalked
+
+Lab_OakRaise:
     ParentActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_10, 0, 0
+
+Lab_OakTalked:
     LastKeyWait
     ActorMsgClose
+    FinishAllEvents
+    ActorsUnpauseAll
+    VMHalt
+
+// The parcel's delivery: Oak takes it, the rival comes back, and Oak gives both of them a Pokédex (as Black 2's own
+// starter scene gives it) and the player five Poké Balls
+Lab_Delivery:
+    ParentActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_11, 0, 0
+    LastKeyWait
+    ActorMsgClose
+    ItemSub ITEM_PARCEL, 1, 0x8010
+    SystemMsg OaksLab_Text_Npc4_12, 1
+    MsgWaitAdvance
+    SystemMsgClose
+    ParentActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_13, 0, 0
+    LastKeyWait
+    ActorMsgClose
+    FlagReset KANTO_FLAG_HIDE_LAB_RIVAL
+    ActorAdd 8
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_14, 8, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_15, 8, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_16, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_17, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_18, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    FlagSet B2_FLAG_HAS_POKEDEX
+    MEPlay SEQ_ME_KEYITEM
+    TrainerCardGetSex 0x8010
+    KantoUnlessEqual 0x8010, 0, Lab_DexFemale
+    PlayFieldEffect 63
+    VMJump Lab_DexShown
+
+Lab_DexFemale:
+    PlayFieldEffect 64
+
+Lab_DexShown:
+    WordSetPlayerName 0
+    SystemMsg OaksLab_Text_Npc4_19, 1
+    MEWait
+    MsgWaitAdvance
+    SystemMsgClose
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_20, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ItemAdd ITEM_POKE_BALL, 5, 0x8010
+    MEPlay SEQ_ME_ITEM
+    SystemMsg OaksLab_Text_Npc4_21, 1
+    MEWait
+    MsgWaitAdvance
+    SystemMsgClose
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_22, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_23, 4, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_24, 8, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorMsg MSGFILE_SCRIPT, OaksLab_Text_Npc4_25, 8, 0, 0
+    LastKeyWait
+    MsgWinCloseAll
+    ActorDelete 8
+    FlagSet KANTO_FLAG_HIDE_LAB_RIVAL
+    WorkSetConst KANTO_VAR_STORY, KANTO_STORY_HAS_POKEDEX
     FinishAllEvents
     ActorsUnpauseAll
     VMHalt

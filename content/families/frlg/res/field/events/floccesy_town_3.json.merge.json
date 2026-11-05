@@ -70,5 +70,17 @@
             }
         }
     ],
-    "bg_events": []
+    "bg_events": [],
+    "init_scripts": [
+        {
+            "type": 1,
+            "conditions": [
+                {
+                    "var": "0x404e",
+                    "value": 3,
+                    "script": 4
+                }
+            ]
+        }
+    ]
 }
