@@ -1,0 +1,15 @@
+{
+    "kind": "gba_gen3_map_text",
+    "source": "firered",
+    "maps": {
+        "pallet_town": [3, 0],
+        "players_house_1f": [4, 0],
+        "players_house_2f": [4, 1],
+        "rivals_house": [4, 2],
+        "oaks_lab": [4, 3],
+        "route_1": [3, 19],
+        "viridian_city": [3, 1],
+        "viridian_mart": [5, 3],
+        "viridian_pokemon_center": [5, 4]
+    }
+}
