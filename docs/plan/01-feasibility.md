@@ -95,7 +95,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Old Rod, Good Rod | Approximate (by decision) | Gen 5 has one fishing table; FRLG has three (2, 3 and 5 slots). The Old and Good Rod tables are folded into the one table or dropped (content choice in Phase 3) | **Verified** slot counts |
 | Rock Smash encounters | Approximate (by decision) | No Gen 5 encounter kind; dropped or moved to another table | **Verified** |
 | Encounter rate per map | Approximate (by decision) | Gen 5's per-step climbing rate model: a table's walking rate selects one of 12 ramp settings. E8 maps every land rate to setting 7, Black 2's most common; Phase 3 decides the general rule | **Verified** Gen 5 side (`field_encount.c`) |
-| Trainers' parties, items, money | Exact | Data, extracted | E2, E8 |
+| Trainers' parties, items, money | Exact | Data, extracted. IVs and prize money carry over exactly, since both games compute them the same way. Items wait for a Gen 3 to Gen 5 item mapping | E2, E8; Phase 3 (`gba_gen3_trainers`, `docs/research/frlg-trainers.md`) |
 | Trainer AI | Approximate | Gen 5 AI scripts (grown from Gen 4's) replace FRLG's; can be tuned in assembly | **Verified** upstream `docs/scripts.md` |
 | Gyms, Elite Four, Champion | Exact | Data + scripts | Phase 3.5–4 |
 | VS Seeker rematches | Approximate initially | Needs an item and its logic | Phase 4 |

@@ -23,6 +23,8 @@ Findings that plans and decisions rest on. Every finding is tagged:
 
 | [frlg-dialogue.md](frlg-dialogue.md) | Phase 3 W2: the path's 174 messages read from FireRed's map scripts by structure, converted to Gen 5 text (breaks, names, fonts) and appended to the stand-ins' banks; no reflow needed |
 
+| [frlg-trainers.md](frlg-trainers.md) | Phase 3 W2: FireRed's trainers, parties and prize money found by structure; the rival's three lab parties on Black 2's first rival battles, with IVs and prize carried over exactly |
+
 Each Phase 0 experiment adds its own `e<N>-<topic>.md` here.
 
 ## Section 3 baseline, re-verified 2026-11-03
