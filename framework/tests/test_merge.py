@@ -28,6 +28,22 @@ class MergeRulesTest(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "0 messages labelled T_Text_Three"):
             merge.override_messages(text, {"T_Text_Three": "x"}, "here")
 
+    def test_new_messages_are_appended_after_the_last(self) -> None:
+        patch = {"T_Text_One": "uno", "$append": {"T_Text_Three": "three", "T_Text_Four": "four"}}
+        self.assertEqual(
+            merge.override_messages(UPSTREAM["res/text/system/t.txt"], patch, "here"),
+            "T_Text_One = uno\nT_Text_Two = two\nT_Text_Three = three\nT_Text_Four = four\n",
+        )
+        padded = "T_Text_One = one\n\\pad{9e}\n"
+        self.assertEqual(
+            merge.override_messages(padded, {"$append": {"T_Text_Two": "two"}}, "here"),
+            "T_Text_One = one\nT_Text_Two = two\n\\pad{9e}\n",
+        )
+        with self.assertRaisesRegex(ConfigError, "already has a message labelled T_Text_Two"):
+            merge.override_messages(UPSTREAM["res/text/system/t.txt"], {"$append": {"T_Text_Two": "x"}}, "here")
+        with self.assertRaisesRegex(ConfigError, "T_Text_Five's text must be a string"):
+            merge.override_messages(UPSTREAM["res/text/system/t.txt"], {"$append": {"T_Text_Five": 5}}, "here")
+
     def test_constants_are_appended_once(self) -> None:
         self.assertEqual(
             merge.append_constants(UPSTREAM["generated/things.txt"], "# mine\nTHING_C\n", "here"),
