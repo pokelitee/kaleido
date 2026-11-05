@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] psel: add KALEIDO_KANTO_STARTERS for Kanto's starters on the
+ starter screen
+
+With KALEIDO_KANTO_STARTERS defined, the starter screen offers Bulbasaur,
+Charmander and Squirtle, in the order of its type messages: Grass, Fire, Water.
+The sub screen's scaled pictures are then the starters' own sprites, since the
+archive's are drawings of Black 2's starters, and each one's dark palette is an
+eighth of each channel of its own, as the archive's dark palettes roughly are.
+---
+ src/ov316/psel.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+
+diff --git a/src/ov316/psel.c b/src/ov316/psel.c
+index a22d32626..9623b25c6 100644
+--- a/src/ov316/psel.c
++++ b/src/ov316/psel.c
+@@ -350,7 +350,12 @@ static const u8 sPselBGPaletteFiles[4] = { 9, 8, 10, 7 };
+ 
+ static const PselCursorPos sPselCursorPositions[PSEL_POKE_COUNT] = { { 42, 29 }, { 128, 29 }, { 211, 29 } };
+ 
++#ifdef KALEIDO_KANTO_STARTERS
++// Kanto's starters, in the order of the type messages: Grass, Fire, Water
++static const u16 sPselSpecies[PSEL_POKE_COUNT] = { SPECIES_BULBASAUR, SPECIES_CHARMANDER, SPECIES_SQUIRTLE };
++#else
+ static const u16 sPselSpecies[PSEL_POKE_COUNT] = { SPECIES_SNIVY, SPECIES_TEPIG, SPECIES_OSHAWOTT };
++#endif
+ 
+ static const G3DSceneAnimationSetup sPselBallAnimations[] = { { 5, 0 }, { 6, 0 } };
+ 
+@@ -750,7 +755,9 @@ static void PselBall_Update(PselWork *wk) {
+ 
+ static void PselPoke_Load(PselWork *wk) {
+     ArcTool *pokeArc;
++#ifndef KALEIDO_KANTO_STARTERS
+     ArcTool *arc;
++#endif
+     u8 i;
+ 
+     pokeArc = MakePokeGraArcHandle(wk->heapId);
+@@ -779,6 +786,18 @@ static void PselPoke_Load(PselWork *wk) {
+         ClActor_SetVisible(wk->poke[i].clact[0], FALSE);
+     }
+ 
++#ifdef KALEIDO_KANTO_STARTERS
++    // The archive's scaled pictures are drawings of Black 2's starters, so another game's are its starters' own
++    // sprites, scaled as the drawings are
++    pokeArc = MakePokeGraArcHandle(wk->heapId);
++    for (i = 0; i < PSEL_POKE_COUNT; i++) {
++        wk->poke[i].res[1].chars =
++            PokeGra_LoadClActChars(pokeArc, sPselSpecies[i], 0, 0, FALSE, 0, FALSE, 0, 1, wk->heapId);
++        wk->poke[i].res[1].cellAnim =
++            PokeGra_LoadClActCellAnims(sPselSpecies[i], 0, 0, FALSE, 0, FALSE, 0, 1, wk->heapId);
++    }
++    GFL_ArcToolFree(pokeArc);
++#else
+     arc = GFL_ArcSysCreateFileHandle(ARCID_PSEL, wk->heapId);
+     for (i = 0; i < PSEL_POKE_COUNT; i++) {
+         wk->poke[i].res[1].chars = ClActSys_LoadChars(arc, sPselPokeFiles[i].chars, FALSE, 1, wk->heapId);
+@@ -786,6 +805,7 @@ static void PselPoke_Load(PselWork *wk) {
+             ClActSys_LoadCellAnims(arc, sPselPokeFiles[i].cell, sPselPokeFiles[i].anim, wk->heapId);
+     }
+     GFL_ArcToolFree(arc);
++#endif
+ 
+     for (i = 0; i < PSEL_POKE_COUNT; i++) {
+         ClActorSetupEx setup;
+@@ -1523,12 +1543,33 @@ static void Psel_SplitColor(u16 color, u16 *r, u16 *g, u16 *b) {
+ #define PSEL_BLEND(from, to, step) (((from) * (16 - (step)) + (to) * (step)) / 16)
+ 
+ static void PselPokePal_Load(PselWork *wk) {
++#ifdef KALEIDO_KANTO_STARTERS
++    ArcTool *arc = MakePokeGraArcHandle(wk->heapId);
++#else
+     ArcTool *arc = GFL_ArcSysCreateFileHandle(ARCID_PSEL, wk->heapId);
++#endif
+     u8 i;
+ 
+     for (i = 0; i < PSEL_POKE_COUNT; i++) {
+         NNSG2dPaletteData *palette;
+         void *normal;
++#ifdef KALEIDO_KANTO_STARTERS
++        u8 j;
++
++        // The starter's own palette, and a dark one of an eighth of each channel, as the archive's dark palettes of
++        // Black 2's starters roughly are
++        normal = GFL_G2DIOReadNCLRArc(
++            arc, GetPokemonPaletteDataNo(GetPokemonGraphicsARCID(), sPselSpecies[i], 0, 0, FALSE, 0, FALSE), &palette,
++            wk->heapId);
++        MI_CpuCopy8(palette->pRawData, wk->poke[i].palNormal, sizeof(wk->poke[i].palNormal));
++        GFL_HeapFree(normal);
++        for (j = 0; j < 16; j++) {
++            u16 r, g, b;
++
++            Psel_SplitColor(wk->poke[i].palNormal[j], &r, &g, &b);
++            wk->poke[i].palDark[j] = (r >> 3) | ((g >> 3) << 5) | ((b >> 3) << 10);
++        }
++#else
+         void *dark;
+ 
+         normal = GFL_G2DIOReadNCLRArc(arc, sPselPokeFiles[i].pltt, &palette, wk->heapId);
+@@ -1537,6 +1578,7 @@ static void PselPokePal_Load(PselWork *wk) {
+         dark = GFL_G2DIOReadNCLRArc(arc, sPselPokeFiles[i].plttDark, &palette, wk->heapId);
+         MI_CpuCopy8(palette->pRawData, wk->poke[i].palDark, sizeof(wk->poke[i].palDark));
+         GFL_HeapFree(dark);
++#endif
+     }
+     GFL_ArcToolFree(arc);
+ 
