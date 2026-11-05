@@ -1,0 +1,15 @@
+{
+    "npcs": [],
+    "bg_events": [
+        {
+            "script": 1,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 4,
+                "y": 3,
+                "z": 0
+            }
+        }
+    ]
+}

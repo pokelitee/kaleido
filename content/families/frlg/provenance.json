@@ -1,6 +1,10 @@
 {
     "entries": [
         {
+            "paths": ["res/field/events/*.json.merge.json", "res/field/scripts/*.s"],
+            "category": "original"
+        },
+        {
             "paths": ["res/field/encounters/route_19.json"],
             "category": "extracted",
             "recipe": "extract/route_1_encounters.json"

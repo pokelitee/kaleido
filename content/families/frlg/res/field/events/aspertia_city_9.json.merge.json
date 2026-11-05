@@ -1,0 +1,105 @@
+{
+    "npcs": [
+        {
+            "id": 1,
+            "model": "OBJ_CODE_SCIENTIST_M_52",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 1,
+            "direction": "DIR_UP",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 7,
+                "z": 9,
+                "y": 0
+            }
+        },
+        {
+            "id": 2,
+            "model": "OBJ_CODE_SCIENTIST_F_46",
+            "movement": "MOVE_CODE_TURN_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 2,
+            "direction": "DIR_RIGHT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 12,
+                "z": 10,
+                "y": 0
+            }
+        },
+        {
+            "id": 3,
+            "model": "OBJ_CODE_SCIENTIST_M_52",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 3,
+            "direction": "DIR_UP",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 2,
+                "z": 3,
+                "y": 0
+            }
+        }
+    ],
+    "bg_events": [
+        {
+            "script": 4,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 7,
+                "y": 2,
+                "z": 0
+            }
+        },
+        {
+            "script": 5,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 11,
+                "y": 2,
+                "z": 0
+            }
+        },
+        {
+            "script": 6,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 4,
+                "y": 7,
+                "z": 0
+            }
+        }
+    ]
+}

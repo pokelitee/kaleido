@@ -1,0 +1,28 @@
+{
+    "npcs": [
+        {
+            "id": 1,
+            "model": "OBJ_CODE_NURSERY_AIDE",
+            "movement": "MOVE_CODE_FACE_RIGHT",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 1,
+            "direction": "DIR_RIGHT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 10,
+                "z": 5,
+                "y": 0
+            }
+        }
+    ],
+    "bg_events": []
+}

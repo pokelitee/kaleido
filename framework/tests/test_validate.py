@@ -66,6 +66,23 @@ class ValidateTest(unittest.TestCase):
             ],
         )
 
+    def test_events_name_scripts_their_zones_file_has(self) -> None:
+        put(self.tree / "res/field/zones/a.json", {"scripts": "SCRIPTS_A"})
+        put(self.tree / "res/field/scripts/a.s", '#include "x"\n    ScriptEntry Script_1\n    ScriptEntry Script_2\n')
+        events = {
+            "npcs": [{"script": 2}, {"script": 3}, {"script": 2100}],
+            "bg_events": [{"script": 0}, {"script": 5}],
+            "triggers": [{"script": 1}],
+        }
+        put(self.tree / "res/field/events/a.json", events)
+        self.assertEqual(
+            [(p.field, p.message) for p in validate.check_event_scripts(self.tree)],
+            [
+                ("npcs[1].script", "res/field/scripts/a.s has scripts 1 to 2, not 3"),
+                ("bg_events[1].script", "res/field/scripts/a.s has scripts 1 to 2, not 5"),
+            ],
+        )
+
     def test_a_zones_encounter_table_must_exist(self) -> None:
         put(self.tree / "res/field/zones/c.json", {"encounters": "ENCOUNTERS_LOST"})
         put(self.tree / "res/field/zones/d.json", {"encounters": "ENCOUNTERS_UNKNOWN"})

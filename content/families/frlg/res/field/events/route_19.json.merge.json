@@ -1,0 +1,62 @@
+{
+    "npcs": [
+        {
+            "id": 1,
+            "model": "OBJ_CODE_77",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 1,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 81,
+                "z": 690,
+                "y": 65536
+            }
+        },
+        {
+            "id": 2,
+            "model": "OBJ_CODE_8",
+            "movement": "MOVE_CODE_WALK_RANDOM_LEFT_RIGHT",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 2,
+            "direction": "DIR_LEFT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 77,
+                "z": 697,
+                "y": 65536
+            }
+        }
+    ],
+    "bg_events": [
+        {
+            "script": 3,
+            "condition": 0,
+            "direction": 6,
+            "grid": {
+                "x": 53,
+                "y": 694,
+                "z": 16
+            }
+        }
+    ]
+}

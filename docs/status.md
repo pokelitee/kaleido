@@ -283,8 +283,19 @@ of the table of map groups (`docs/research/frlg-dialogue.md` §1). **Verified** 
 only 3.0 and 4.0 to 4.3, and `extract firered` writes the same files as before, Route 1's encounters (`488c6a6c…`)
 included.
 
-Next in step 2: the maps' NPCs and signs on the stand-ins, with scripts that show these messages, then the rival's
-parties.
+Then the people and signs (`frlg-dialogue.md` §5):
+- The FRLG family puts FireRed's 22 always-present people and 12 of its signs on Black 2's own NPC and sign spots of
+  the stand-ins, with placeholder models.
+- It replaces the stand-ins' script files with talk and sign scripts that show the extracted messages.
+- People that a story flag hides (Oak, the rival, the starter balls) and signs with no spot wait for step 3.
+- `validate` now checks that every event's script is one its zone's script file has.
+
+**Verified** on the WSL clone:
+- `validate` is clean for both games;
+- FireRed builds (`e5f593ec…`), its nine new script files assembling without a warning, and its patch applies back to
+  it.
+
+Next in step 2: the rival's parties.
 
 Outside Phases 1 and 2:
 
@@ -324,6 +335,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | Phase 1 | `./kaleido build firered`: the intro's first line is "Kaleido FireRed / This is Phase 1's test layer." (seen in DeSmuME by the harness, 2026-11-04); Route 19's grass gives FireRed Route 1's wild Pokémon (from Phase 3's step 3 on, once the story gives a Pokémon; before then, at `6342c0e`) | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 2 | Both ROMs boot in melonDS in DS mode, and the DS menu lists them as "Kaleido / FireRed" and "Kaleido / Red". Red's intro shows its line, then the RBY family's ("This line comes from the RBY family's layer…"). After the first rival battle in Aspertia, FireRed's bottom screen becomes the C-Gear and Red's never does. Each game, given the other's save, offers only New Game | Both games built at `6342c0e`, Phase 2's last commit: Phase 3's skeleton takes Aspertia's story (the rival battle, the C-Gear) out of later builds |
 | Phase 3, step 1 | A new game goes from the intro straight to the player's room upstairs, with no flight over Unova and no opening scene, standing on open floor. The stairs lead down. The front door leads out into "Pallet Town" (Aspertia City, still with Unova's names), with no NPCs or scenes. The other doors reach the rival's house and the lab (the Trainers' School). The gate leads through to Route 1 (Route 19), and Route 1 to Viridian City (Floccesy Town), with its Pokémon Center and Mart (a house). Nothing stops the player on the way | `build/firered/kaleido-firered.nds` or `build/red/kaleido-red.nds` (rebuild them) |
+| Phase 3, step 2 | The stand-ins show FireRed's names: "Pallet Town", "Route 1" and "Viridian City" as each is entered. Its people stand on the stand-ins, each with a placeholder model, and talking to one shows its FireRed line in a speech box, the player's name filled in. Mom's line differs for a boy and a girl. Pallet Town's five signs read FireRed's text: the town sign as a town board, the houses' and the lab's as building signs, and Trainer Tips. Route 1's sign is a route board, and the upstairs room's, the lab's and Viridian's read too. FireRed's capitals ("POKéMON") show as written. Check line breaks, scrolls and new boxes, and whether the rival's name (`{0100:1}`, Daisy's line and the rival's house sign) shows, since the new game skips the intro that may set it | `build/firered/kaleido-firered.nds` (rebuild it) |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator

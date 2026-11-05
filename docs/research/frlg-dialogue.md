@@ -18,8 +18,8 @@ by Gen 5's text system, with nothing ROM-derived committed?
   narrower than 1% of Black 2's own lines, and its longest message fits the script's message buffer (§3).
 - **Not carried over:** FireRed's text colors and voice fonts, which Gen 5's field text doesn't have. The other
   control codes FireRed uses elsewhere, such as music and pauses, are refused until a map needs them (§2).
-- **Not on screen yet.** No script names these messages until the next pieces of step 2 and W3 add NPCs, signs and
-  scripts to the stand-ins.
+- **On the stand-ins** (§5): FireRed's always-present people and its signs stand on Black 2's own NPC and sign spots,
+  with talk scripts that show these messages. Story-flagged people and objects wait for the story step.
 
 ## 1. Finding the messages
 
@@ -108,3 +108,41 @@ Measured with Gen 5's font 0 advance widths, counting each name placeholder as s
 - `./kaleido validate firered` is clean. The merged banks keep Black 2's messages and end with FireRed's, before their
   `\pad` line.
 - The build results are in `docs/status.md`.
+
+## 5. Showing them on the stand-ins
+
+Added 2026-11-04. The FRLG family puts FireRed's people and signs on the stand-ins, with scripts that show their
+messages (`content/families/frlg/res/field/`). It is a stand-in arrangement (D1), replaced when a map gets its own art.
+
+- **Places come from Black 2.** Each person or sign takes one of Black 2's own NPC or sign spots on the same stand-in:
+  its position, height, movement, facing and area. Black 2 put an actor there, so it can stand there and be reached.
+  The two house name signs are the exception. Pallet Town's doors have no Black 2 sign beside them, so each sign is
+  two tiles left of its door, where Black 2 puts its own house sign beside the player's door.
+- **Who is placed.** The people whom FireRed shows without a story flag, 22 of them, and 12 signs. Left for the story
+  step (W3):
+  - those a flag hides or shows: Oak, twice; the rival in the lab; the starter balls, the Pokédexes, the Town Map; the
+    trees that Cut clears; an item;
+  - signs with no spot on their stand-in: the houses' TV, PC, posters and shelves, and two of Viridian's Trainer Tips.
+- **Each script shows one line.** People whose FireRed scripts branch show the line that fits a first visit, picked by
+  hand. Mom's two lines, for a boy or a girl, go through `ActorMsgGendered`, which picks the second message for a
+  female player (`src/ov036/scrcmd_msg.c`). **Verified**.
+- **Message boxes follow Black 2's own scripts.** People speak with `ParentActorMsg`. Outdoor signs use
+  `MsgPlaceSign` with Black 2's boards: 1 for a town, 2 for a building, 3 for a route, 0 for Trainer Tips. Indoor
+  objects use `InfoMsg`. Names are filled as §2 says.
+- **Models are placeholders**, chosen from what Black 2 itself uses them for:
+  - the nurse is `OBJ_CODE_78`, the model of the nurse who runs Black 2's healing script (global 2100);
+  - the clerks are `OBJ_CODE_77`, the Pokémon Center's Mart clerks;
+  - Mom is `OBJ_CODE_NURSERY_AIDE`, the mother in the house that stands in for the player's;
+  - the others are named trainer classes or townsfolk of Black 2's that look the part.
+
+  Oak and the rival, when the story step places them, will use Juniper's model (`OBJ_CODE_105`, D3) and Hugh's
+  (`OBJ_CODE_291`).
+- **Loading other models.** A zone's NPC cache holds at most 26 models' records. The field reads any other model's
+  record from the model table (pokebw2's `docs/data.md`, "NPC info cache"), so a stand-in can show models it never
+  had. That this costs no visible delay is **Unverified** until the playtest.
+- **Scripts replace the stand-ins' script files.** No other zone shares one, and no C code starts their scripts. The
+  only C reader of one of their text banks, the starter selection reading Aspertia's, uses Black 2's messages, which
+  stay. **Verified** at the pin.
+- **Validation now checks event scripts.** `kaleido validate` checks that every NPC's, sign's and trigger's script
+  below 2000 is an entry of its zone's script file. Global scripts start at 2000 (pokebw2's `docs/scripts.md`), and
+  Black 2's own events pass.

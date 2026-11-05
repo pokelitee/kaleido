@@ -1,0 +1,164 @@
+{
+    "npcs": [
+        {
+            "id": 1,
+            "model": "OBJ_CODE_POKEFAN_M",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 1,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 2,
+                "height": 2
+            },
+            "grid": {
+                "x": 119,
+                "z": 683,
+                "y": 65536
+            }
+        },
+        {
+            "id": 3,
+            "model": "OBJ_CODE_187",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 2,
+            "direction": "DIR_RIGHT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 112,
+                "z": 661,
+                "y": 131072
+            }
+        },
+        {
+            "id": 4,
+            "model": "OBJ_CODE_187",
+            "movement": "MOVE_CODE_NONE",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 3,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 0,
+                "height": 0
+            },
+            "grid": {
+                "x": 107,
+                "z": 665,
+                "y": 131072
+            }
+        },
+        {
+            "id": 5,
+            "model": "OBJ_CODE_21",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 4,
+            "direction": "DIR_LEFT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 2,
+                "height": 0
+            },
+            "grid": {
+                "x": 117,
+                "z": 695,
+                "y": 65536
+            }
+        },
+        {
+            "id": 6,
+            "model": "OBJ_CODE_YOUNGSTER",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 5,
+            "direction": "DIR_DOWN",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 2,
+                "height": 2
+            },
+            "grid": {
+                "x": 107,
+                "z": 684,
+                "y": 65536
+            }
+        },
+        {
+            "id": 7,
+            "model": "OBJ_CODE_8",
+            "movement": "MOVE_CODE_WALK_RANDOM",
+            "type": "ACTOR_EVENT_TYPE_NONE",
+            "flag": 0,
+            "script": 6,
+            "direction": "DIR_LEFT",
+            "params": [
+                0,
+                0,
+                0
+            ],
+            "area": {
+                "width": 1,
+                "height": 1
+            },
+            "grid": {
+                "x": 116,
+                "z": 676,
+                "y": 65536
+            }
+        }
+    ],
+    "bg_events": [
+        {
+            "script": 7,
+            "condition": 0,
+            "direction": 0,
+            "grid": {
+                "x": 110,
+                "y": 682,
+                "z": 16
+            }
+        },
+        {
+            "script": 8,
+            "condition": 0,
+            "direction": 6,
+            "grid": {
+                "x": 110,
+                "y": 693,
+                "z": 16
+            }
+        }
+    ]
+}
