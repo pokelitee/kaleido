@@ -336,6 +336,26 @@ Step 3, the story, started 2026-11-05:
 
 Nothing opens the starter screen until 3a's lab script.
 
+3a, the lab (the FRLG family's scripts on the stand-ins):
+- **The escort.** In Pallet Town, Oak (hidden by his flag except for this) calls out from a trigger before Route 1's
+  gate, walks up and warns the player. A fade then takes both to the lab (D7).
+- **The starter scene.** It runs when the player arrives with the story at 1:
+  - the rival is named on Black 2's screen (D9);
+  - Oak and the rival speak FireRed's lines;
+  - the player chooses on Black 2's starter screen (D8);
+  - FireRed's "received" line plays, then a nickname offer;
+  - the rival takes the starter strong against the player's.
+- **The rival battle.** Heading for the door starts the rival's challenge. The battle is on the trainer that
+  matches, the player may lose and go on, as in Black 2's first rival battle, and the party is healed.
+- **Mom** heals once the player has a Pokémon. Route 1's clerk gives one Potion, if the bag has room.
+- **Shared constants.** `frlg_story.inc` names the story's flags and variable values, and the comparisons the
+  scripts make. `VMJumpIf CMP_STACK` jumps when its comparison is false, and `YesNoWin` gives 0 for yes; both are
+  **Verified** in `scrcmd_vm.c` and `scrcmd_menu.c`, against the docs' wording.
+- **Validation** now also checks the script numbers in the zones' init script tables.
+
+**Verified** on the WSL clone: `validate` is clean for both games, and FireRed builds with the scripts (`e3999055…`),
+its patch applying back to it. Nothing of 3a has been seen in game: the playtest row below lists each beat.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
@@ -375,6 +395,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | Phase 2 | Both ROMs boot in melonDS in DS mode, and the DS menu lists them as "Kaleido / FireRed" and "Kaleido / Red". Red's intro shows its line, then the RBY family's ("This line comes from the RBY family's layer…"). After the first rival battle in Aspertia, FireRed's bottom screen becomes the C-Gear and Red's never does. Each game, given the other's save, offers only New Game | Both games built at `6342c0e`, Phase 2's last commit: Phase 3's skeleton takes Aspertia's story (the rival battle, the C-Gear) out of later builds |
 | Phase 3, step 1 | A new game goes from the intro straight to the player's room upstairs, with no flight over Unova and no opening scene, standing on open floor. The stairs lead down. The front door leads out into "Pallet Town" (Aspertia City, still with Unova's names), with no NPCs or scenes. The other doors reach the rival's house and the lab (the Trainers' School). The gate leads through to Route 1 (Route 19), and Route 1 to Viridian City (Floccesy Town), with its Pokémon Center and Mart (a house). Nothing stops the player on the way | `build/firered/kaleido-firered.nds` or `build/red/kaleido-red.nds` (rebuild them) |
 | Phase 3, step 2 | The stand-ins show FireRed's names: "Pallet Town", "Route 1" and "Viridian City" as each is entered. Its people stand on the stand-ins, each with a placeholder model, and talking to one shows its FireRed line in a speech box, the player's name filled in. Mom's line differs for a boy and a girl. Pallet Town's five signs read FireRed's text: the town sign as a town board, the houses' and the lab's as building signs, and Trainer Tips. Route 1's sign is a route board, and the upstairs room's, the lab's and Viridian's read too. FireRed's capitals ("POKéMON") show as written. Check line breaks, scrolls and new boxes, and whether the rival's name (`{0100:1}`, Daisy's line and the rival's house sign) shows, since the new game skips the intro that may set it | `build/firered/kaleido-firered.nds` (rebuild it) |
+| Phase 3, step 3a | From a new game, walk to Route 1's gate in "Pallet Town": Oak calls out, appears with Juniper's look, walks up, warns, and a fade brings both into the lab facing up. The rival-naming screen opens, then Oak and the rival (Hugh's look) speak. Black 2's starter screen offers Bulbasaur, Charmander and Squirtle; check that its lower screen draws them, scaling cleanly and dimming the two not picked. The chosen one joins at level 5 with FireRed's "received" line and a nickname offer, the party menu works, and the rival takes the starter strong against it. Walking toward the door starts his challenge and battle; check his losing and winning lines (and his name in the winning one). Win or lose, the party is healed and he's gone. Mom heals afterwards. Route 1's clerk gives one Potion, which the Bag shows, and only once | `build/firered/kaleido-firered.nds` (rebuild it) |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator

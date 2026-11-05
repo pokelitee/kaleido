@@ -167,6 +167,22 @@ upstream's packers can only **edit** the original ones. See risk R-01 and experi
 - **Verified** (`CLAUDE.md`, "Publish every commit"): upstream pushes straight to `main` after a matching build. Not
   our workflow; noted so agents don't copy it.
 
+## Field script semantics (Phase 3, step 3)
+
+Read in the code at the pin, 2026-11-05, for writing story scripts:
+- **`VMJumpIf CMP_STACK` jumps when the comparison on the stack is false.** It jumps when the popped value isn't 1
+  (`Scrcmd_Vm_VMJumpIf`, `src/ov012/scrcmd_vm.c`). `docs/scripts.md` says it jumps when the result is true, but Black
+  2's scripts use it the code's way. Kaleido's scripts wrap it in named macros (`frlg_story.inc`). **Verified**.
+- **`YesNoWin` stores 0 for yes and 1 for no** (`src/ov036/scrcmd_menu.c`). **Verified**.
+- **An NPC appears only while its spawn flag is clear** (`SpawnAllZoneNPCs`, `src/ov012/field_actor.c`). **Verified**.
+- **A zone's map script table** (`init_<zone>.s`, mirrored in its events' `init_scripts`):
+  - type 2 runs a script as the zone loads;
+  - type 1 runs one of its conditions' scripts when the condition's variable has its value, as Black 2's scenes do.
+
+  **Verified** from Black 2's own tables and scripts; the code that reads the table isn't named yet.
+- **Black 2's first rival battle** is `CallTrainerBattle` with 1 as its third argument, then `CallTrainerBattleEnd`;
+  a loss carries on without a blackout (`aspertia_city.s`). **Verified** from the script; in game, **Unverified**.
+
 ## Not yet checked
 
 - `docs/porting-notes.md`, `docs/matching.md` (474 KB) and `docs/source-files.md` were skimmed only for the facts above.
