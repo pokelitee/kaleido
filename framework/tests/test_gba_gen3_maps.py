@@ -73,7 +73,7 @@ class MessageTest(unittest.TestCase):
 class MapsTest(unittest.TestCase):
     def test_finds_maps_by_group_and_number(self) -> None:
         rom = gba_gen3.Rom(synthetic_rom())
-        self.assertEqual(gba_gen3_maps.map_groups(rom), [0x400, 0x404])
+        self.assertEqual(gba_gen3.map_groups(rom), [0x400, 0x404])
         self.assertEqual(gba_gen3_maps.map_header(rom, 0, 0), 0x100)
         self.assertEqual(gba_gen3_maps.map_header(rom, 1, 0), 0x140)
         with self.assertRaisesRegex(gba_gen3.ExtractError, "no map 0.1"):

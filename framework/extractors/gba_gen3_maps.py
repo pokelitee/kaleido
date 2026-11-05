@@ -1,9 +1,7 @@
 """FireRed and LeafGreen's maps: a map's header by its group and number, its events, and the messages that its events'
 scripts show (Phase 3, docs/plan/08-phase3.md, W2).
 
-The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
-- the table of map groups: a pointer to each group's table of pointers to map headers, the groups' tables back to back;
-  a map's group and number are its places in them;
+The formats beyond gba_gen3's map headers and groups, from reading pret/pokefirered at ce6406d8 (nothing copied):
 - a map header's word 1 points to its events: the counts of its NPCs, warps, triggers and signs (a byte each), then a
   pointer to each array. An NPC is 24 bytes, its local ID at 0 and its script at 16; a trigger 16, its script at 12; a
   sign 12, its kind at 5 and, for kinds 0 to 4, its script at 8 (the other kinds are hidden items);
@@ -13,12 +11,10 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
   the event macros (asm/macros/event.inc); a walk that meets another opcode stops with an error, since its arguments'
   size can't be guessed. A trainer battle's arguments depend on its type."""
 
-import functools
 import struct
-from array import array
 from dataclasses import dataclass
 
-from extractors.gba_gen3 import ROM_BASE, ExtractError, Rom, _is_map_header, _points_to_map_header
+from extractors.gba_gen3 import ExtractError, Rom, _is_map_header, group_headers
 
 NPC_SIZE, TRIGGER_SIZE, SIGN_SIZE, TABLE_ENTRY_SIZE = 24, 16, 12, 8
 LAST_SCRIPT_SIGN = 4
@@ -67,39 +63,12 @@ def _offset(rom: Rom, pointer: int, what: str) -> int:
     return rom.at(pointer)
 
 
-@functools.cache
-def map_groups(rom: Rom) -> list[int]:
-    """The offsets of the groups' tables of map headers: the longest run of words that point to a table whose first word
-    points to a map header."""
-    words = array("I", rom.data[: len(rom.data) // 4 * 4])
-    low, high = ROM_BASE, ROM_BASE + len(rom.data)
-    best, best_count, start, count = 0, 0, 0, 0
-    for index, value in enumerate(words):
-        first = words[(value - low) // 4] if low <= value < high and not value & 3 else 0
-        if low <= first < high and not first & 3 and _is_map_header(rom, first - low):
-            if count == 0:
-                start = index
-            count += 1
-            if count > best_count:
-                best, best_count = start, count
-        else:
-            count = 0
-    if not best_count:
-        raise ExtractError("no table of map groups found")
-    return [words[best + i] - low for i in range(best_count)]
-
-
 def map_header(rom: Rom, group: int, number: int) -> int:
-    """The offset of a map's header. A group's table ends where the next one starts, or at its last map header."""
-    groups = map_groups(rom)
-    if not 0 <= group < len(groups):
-        raise ExtractError(f"no map group {group}; the ROM has {len(groups)}")
-    after = [start for start in groups if start > groups[group]]
-    end = min(after) if after else len(rom.data)
-    slot = groups[group] + 4 * number
-    if number < 0 or slot >= end or not _points_to_map_header(rom, slot):
+    """The offset of a map's header."""
+    headers = group_headers(rom, group)
+    if not 0 <= number < len(headers):
         raise ExtractError(f"no map {group}.{number}")
-    return rom.at(rom.u32(slot))
+    return headers[number]
 
 
 def entries(rom: Rom, header: int) -> list[Entry]:
