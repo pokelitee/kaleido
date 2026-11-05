@@ -17,8 +17,8 @@ SECTION_NAMES = ["PALLET TOWN", "ROUTE 1"] + [f"PLACE {i}" for i in range(2, gba
 
 def synthetic_rom(route_species: int = 19) -> bytes:
     """A small image shaped like the structures the reader looks for, with made-up values: a table of map section names
-    and a longer decoy that starts with the same name, two map headers in two groups, and wild encounter headers for
-    both maps."""
+    and a longer decoy that starts with the same name, two map headers in two groups and a shorter decoy of the groups'
+    table, and wild encounter headers for both maps."""
     rom = bytearray(0x3000)
 
     def put(offset: int, data: bytes) -> None:
@@ -37,7 +37,9 @@ def synthetic_rom(route_species: int = 19) -> bytes:
         put(offset, pointer(0x800) * 3)
         rom[offset + gba_gen3.MAP_SECTION_OFFSET] = section
     put(0x400, pointer(0x300) + pointer(0x340))  # group 0 = [Pallet Town], group 1 = [Route 1], back to back
-    put(0x500, pointer(0x400) + pointer(0x404))  # the table of groups
+    put(0x408, pointer(0x400) + pointer(0x404))  # the table of groups, right after the last group's table
+    put(0x480, pointer(0x340))  # a table shaped like a group's that lists Route 1 too
+    put(0x500, pointer(0x480))  # and a shorter table of groups that points to it
 
     def header(group: int, number: int, land: int) -> bytes:
         return bytes([group, number, 0, 0]) + pointer(land) + bytes(12)
@@ -57,6 +59,16 @@ class Gen3Test(unittest.TestCase):
         self.assertEqual(gba_gen3.map_section(rom, "ROUTE 1"), 0x59)
         self.assertEqual(gba_gen3.map_ids(rom, 0x59), [(1, 0)])
         self.assertEqual(gba_gen3.find_wild_headers(rom), 0x600)
+
+    def test_lists_only_the_maps_of_the_table_of_groups(self) -> None:
+        rom = gba_gen3.Rom(synthetic_rom())
+        self.assertEqual(gba_gen3.map_groups(rom), [0x400, 0x404])
+        self.assertEqual(gba_gen3.map_ids(rom, 0x58), [(0, 0)])
+        self.assertEqual(gba_gen3.map_ids(rom, 0x59), [(1, 0)])
+        # The table of groups points to tables that also pass for map headers, so it ends the last group's table
+        self.assertEqual(gba_gen3.group_headers(rom, 1), [0x340])
+        with self.assertRaisesRegex(gba_gen3.ExtractError, "no map group 2"):
+            gba_gen3.group_headers(rom, 2)
 
     def test_reads_the_maps_land_encounters(self) -> None:
         land = gba_gen3.land_encounters(gba_gen3.Rom(synthetic_rom()), "ROUTE 1")

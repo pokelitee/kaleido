@@ -6,8 +6,8 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
   rock smash and fishing groups, or 0), ended by map group and number 0xFF;
 - a group: an encounter rate (u8, then padding) and a pointer to its slots; a slot: minimum and maximum level (u8) and
   species (u16); 12 land slots;
-- a map header: 28 bytes, whose byte 0x14 is its map section; the map groups: a table of pointers to tables of pointers
-  to map headers;
+- a map header: 28 bytes, whose byte 0x14 is its map section; the table of map groups: a pointer to each group's table
+  of pointers to map headers, the groups' tables back to back; a map's group and number are its places in them;
 - the map section names: a table of pointers to strings, one per section from the first Kanto section,
   KANTO_MAPSEC_START, up to MAPSEC_NONE (0xC5), so KANTO_MAPSEC_COUNT of them. The owner's FireRed holds exactly one
   such run; a longer run of names that also starts with Pallet Town (the region map's) is another table;
@@ -17,6 +17,7 @@ The formats, from reading pret/pokefirered at ce6406d8 (nothing copied):
   length the code gives (GetExtCtrlCodeLength), the font command 0x06 taking one byte;
 - species 1 to 251 are in national Pokédex order."""
 
+import functools
 import struct
 from array import array
 from dataclasses import dataclass
@@ -77,16 +78,6 @@ class Rom:
 
     def at(self, pointer: int) -> int:
         return pointer - ROM_BASE
-
-    def pointers_to(self, offset: int) -> list[int]:
-        """Every 4-aligned offset that holds a pointer to offset."""
-        needle = struct.pack("<I", ROM_BASE + offset)
-        found, start = [], 0
-        while (i := self.data.find(needle, start)) != -1:
-            if i % 4 == 0:
-                found.append(i)
-            start = i + 1
-        return found
 
 
 ENCODING = {character: byte for byte, character in CHARACTERS.items()}
@@ -229,32 +220,60 @@ def _points_to_map_header(rom: Rom, slot: int) -> bool:
     return rom.is_pointer(value) and _is_map_header(rom, rom.at(value))
 
 
-def _points_to_map_group(rom: Rom, slot: int) -> bool:
-    value = rom.u32(slot)
-    return rom.is_pointer(value) and _points_to_map_header(rom, rom.at(value))
+@functools.cache
+def _group_table(rom: Rom) -> tuple[int, int]:
+    """The offset of the table of map groups and its number of groups: the longest run of words that point to a table
+    whose first word points to a map header. Shorter runs of that shape exist and point to some of the same maps."""
+    words = array("I", rom.data[: len(rom.data) // 4 * 4])
+    low, high = ROM_BASE, ROM_BASE + len(rom.data)
+    best, best_count, start, count = 0, 0, 0, 0
+    for index, value in enumerate(words):
+        first = words[(value - low) // 4] if low <= value < high and not value & 3 else 0
+        if low <= first < high and not first & 3 and _is_map_header(rom, first - low):
+            if count == 0:
+                start = index
+            count += 1
+            if count > best_count:
+                best, best_count = start, count
+        else:
+            count = 0
+    if not best_count:
+        raise ExtractError("no table of map groups found")
+    return 4 * best, best_count
+
+
+def map_groups(rom: Rom) -> list[int]:
+    """The offsets of the groups' tables of map headers."""
+    table, count = _group_table(rom)
+    return [rom.at(rom.u32(table + 4 * i)) for i in range(count)]
+
+
+def group_headers(rom: Rom, group: int) -> list[int]:
+    """The offsets of a group's map headers, by number. A group's table ends where the next group's table or the table
+    of groups starts, or at its last map header."""
+    table, _ = _group_table(rom)
+    groups = map_groups(rom)
+    if not 0 <= group < len(groups):
+        raise ExtractError(f"no map group {group}; the ROM has {len(groups)}")
+    # FireRed's table of groups follows the last group's table, and its pointers to groups' tables would pass for
+    # pointers to map headers
+    end = min((start for start in (*groups, table) if start > groups[group]), default=len(rom.data))
+    headers = []
+    for slot in range(groups[group], end, 4):
+        if not _points_to_map_header(rom, slot):
+            break
+        headers.append(rom.at(rom.u32(slot)))
+    return headers
 
 
 def map_ids(rom: Rom, section: int) -> list[tuple[int, int]]:
-    """The (group, number) of every map in a section: a map's number is its place in its group's table of headers, and
-    its group is that table's place in the table of groups."""
-    ids = set()
-    for offset in range(0, len(rom.data) - MAP_HEADER_SIZE, 4):
-        if rom.data[offset + MAP_SECTION_OFFSET] != section or not _is_map_header(rom, offset):
-            continue
-        for slot in rom.pointers_to(offset):
-            # The groups' tables lie back to back, so a group starts where the table of groups points
-            group_start, group_slots = slot, []
-            while True:
-                group_slots = [s for s in rom.pointers_to(group_start) if _points_to_map_group(rom, s)]
-                if group_slots or group_start < 4 or not _points_to_map_header(rom, group_start - 4):
-                    break
-                group_start -= 4
-            for group_slot in group_slots:
-                groups_start = group_slot
-                while groups_start >= 4 and _points_to_map_group(rom, groups_start - 4):
-                    groups_start -= 4
-                ids.add(((group_slot - groups_start) // 4, (slot - group_start) // 4))
-    return sorted(ids)
+    """The (group, number) of every map in a section."""
+    return [
+        (group, number)
+        for group in range(len(map_groups(rom)))
+        for number, header in enumerate(group_headers(rom, group))
+        if rom.data[header + MAP_SECTION_OFFSET] == section
+    ]
 
 
 def land_encounters(rom: Rom, map_name: str) -> LandEncounters:
