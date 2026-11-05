@@ -18,6 +18,11 @@
             "paths": ["res/text/script/*.txt.merge.json"],
             "category": "extracted",
             "recipe": "extract/map_text.json"
+        },
+        {
+            "paths": ["res/trainers/data/*.json.merge.json"],
+            "category": "extracted",
+            "recipe": "extract/trainers.json"
         }
     ]
 }

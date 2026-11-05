@@ -103,7 +103,12 @@ class LayersTest(unittest.TestCase):
         stack = layers.load_stack(root, ["regions/kanto", "families/frlg", "games/firered"])
         self.assertEqual(
             stack[1].recipes(),
-            ["extract/map_text.json", "extract/place_names.json", "extract/route_1_encounters.json"],
+            [
+                "extract/map_text.json",
+                "extract/place_names.json",
+                "extract/route_1_encounters.json",
+                "extract/trainers.json",
+            ],
         )
 
 
