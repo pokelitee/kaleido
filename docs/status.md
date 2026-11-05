@@ -310,6 +310,32 @@ Then the rival's parties (`docs/research/frlg-trainers.md`), which finish step 2
 Nothing starts the battles until step 3's lab script, which is next: Oak's escort, the starter, the rival battle, the
 Parcel errand and the Pokédex (W3, W4).
 
+Step 3, the story, started 2026-11-05:
+- **The owner's choices** (`08-phase3.md`):
+  - D7: on the stand-ins, Oak talks at the edge of town, then a fade takes both to the lab;
+  - D8: the starter is chosen on Black 2's starter screen, offering Kanto's three;
+  - D9: the rival is named with Black 2's naming screen when he first appears.
+- **Two pull requests.** 3a is the lab: the escort, the starter, the rival battle, Mom's healing and Route 1's Potion.
+  3b is the Parcel errand: the Mart, Viridian's old man, the Pokédex and Poké Balls, the Town Map, and the Pokémon
+  Center and Mart.
+- **Story progress** takes event flags from 0x1F2 and variables from 0x404E. Those are runs of 106 and 34 that no
+  Black 2 script, event or C source names (**Assumption**: a flag reached only by arithmetic would escape the scan;
+  none of the C literals in those ranges are flags).
+- **Engine patch `0008`** (`KALEIDO_KANTO_STARTERS`, D8) makes Black 2's starter screen offer Bulbasaur, Charmander and
+  Squirtle.
+  - Its sub screen draws the starters' own sprites instead of the archive's drawings of Black 2's starters, scaled as
+    those are.
+  - Each dark palette is an eighth of each channel: Black 2's dark palettes are roughly that, hand-tuned.
+  - Whether a starter's sprite scales cleanly on the sub screen is **Unverified** until the playtest.
+
+**Verified** on the WSL clone, for patch `0008`:
+- `baseline` still matches Black 2 (`e51e6dfb…`);
+- `compile` compiles all 1,792 C files for every game's defines;
+- FireRed builds with `KALEIDO_KANTO_STARTERS` (`c4bd580d…`) and its patch applies back to it;
+- clang-format 23.1.1 leaves the patched `psel.c` as it is.
+
+Nothing opens the starter screen until 3a's lab script.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.

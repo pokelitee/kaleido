@@ -73,7 +73,8 @@ Each step lands as its own pull requests, with `kaleido build firered` and `vali
 
 ## Decisions for the owner
 
-The owner took each recommendation on 2026-11-04, so the last column is what Phase 3 does.
+The owner took each recommendation on 2026-11-04, so the last column is what Phase 3 does. D7 to D9 came up in step 3
+and were decided on 2026-11-05.
 
 | # | Decision | Options | Decided |
 | --- | --- | --- | --- |
@@ -83,6 +84,9 @@ The owner took each recommendation on 2026-11-04, so the last column is what Pha
 | D4 | **The player character** | B2W2's Nate and Rosa; new Kanto player art | Nate and Rosa (Approximate) until art is scheduled |
 | D5 | **FireRed's B2W2 switches on this path** | Per system: keep or switch off (C-Gear, seasons, Pass Powers, Unova Pokédex). FRLG had none of them, but had a wireless adapter | All four off, the Unova Pokédex replaced by a Kanto one. The C-Gear goes off only after Phase 2's exit check, which needs FireRed to show it; wireless features get their own decision later |
 | D6 | **Encounter rates** (`01-feasibility.md` says Phase 3 decides the rule) | Every FRLG land rate to one Gen 5 setting (E8's 7); a mapping from FRLG's rate to the nearest setting; per-map hand tuning | A mapping, written once and recorded as Approximate |
+| D7 | **Oak's escort on the stand-ins** (step 3, 2026-11-05) | Oak talks at the edge of town, then a fade to the lab; the full walk through the stand-in's streets | Talk, then fade (Approximate). FireRed's walk returns when Pallet Town gets its own map (step 5) |
+| D8 | **Choosing the starter** (step 3, 2026-11-05) | FireRed's three balls on the lab table; Black 2's starter screen with Kanto's three. Black 2's screen draws its starters on the sub screen, so: the starters' own sprites in code, new art, or the balls | Black 2's starter screen (Approximate), its sub screen drawing the starters' own sprites (engine patch `0008`) |
+| D9 | **Naming the rival** (step 3, 2026-11-05) | Black 2's rival-naming screen when he first appears; in the new-game intro, as FireRed does; a fixed name | When he first appears in the lab (Approximate); the intro's version waits for W4's intro speech |
 
 ## Risks for this phase
 
