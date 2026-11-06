@@ -5,24 +5,43 @@ from extractors.gba_gen3_layout import Layout
 from kaleido import mapgen
 from kaleido.config import ConfigError
 
-MATERIALS = ["grass01ax", "michi01a", "ike01", "hana01_1", "gake1_1", "saku01a", "ki02c", "ki03ax", "unused"]
+MATERIALS = [
+    "grass01ax",
+    "michi01a",
+    "michi01b",
+    "ike01",
+    "hana01_1",
+    "gake1_1",
+    "fence",
+    "post",
+    "forest",
+    "ki02c",
+    "ki03ax",
+    "unused",
+]
 KIT = mapgen.Kit(
     template="MAP_MODEL_TEMPLATE",
+    texture_set="MAP_TEXTURE_SET_T",
+    texture_directory="t",
+    textures={"post": "c12_post01"},
     ground_y=16,
     ground_height=51,
     water_y=8,
     water_height=169,
     surfaces={
-        "grass": ("grass01ax", 0.25, 0),
-        "path": ("michi01a", 1, 0),
-        "water": ("ike01", 0.5, 0),
-        "flowers": ("hana01_1", 1, 2),
+        "grass": mapgen.Surface("grass01ax", (0.25, 0.25)),
+        "path": mapgen.Surface("michi01b", (1, 1)),
+        "water": mapgen.Surface("ike01", (0.5, 0.5)),
+        "flowers": mapgen.Surface("hana01_1", (0.5, 1), 1),
     },
-    bank=("gake1_1", 1),
-    fence={"material": "saku01a", "depth": [3, 13], "repeat": 2, "strips": [{"y": 3, "u": [0.75, 0.5]}]},
+    edge=mapgen.Surface("michi01a", (0.5, 0.5), 0.25),
+    bank=mapgen.Surface("gake1_1", (1, 1)),
+    fence={"material": "fence", "height": 16, "offset": 12, "repeat": 1},
+    billboards={"mailbox": {"material": "post", "width": 16, "height": 32, "offset": 12}},
+    forest={"material": "forest", "height": 40, "repeat": 0.5},
     tree={"materials": ["ki02c", "ki03ax"], "box": [0, 0, 32, 32], "anchor": [0, 0, 0], "height": 64},
     tile_types={"walk": 0x800000, "block": 0x810001, "water": 0x16003F, "shore": 0xC30041},
-    props={"sign": 152, "mailbox": 153},
+    props={"sign": 152},
     doors={305: (0, 1)},
     footprints={305: (-35, -47.3, 55.5, 34.3)},
 )
@@ -37,12 +56,13 @@ LABELS = {
     7: "sign",
     8: "flowers",
     9: "fence",
+    10: "mailbox",
 }
-BLOCKS = {4, 5, 6, 7, 9}
+BLOCKS = {4, 5, 6, 7, 9, 10}
 GRID = [
     [4, 4, 2, 2, 1, 1],
     [4, 4, 2, 5, 6, 1],
-    [1, 8, 2, 2, 2, 9],
+    [10, 8, 2, 2, 2, 9],
     [1, 1, 3, 3, 2, 7],
     [1, 1, 3, 3, 2, 1],
 ]
@@ -95,7 +115,13 @@ def template() -> bytes:
         ],
         "skins": [{"joints": [0]}],
         "meshes": [{"name": "tmpl", "primitives": mesh_primitives}],
-        "materials": [{"name": name} for name in MATERIALS],
+        "materials": [
+            {"name": name, "pbrMetallicRoughness": {"baseColorTexture": {"index": i}}}
+            for i, name in enumerate(MATERIALS)
+        ],
+        "textures": [{"source": i, "sampler": 0} for i in range(len(MATERIALS))],
+        "images": [{"uri": f"../../textures/set/{name}.png"} for name in MATERIALS],
+        "samplers": [{"wrapS": 10497, "wrapT": 10497}],
         "buffers": [{"byteLength": len(binary)}],
         "bufferViews": views,
         "accessors": accessors,
@@ -139,10 +165,43 @@ class GenerateTest(unittest.TestCase):
     def test_draws_each_kind_in_its_material(self) -> None:
         triangles = generate().triangles
         self.assertEqual(triangles["unused"], 0)
-        # One tree, the template's tree triangles once
-        self.assertEqual((triangles["ki02c"], triangles["ki03ax"]), (1, 1))
-        for material in ("grass01ax", "michi01a", "ike01", "hana01_1", "gake1_1", "saku01a"):
+        # Each tree is the template's tree triangles once: the map's tree, and the forest's in front where needed
+        self.assertEqual(triangles["ki02c"], triangles["ki03ax"])
+        self.assertGreater(triangles["ki02c"], 1)
+        for material in (
+            "grass01ax",
+            "michi01a",
+            "michi01b",
+            "ike01",
+            "hana01_1",
+            "gake1_1",
+            "fence",
+            "post",
+            "forest",
+        ):
             self.assertGreater(triangles[material], 0, material)
+
+    def test_the_forest_starts_with_trees_where_the_maps_edge_has_none(self) -> None:
+        # A 2x2 map: of grass, trees stand around it; of trees, only its own one stands
+        grass = generate([[1, 1], [1, 1]], buildings=[], origin=(10, 10)).triangles["ki02c"]
+        trees = generate([[4, 4], [4, 4]], buildings=[], origin=(10, 10)).triangles["ki02c"]
+        self.assertEqual(trees, 1)
+        self.assertEqual(grass, 4)
+
+    def test_points_the_kits_materials_at_its_other_textures(self) -> None:
+        doc, _ = mapgen.read_glb(generate().glb)
+        post = next(material for material in doc["materials"] if material["name"] == "post")
+        texture = doc["textures"][post["pbrMetallicRoughness"]["baseColorTexture"]["index"]]
+        self.assertEqual(doc["images"][texture["source"]]["uri"], "../../textures/t/c12_post01.png")
+        self.assertEqual(texture["sampler"], 0)
+
+    def test_draws_a_mailbox_as_an_upright_quad_facing_south(self) -> None:
+        doc, binary = mapgen.read_glb(generate().glb)
+        index = MATERIALS.index("post")
+        primitive = doc["meshes"][0]["primitives"][index]
+        normals = mapgen.accessor_values(doc, binary, primitive["attributes"]["NORMAL"])
+        self.assertEqual(set(normals), {(0.0, 0.0, 1.0)})
+        self.assertEqual(len(normals), 6)
 
     def test_places_buildings_at_their_doors_and_signs_on_their_tiles(self) -> None:
         doc, _ = mapgen.read_glb(generate().glb)

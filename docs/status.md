@@ -429,11 +429,28 @@ The plan's step 2, the Pallet Town spike (2026-11-06), is built and waits for th
 **Verified**, 2026-11-06:
 - `baseline` still matches Black 2, and `compile` compiles every define set, the spike's included.
 - FireRed builds unchanged (`d3e00b92…`).
-- The spike builds (`ce083c99…`), its validation clean and every chunk within budget, and its patch applies back to
-  it.
+- The spike builds, its validation clean and every chunk within budget, and its patch applies back to it.
 
-Next: the owner plays the spike (the playtest row below) and judges the look. That decides whether the plan's step 3
-goes ahead as written.
+The owner's first playtest (`ce083c99…`): "some resemblance to Pallet Town but seems a bit off (texturing and some
+layout)". The causes and the texture pass that followed are in `docs/research/generated-maps-spike.md` §7:
+- the paths were tiled with a border texture;
+- the pond had no bed under its see-through water;
+- the fence was flat;
+- the town stood in an open field.
+
+The model now shows Aspertia City's texture set, so its materials can show more of it:
+- sand paths with soft edges;
+- the sea;
+- red flowers;
+- a standing picket fence;
+- red mailboxes;
+- a forest with trees in front.
+
+The owner chose Black 2's textures over generated art. The textured spike is `022bd2c9…`, its chunk 100,308 bytes of
+110,600.
+
+Next: the owner plays the textured spike (the playtest row below) and judges the look. That decides whether the plan's
+step 3 goes ahead as written.
 
 Outside Phases 1 and 2:
 
