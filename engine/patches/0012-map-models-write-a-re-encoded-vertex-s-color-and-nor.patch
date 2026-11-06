@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] map models: write a re-encoded vertex's color and normal only
+ when they change
+
+When the packer re-encodes a map model's triangles, it wrote a color and a
+normal command for every vertex, 16 of a vertex's 36 bytes, though the GPU
+keeps both for the vertices after. Now a color is written when it changes,
+and a normal when it changes or after a color, since with lighting on the
+normal's lit color replaces the color. The drawing is the same, and a chunk
+of mostly flat ground takes about half the space it did.
+
+Only edited models are re-encoded, so the original archives pack as before.
+---
+ tools/data/map_model_data.py | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/tools/data/map_model_data.py b/tools/data/map_model_data.py
+index 191ff2d37..2d486c73d 100644
+--- a/tools/data/map_model_data.py
++++ b/tools/data/map_model_data.py
+@@ -1046,6 +1046,9 @@ def topology_display_list(data, model, material_index, doc, primitive, binary, s
+     if uvs is not None and not all(uv_scale):
+         raise ValueError(f"{name}: material has a zero texture scale")
+     commands = bytearray(nitro_command(0x40, 0))
++    # The GPU keeps the last color and normal for the vertices after, so a repeat isn't written again. A normal
++    # follows any color written, since with lighting on the normal's lit color replaces the color
++    last_color = last_normal = None
+     for vertex in indices:
+         if vertex >= len(positions) or any(vertex >= len(values) for values in (uvs, colors, normals, joints, weights)
+                                                if values is not None):
+@@ -1058,13 +1061,19 @@ def topology_display_list(data, model, material_index, doc, primitive, binary, s
+         coords = [round(value * 4096 / scale) for value in point]
+         if any(not -32768 <= value <= 32767 for value in coords):
+             raise ValueError(f"{name}: edited vertex exceeds Nitro VTX_16 range")
++        color_written = False
+         if colors is not None:
+-            commands.extend(nitro_command(0x20, gltf_color(doc, attributes["COLOR_0"], colors, vertex, name)))
++            color = gltf_color(doc, attributes["COLOR_0"], colors, vertex, name)
++            if color != last_color:
++                commands.extend(nitro_command(0x20, color))
++                last_color, color_written = color, True
+         if normals is not None:
+             normal = normals[vertex]
+             packed = sum((max(-512, min(511, round(value * 512))) & 0x3ff) << (axis * 10)
+                          for axis, value in enumerate(normal))
+-            commands.extend(nitro_command(0x21, packed))
++            if color_written or packed != last_normal:
++                commands.extend(nitro_command(0x21, packed))
++                last_normal = packed
+         if uvs is not None:
+             u, v = uvs[vertex]
+             raw = (round(u * width * 16 / uv_scale[0]), round(v * height * 16 / uv_scale[1]))
