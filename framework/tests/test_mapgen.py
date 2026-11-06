@@ -1,0 +1,180 @@
+import struct
+import unittest
+
+from extractors.gba_gen3_layout import Layout
+from kaleido import mapgen
+from kaleido.config import ConfigError
+
+MATERIALS = ["grass01ax", "michi01a", "ike01", "hana01_1", "gake1_1", "saku01a", "ki02c", "ki03ax", "unused"]
+KIT = mapgen.Kit(
+    template="MAP_MODEL_TEMPLATE",
+    ground_y=16,
+    ground_height=51,
+    water_y=8,
+    water_height=169,
+    surfaces={
+        "grass": ("grass01ax", 0.25, 0),
+        "path": ("michi01a", 1, 0),
+        "water": ("ike01", 0.5, 0),
+        "flowers": ("hana01_1", 1, 2),
+    },
+    bank=("gake1_1", 1),
+    fence={"material": "saku01a", "depth": [3, 13], "repeat": 2, "strips": [{"y": 3, "u": [0.75, 0.5]}]},
+    tree={"materials": ["ki02c", "ki03ax"], "box": [0, 0, 32, 32], "anchor": [0, 0, 0], "height": 64},
+    tile_types={"walk": 0x800000, "block": 0x810001, "water": 0x16003F, "shore": 0xC30041},
+    props={"sign": 152, "mailbox": 153},
+    doors={305: (0, 1)},
+)
+# Metatiles of the synthetic map and their kinds; 6 is a door
+LABELS = {
+    1: "grass",
+    2: "path",
+    3: "water",
+    4: "tree",
+    5: "building",
+    6: "building",
+    7: "sign",
+    8: "flowers",
+    9: "fence",
+}
+BLOCKS = {4, 5, 6, 7, 9}
+GRID = [
+    [4, 4, 2, 2, 1, 1],
+    [4, 4, 2, 5, 6, 1],
+    [1, 8, 2, 2, 2, 9],
+    [1, 1, 3, 3, 2, 7],
+    [1, 1, 3, 3, 2, 1],
+]
+
+
+def layout(grid: list[list[int]] = GRID) -> Layout:
+    cells = tuple(m | (1 << 10 if m in BLOCKS else 0) for row in grid for m in row)
+    attributes = {m: (0x69 if m == 6 else 0) for row in grid for m in row}
+    return Layout(len(grid[0]), len(grid), cells, 1, 1, (1,), attributes)
+
+
+def template() -> bytes:
+    """A template GLB: a primitive per material, the tree's two in the kit's box, the others a triangle elsewhere; a
+    skeleton and a prop node, as Black 2's GLBs have them."""
+    positions, uvs, normals, primitives = [], [], [], []
+    binary = bytearray()
+    views, accessors = [], []
+
+    def add(values: list[tuple], kind: str, code: str, component: int) -> int:
+        data = b"".join(struct.pack("<" + code * len(v), *v) for v in values)
+        views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(data)})
+        binary.extend(data)
+        accessors.append({"bufferView": len(views) - 1, "componentType": component, "count": len(values), "type": kind})
+        return len(accessors) - 1
+
+    for index, material in enumerate(MATERIALS):
+        x = 0.0 if material in ("ki02c", "ki03ax") else 100.0
+        base = len(positions)
+        positions += [(x, 3.0, 0.0), (x + 32, 3.0, 0.0), (x + 32, 40.0, 32.0)]
+        uvs += [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0)]
+        normals += [(0.0, 1.0, 0.0)] * 3
+        primitives.append((index, [(base,), (base + 1,), (base + 2,)]))
+    attributes = {
+        "POSITION": add(positions, "VEC3", "f", 5126),
+        "TEXCOORD_0": add(uvs, "VEC2", "f", 5126),
+        "NORMAL": add(normals, "VEC3", "f", 5126),
+    }
+    mesh_primitives = [
+        {"attributes": attributes, "indices": add(indices, "SCALAR", "I", 5125), "material": material}
+        for material, indices in primitives
+    ]
+    doc = {
+        "asset": {"version": "2.0"},
+        "scene": 0,
+        "scenes": [{"nodes": [1, 2]}],
+        "nodes": [
+            {"name": "skeleton"},
+            {"mesh": 0, "skin": 0, "name": "tmpl", "children": [0]},
+            {"name": "bw2_prop_0000_id_00001", "translation": [0, 16, 0]},
+        ],
+        "skins": [{"joints": [0]}],
+        "meshes": [{"name": "tmpl", "primitives": mesh_primitives}],
+        "materials": [{"name": name} for name in MATERIALS],
+        "buffers": [{"byteLength": len(binary)}],
+        "bufferViews": views,
+        "accessors": accessors,
+    }
+    return mapgen.write_glb(doc, bytes(binary))
+
+
+def generate(grid: list[list[int]] = GRID, buildings=None, origin=(2, 3)) -> mapgen.Chunk:
+    buildings = [mapgen.Building((4, 1), 305)] if buildings is None else buildings
+    return mapgen.generate(layout(grid), LABELS, KIT, template(), origin, buildings, {0x69})
+
+
+def terrain(chunk: mapgen.Chunk) -> dict[tuple[int, int], tuple[int, int]]:
+    rows = chunk.terrain.splitlines()[1:]
+    return {(int(r[0]), int(r[1])): (int(r[4]), int(r[5])) for r in (row.split(",") for row in rows)}
+
+
+class RectanglesTest(unittest.TestCase):
+    def test_cover_every_cell_once(self) -> None:
+        cells = {(0, 0), (1, 0), (2, 0), (0, 1), (1, 1), (5, 5)}
+        found = mapgen.rectangles(cells)
+        covered = [(x + i, z + j) for x, z, w, h in found for i in range(w) for j in range(h)]
+        self.assertEqual(sorted(covered), sorted(cells))
+        self.assertEqual(len(found), 3)
+
+    def test_trees_stand_on_2x2_groups_and_center_on_a_pair(self) -> None:
+        trees = {(0, 0), (1, 0), (0, 1), (1, 1), (5, 0), (5, 1)}
+        self.assertEqual(mapgen.tree_spots(trees), [(0.0, 0.0), (4.5, 0.0)])
+
+
+class GenerateTest(unittest.TestCase):
+    def test_keeps_the_templates_draw_calls_each_with_a_triangle(self) -> None:
+        doc, _ = mapgen.read_glb(generate().glb)
+        primitives = doc["meshes"][0]["primitives"]
+        self.assertEqual([p["material"] for p in primitives], list(range(len(MATERIALS))))
+        counts = [doc["accessors"][p["indices"]]["count"] for p in primitives]
+        self.assertTrue(all(count >= 3 and count % 3 == 0 for count in counts))
+        self.assertNotIn("skins", doc)
+        self.assertNotIn("skin", doc["nodes"][1])
+
+    def test_draws_each_kind_in_its_material(self) -> None:
+        triangles = generate().triangles
+        self.assertEqual(triangles["unused"], 0)
+        # One tree, the template's tree triangles once
+        self.assertEqual((triangles["ki02c"], triangles["ki03ax"]), (1, 1))
+        for material in ("grass01ax", "michi01a", "ike01", "hana01_1", "gake1_1", "saku01a"):
+            self.assertGreater(triangles[material], 0, material)
+
+    def test_places_buildings_at_their_doors_and_signs_on_their_tiles(self) -> None:
+        doc, _ = mapgen.read_glb(generate().glb)
+        props = {node["name"]: node["translation"] for node in doc["nodes"] if node["name"].startswith("bw2_prop_")}
+        # The door at map (4, 1) is chunk tile (6, 4); the prop's origin is a tile behind it
+        self.assertEqual(props["bw2_prop_0000_id_00305"], [6 * 16 - 256, 16.0, 3 * 16 - 256])
+        self.assertEqual(props["bw2_prop_0001_id_00152"], [7 * 16 - 256 + 8, 16.0, 6 * 16 - 256 + 8])
+        self.assertNotIn("bw2_prop_0000_id_00001", props)
+
+    def test_terrain_follows_the_maps_collision_and_water(self) -> None:
+        tiles = terrain(generate())
+        self.assertEqual(len(tiles), 32 * 32)
+        self.assertEqual(tiles[0, 0], (51, KIT.tile_types["block"]))
+        self.assertEqual(tiles[2 + 2, 3 + 0], (51, KIT.tile_types["walk"]))
+        self.assertEqual(tiles[2 + 0, 3 + 0], (51, KIT.tile_types["block"]))
+        self.assertEqual(tiles[2 + 2, 3 + 3], (169, KIT.tile_types["shore"]))
+        # The water at the map's edge runs on to the chunk's
+        self.assertEqual(tiles[2 + 3, 31][0], 169)
+
+    def test_needs_every_metatile_labeled(self) -> None:
+        grid = [row[:] for row in GRID]
+        grid[4][5] = 99
+        with self.assertRaisesRegex(ConfigError, "0x063"):
+            generate(grid)
+
+    def test_needs_a_building_at_every_door(self) -> None:
+        with self.assertRaisesRegex(ConfigError, "doors without a building"):
+            generate(buildings=[])
+
+    def test_needs_the_map_to_fit_the_chunk(self) -> None:
+        with self.assertRaises(ConfigError):
+            generate(origin=(30, 0))
+
+
+if __name__ == "__main__":
+    unittest.main()
