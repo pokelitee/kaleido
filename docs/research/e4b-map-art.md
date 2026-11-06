@@ -67,6 +67,30 @@ Consequences:
   records. `docs/data.md` counts 81 records that nothing names, and Unova's records are free in a Kanto game.
 - The validator must check each chunk's size against its zone's map type (R-22).
 
+**Later, 2026-11-06 (Verified at the pin):** the limits table above names three of the eight buffer sizes in
+`MAP_CONFIGS`. Its 29 map types mostly use 0x15004 (86,020 B) or 0x1b008 (110,600 B), and one uses 0x54010
+(344,080 B). Five use smaller ones: 0xa004 (40,964 B), 0xd004 (53,252 B), 0xd534 (54,580 B), 0xe004 (57,348 B) and
+0xf000 (61,440 B). Aspertia City, on the overworld, has map type 0 (110,600 B).
+- The field reads a chunk whole into this buffer and never checks its length (`FieldChunk_LoadAtOnce` and the
+  streamer in `src/ov012/field_g3d_map.c`), so a larger chunk would overwrite the heap.
+- `kaleido build` checks every chunk a zone's matrix can show, replacements included, against the smallest buffer of
+  the zones that load that matrix (`framework/kaleido/chunks.py`). It runs after ninja, on the packed archive, rather
+  than in `validate`.
+- On Black 2's own chunks, every matrix that zones load fits: 332 of them in FireRed's build tree, and the same in
+  the series' own tree with no layers (2026-11-06).
+
+**Patch `0011` (2026-11-06)** is the prototype as an engine patch. It also starts a new model from its template's
+original chunk, not from edits the same build made to the template, and names a bad or missing template in its error.
+**Verified** in the series worktree, on its scratch copy since restored, with three new entries:
+- a copy of Aspertia City's chunk and a copy of the largest chunk (`MAP_MODEL_STRIATON_CITY_2_M_DINING01_00_00`, 99,884 B);
+- a copy of Aspertia's texture set.
+
+The results:
+- the packers built a/0/0/8 with 1,067 entries and a/0/1/4 with 410;
+- every original was byte-identical, and each new entry equaled its template;
+- with the large copy in a cell of the Abyssal Ruins' matrix (map type 7, 86,020 B), the chunk check named it and
+  nothing else, and with it in no matrix the check passed.
+
 ## 3. The template-append prototype
 
 Change (25 lines added, 8 removed, plus one schema property), recorded as

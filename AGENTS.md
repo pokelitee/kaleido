@@ -10,9 +10,10 @@ holds the rules sessions get wrong and points into `docs/`.
 ## Current phase
 
 **Phase 3** (Pallet Town to Viridian City) since 2026-11-04, by the accepted plan `docs/plan/08-phase3.md`: Kanto's
-story on Unova stand-in maps first (D1), then new maps for the art-cost measurement. Phase 2's build work is done;
-its in-game exit checks, and Phase 1's second-machine check, wait for the owner (`docs/status.md`). Phase 0's
-prototypes and findings are in `docs/research/`. Read `docs/status.md` first.
+story on Unova stand-in maps first (D1), then Kanto's maps generated from FireRed (D10,
+`docs/plan/09-generated-maps.md`). Phase 2's build work is done; its in-game exit checks, and Phase 1's second-machine
+check, wait for the owner (`docs/status.md`). Phase 0's prototypes and findings are in `docs/research/`. Read
+`docs/status.md` first.
 
 ## Where things are
 
@@ -48,7 +49,7 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | `./kaleido extract <game>` | the game's layers' recipes, run on your source ROMs, into `build/<game>/extracted/` |
 | `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
 | `./kaleido validate <game>` | extracts, merges, then checks the merged tree: layer JSON against pokebw2's schemas, and cross-references; `--no-extract` merges only committed files, as CI does |
-| `./kaleido build <game>` | extracts, merges, validates and builds the ROM: `build/<game>/kaleido-<game>.nds` |
+| `./kaleido build <game>` | extracts, merges, validates and builds the ROM, then checks each map chunk against its buffer: `build/<game>/kaleido-<game>.nds` |
 | `./kaleido patch <game>` | `dist/kaleido-<game>.xdelta` against your Black 2, checked by applying it (xdelta3 3.0.11) |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
 

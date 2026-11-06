@@ -161,7 +161,7 @@ kaleido bootstrap         submodule at pin → apply patches → venv → upstre
 kaleido extract <game>    source ROMs (SHA1-checked) → build/<game>/extracted/  (category 2, deterministic)
 kaleido merge <game>      layers + extracted → build/<game>/engine/{res,generated}  + provenance and schema checks
 kaleido validate <game>   cross-references on the merged tree (warps, scripts, text IDs, encounters, trainers, IDs)
-kaleido build <game>      upstream configure.py with the game's defines → ninja → build/<game>/kaleido-<game>.nds
+kaleido build <game>      configure.py with the game's defines → ninja → chunk budgets → build/<game>/kaleido-<game>.nds
 kaleido patch <game>      xdelta3 against the base ROM → dist/<game>.xdelta + checksums for players
 kaleido baseline          patched engine, every flag off, no layers → must equal Black 2's SHA1
 ```

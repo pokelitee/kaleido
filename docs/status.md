@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-04
+Last updated: 2026-11-06
 
 ## Current phase
 
@@ -17,8 +17,8 @@ Phase 1 built:
 - the emulator harness spike with E6b.
 
 Phase 2 added a second game, `red`, beside `firered`, each with its own DS-menu title and save magic, and the first
-B2W2-system switch (Red has no C-Gear). Phase 3 has so far laid a walkable Kanto skeleton on Unova stand-ins (step 1)
-and is extracting FireRed's content onto it (step 2). The owner's answers are in `docs/plan/07-open-questions.md`, and
+B2W2-system switch (Red has no C-Gear). Phase 3 has so far put FireRed's content and story, up to the Parcel, on
+Unova stand-ins (steps 1 to 4), and is now generating Kanto's own maps from FireRed (step 5, D10). The owner's answers are in `docs/plan/07-open-questions.md`, and
 what is decided so far is in `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
@@ -400,6 +400,21 @@ Step 5 changed on 2026-11-06 (D10, ADR 0006): Kanto's maps are to be generated f
 Black 2's textures and props, on FireRed's own grid and replaceable per map, instead of rebuilt by hand. The plan,
 `docs/plan/09-generated-maps.md`, was accepted by the owner the same day. It starts with template-append as an engine
 patch and a spike on Pallet Town alone, which the owner plays to judge the look.
+
+The plan's step 1, template-append (2026-11-06):
+- **Patch `0011`**, E4b's prototype as an engine patch: a map model or texture set listed after Black 2's starts from
+  an original, its template, and is appended. It is tooling only, so it has no define.
+- **The chunk check** (`framework/kaleido/chunks.py`): after ninja, `kaleido build` checks every chunk a zone's matrix
+  can show against its map type's buffer, which the field never bounds-checks. The buffers run from 40,964 to 344,080
+  bytes, not just the 86,020 E4b recorded (`docs/research/e4b-map-art.md` §2).
+
+**Verified**, 2026-11-06:
+- `baseline` still matches Black 2 (`e51e6dfb…`), and `compile` compiles every game's defines.
+- FireRed builds unchanged (`d3e00b92…`), every chunk within its budget, and its patch applies back to it.
+- In the series worktree, on a scratch copy since restored, new entries packed as copies of their templates, every
+  original byte-identical. The check named the one copy placed in a zone whose buffer it overflows.
+
+Next, the plan's step 2: the Pallet Town spike.
 
 Outside Phases 1 and 2:
 

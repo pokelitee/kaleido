@@ -73,8 +73,13 @@ checks, and exits 1 unless the ROM's SHA1 matches. The first run downloads upstr
 2. **Extract:** the layers' recipes run on the source ROMs into `build/<game>/extracted/`.
 3. **Merge:** the layers, lowest first, are laid over the worktree's `res/` and `generated/`.
    `build/<game>/merge-report.json` lists every merged file with its layers and provenance.
-4. **Build:** the game's defines and `--allow-stale-secure-area` go to `configure.py`, ninja builds the ROM target, and
-   the ROM is copied to `build/<game>/kaleido-<game>.nds`. Logs go to `build/<game>/logs/`.
+4. **Build:** the game's defines and `--allow-stale-secure-area` go to `configure.py`, and ninja builds the ROM target.
+   Logs go to `build/<game>/logs/`.
+5. **Chunk budgets:** every map chunk a zone's matrix can show, its seasonal and event replacements included, must fit
+   the buffer of the zone's map type (`framework/kaleido/chunks.py`, ADR 0003). The field reads a chunk whole into
+   that buffer without checking its length, so a larger one would overwrite memory. A chunk over its budget stops the
+   build, naming the model, its size, the budget and the zone.
+6. **The ROM** is copied to `build/<game>/kaleido-<game>.nds`.
 
 Between merge and build, `validate` checks the merged tree and stops the build on a problem:
 - each JSON file the layers wrote is checked against the schema its `"$schema"` names, with pokebw2's own checker
