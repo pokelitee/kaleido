@@ -18,8 +18,8 @@ Phase 1 built:
 
 Phase 2 added a second game, `red`, beside `firered`, each with its own DS-menu title and save magic, and the first
 B2W2-system switch (Red has no C-Gear). Phase 3 has so far put FireRed's content and story, up to the Parcel, on
-Unova stand-ins (steps 1 to 4), and is now generating Kanto's own maps from FireRed (step 5, D10). The owner's answers are in `docs/plan/07-open-questions.md`, and
-what is decided so far is in `docs/architecture.md`.
+Unova stand-ins (steps 1 to 4), and is now generating Kanto's own maps from FireRed (step 5, D10). The owner's answers
+are in `docs/plan/07-open-questions.md`, and what is decided so far is in `docs/architecture.md`.
 
 Phase 0 (2026-11-03 to 2026-11-04) ran its experiments in a scratch pokebw2 checkout at the pin, in WSL's own
 filesystem (on the owner's machine, `~/kaleido-work/pokebw2`). Its write-ups, patches and the extractor prototype are
