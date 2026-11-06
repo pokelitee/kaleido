@@ -1,21 +1,30 @@
 {
-    "notes": "Which of a Route 19 chunk's materials draws each kind of tile, for chunks generated from FireRed's maps (docs/research/generated-maps-spike.md §1-3). Heights are in units, 16 a tile; ground and water give the terrain's height index too. Repeats are textures a tile, as the template's own geometry has them. The tree is the template's at the box's tree, relative to the anchor, its corner on the ground. Props are res_ids of Aspertia City's bundle; a building prop's door is in tiles from its origin, and its footprint the x and z bounds of its model, in units from its origin.",
+    "notes": "Which of a Route 19 chunk's materials draws each kind of tile, for chunks generated from FireRed's maps (docs/research/generated-maps-spike.md). Its materials show textures of Aspertia City's set, some of them another than the template's (textures: material to texture). Heights are in units, 16 a tile; ground and water give the terrain's height index too. Repeats are textures a tile, along x and z. The tree is the template's at the box's tree, relative to the anchor, its corner on the ground. Props are res_ids of Aspertia City's bundle; a building prop's door is in tiles from its origin, and its footprint the x and z bounds of its model, in units from its origin.",
     "template": "MAP_MODEL_OVERWORLD_2_MAP02_21",
+    "texture_set": "MAP_TEXTURE_SET_ASPERTIA_CITY",
+    "texture_directory": "aspertia_city",
+    "textures": {
+        "mizu_sita2": "sea_mizu1",
+        "hana01_1": "c12_flower",
+        "michi_hage": "C12_saku01",
+        "michi_hage02": "c12_post01",
+        "kaidan01a": "mori01a"
+    },
     "ground": { "y": 16, "height": 51 },
     "water": { "y": 8, "height": 169 },
     "surfaces": {
         "grass": { "material": "grass01ax", "repeat": 0.25 },
-        "path": { "material": "michi01a", "repeat": 1 },
-        "water": { "material": "ike01", "repeat": 0.5 },
-        "flowers": { "material": "hana01_1", "repeat": 1, "lift": 2 }
+        "path": { "material": "michi01b", "repeat": 1 },
+        "water": { "material": "mizu_sita2", "repeat": 0.5 },
+        "flowers": { "material": "hana01_1", "repeat": [0.5, 1], "lift": 1 }
     },
+    "edge": { "material": "michi01a", "repeat": 0.5, "lift": 0.25 },
     "bank": { "material": "gake1_1", "repeat": 1 },
-    "fence": {
-        "material": "saku01a",
-        "depth": [3, 13],
-        "repeat": 2,
-        "strips": [ { "y": 3, "u": [0.75, 0.5] }, { "y": 14.5, "u": [1.0, 0.75] } ]
+    "fence": { "material": "michi_hage", "height": 16, "offset": 12, "repeat": 1 },
+    "billboards": {
+        "mailbox": { "material": "michi_hage02", "width": 16, "height": 32, "offset": 12 }
     },
+    "forest": { "material": "kaidan01a", "height": 40, "repeat": 0.5 },
     "tree": {
         "materials": [ "ki02c", "ki03ax", "ki03bx", "ki03dx" ],
         "box": [ 208, -224, 240, -160 ],
@@ -23,7 +32,7 @@
         "height": 64
     },
     "tile_types": { "walk": "0x800000", "block": "0x810001", "water": "0x16003f", "shore": "0xc30041" },
-    "props": { "sign": 152, "mailbox": 153 },
+    "props": { "sign": 152 },
     "doors": { "304": [-1, 1], "305": [0, 1], "306": [0, 1] },
     "footprints": {
         "304": [-34, -58.5, 56.3, 45.3],

@@ -284,9 +284,8 @@ def _map_model(
         buildings,
         {gba_gen3_layout.WARP_DOOR},
     )
-    template_data = json.loads((template_dir / "data.json").read_text(encoding="utf-8"))
-    data = {key: value for key, value in template_data.items() if key not in ("transformed", "template")}
-    data["template"] = kit.template
+    # The model binds the kit's texture set, which lets its materials show that set's other textures
+    data = {"$schema": "../map_model.schema.json", "texture_set": kit.texture_set, "template": kit.template}
 
     matrix = recipe["matrix"]
     matrix_file = f"res/field/matrices/{matrix.removeprefix('MAP_MATRIX_').lower()}.json"
