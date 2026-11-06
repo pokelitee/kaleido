@@ -1,0 +1,28 @@
+{
+    "notes": "Which of a Route 19 chunk's materials draws each kind of tile, for chunks generated from FireRed's maps (docs/research/generated-maps-spike.md §1-3). Heights are in units, 16 a tile; ground and water give the terrain's height index too. Repeats are textures a tile, as the template's own geometry has them. The tree is the template's at the box's tree, relative to the anchor, its corner on the ground. Props are res_ids of Aspertia City's bundle, and a building prop's door is in tiles from its origin.",
+    "template": "MAP_MODEL_OVERWORLD_2_MAP02_21",
+    "ground": { "y": 16, "height": 51 },
+    "water": { "y": 8, "height": 169 },
+    "surfaces": {
+        "grass": { "material": "grass01ax", "repeat": 0.25 },
+        "path": { "material": "michi01a", "repeat": 1 },
+        "water": { "material": "ike01", "repeat": 0.5 },
+        "flowers": { "material": "hana01_1", "repeat": 1, "lift": 2 }
+    },
+    "bank": { "material": "gake1_1", "repeat": 1 },
+    "fence": {
+        "material": "saku01a",
+        "depth": [3, 13],
+        "repeat": 2,
+        "strips": [ { "y": 3, "u": [0.75, 0.5] }, { "y": 14.5, "u": [1.0, 0.75] } ]
+    },
+    "tree": {
+        "materials": [ "ki02c", "ki03ax", "ki03bx", "ki03dx" ],
+        "box": [ 208, -224, 240, -160 ],
+        "anchor": [ 208, 112, -208 ],
+        "height": 64
+    },
+    "tile_types": { "walk": "0x800000", "block": "0x810001", "water": "0x16003f", "shore": "0xc30041" },
+    "props": { "sign": 152, "mailbox": 153 },
+    "doors": { "304": [-1, 1], "305": [0, 1], "306": [0, 1] }
+}
