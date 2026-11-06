@@ -30,6 +30,7 @@ Phase 1 (`docs/plan/05-roadmap.md`) is building the skeleton. So far:
 | New map art: map models and texture sets are appended from a template (upstream packers extended, offered upstream) through Phase 3; a glTF → Nitro encoder is built before Phase 4; each chunk must fit its map type's `chunkBufferSize` | ADR 0003 |
 | Tier 1 Kanto zones reuse existing zone IDs. Builds that change ARM9 main use Kaleido's dsd flag `--allow-stale-secure-area`, or `--arm7-bios` when a builder has the BIOS | ADR 0004 |
 | Automated emulator checks run on py-desmume in DS mode, on the builder's machine and never in CI; DSi-mode checks stay manual in melonDS | ADR 0005 |
+| Kanto's maps are generated on the builder's machine from the source game's layouts, with Black 2's textures and props by template-append, on FireRed's own grid; a hand-made model in a layer can replace any map (plan `docs/plan/09-generated-maps.md`) | ADR 0006 |
 | Patches carry the extracted content they add (one xdelta per game against the B2 ROM) | `07-open-questions.md`, Q1 |
 | Every build fits DS mode (4 MB, DS Lite); DSi mode is never required | Q4 |
 | Every game uses Gen 5 mechanics and B2W2's move data. Gen 5 decides how things work (battle and field rules, move data, species stats, types, abilities); the original game decides what is in it (story, dialogue, maps, trainers, encounters, items, learnsets, TM contents). No ruleset mechanism until a game needs a variant | Q6, Q9 (replace the brief's rulesets, Sections 4–5) |

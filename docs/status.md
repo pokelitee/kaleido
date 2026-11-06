@@ -396,6 +396,11 @@ Step 4, FireRed's B2W2-system switches (D5), traced in `docs/research/b2w2-syste
 - FireRed builds (`d3e00b92…`) and its patch applies back to it;
 - clang-format leaves both patches' files unchanged.
 
+Step 5 changed on 2026-11-06 (D10, ADR 0006): Kanto's maps are to be generated from the player's FireRed with
+Black 2's textures and props, on FireRed's own grid and replaceable per map, instead of rebuilt by hand. The plan,
+`docs/plan/09-generated-maps.md`, is proposed for the owner's review. It starts with template-append as an engine
+patch and a spike on Pallet Town alone, which the owner plays to judge the look.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.

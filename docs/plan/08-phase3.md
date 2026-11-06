@@ -74,7 +74,7 @@ Each step lands as its own pull requests, with `kaleido build firered` and `vali
 ## Decisions for the owner
 
 The owner took each recommendation on 2026-11-04, so the last column is what Phase 3 does. D7 to D9 came up in step 3
-and were decided on 2026-11-05.
+and were decided on 2026-11-05. D10, on 2026-11-06, replaces D1's rebuilt maps and D2's artist (ADR 0006).
 
 | # | Decision | Options | Decided |
 | --- | --- | --- | --- |
@@ -87,6 +87,7 @@ and were decided on 2026-11-05.
 | D7 | **Oak's escort on the stand-ins** (step 3, 2026-11-05) | Oak talks at the edge of town, then a fade to the lab; the full walk through the stand-in's streets | Talk, then fade (Approximate). FireRed's walk returns when Pallet Town gets its own map (step 5) |
 | D8 | **Choosing the starter** (step 3, 2026-11-05) | FireRed's three balls on the lab table; Black 2's starter screen with Kanto's three. Black 2's screen draws its starters on the sub screen, so: the starters' own sprites in code, new art, or the balls | Black 2's starter screen (Approximate), its sub screen drawing the starters' own sprites (engine patch `0008`) |
 | D9 | **Naming the rival** (step 3, 2026-11-05) | Black 2's rival-naming screen when he first appears; in the new-game intro, as FireRed does; a fixed name | When he first appears in the lab (Approximate); the intro's version waits for W4's intro speech |
+| D10 | **Where Kanto's maps come from** (2026-11-06) | Hand-made art (D1, D2); a hand kit-bash of Black 2's pieces; generated from the player's FireRed with Black 2's art, replaceable per map | Generated from FireRed (ADR 0006, plan `09-generated-maps.md`), replacing D1's rebuilt maps and D2's artist for Phase 3; step 5 follows that plan |
 
 ## Risks for this phase
 
