@@ -414,7 +414,26 @@ The plan's step 1, template-append (2026-11-06):
 - In the series worktree, on a scratch copy since restored, new entries packed as copies of their templates, every
   original byte-identical. The check named the one copy placed in a zone whose buffer it overflows.
 
-Next, the plan's step 2: the Pallet Town spike.
+The plan's step 2, the Pallet Town spike (2026-11-06), is built and waits for the owner's playtest:
+- **The converter** (`framework/kaleido/mapgen.py`, recipe kind `gba_gen3_map_model`) generates a FireRed map as a
+  map model from a template chunk. Kaleido labels each FireRed metatile by kind, and a kit names the template's
+  material, height, tree, prop and tile type for each kind (`content/families/frlg/maps/`).
+- **The spike game, `firered_spike`:** FireRed's story stays on its stand-ins, so the spike is a game of its own.
+  - Pallet Town is generated into Aspertia City's southern overworld cell.
+  - A new game starts in front of the player's house.
+  - The house, the rival's house and the lab lead into the stand-in interiors.
+- **Patch `0012`:** the packer writes a vertex's color and normal only when they change. That brought Pallet Town's
+  chunk from 2,656 bytes over its budget to 80,568 of 110,600.
+- **Findings:** `docs/research/generated-maps-spike.md`, including the converter's cost and the touch-ups found.
+
+**Verified**, 2026-11-06:
+- `baseline` still matches Black 2, and `compile` compiles every define set, the spike's included.
+- FireRed builds unchanged (`d3e00b92…`).
+- The spike builds (`ce083c99…`), its validation clean and every chunk within budget, and its patch applies back to
+  it.
+
+Next: the owner plays the spike (the playtest row below) and judges the look. That decides whether the plan's step 3
+goes ahead as written.
 
 Outside Phases 1 and 2:
 
@@ -458,6 +477,7 @@ decision, 2026-11-03). Experiments proceed on build-level verification. Until th
 | Phase 3, step 3a | From a new game, walk to Route 1's gate in "Pallet Town": Oak calls out, appears with Juniper's look, walks up, warns, and a fade brings both into the lab facing up. The rival-naming screen opens, then Oak and the rival (Hugh's look) speak. Black 2's starter screen offers Bulbasaur, Charmander and Squirtle; check that its lower screen draws them, scaling cleanly and dimming the two not picked. The chosen one joins at level 5 with FireRed's "received" line and a nickname offer, the party menu works, and the rival takes the starter strong against it. Walking toward the door starts his challenge and battle; check his losing and winning lines (and his name in the winning one). Win or lose, the party is healed and he's gone. Mom heals afterwards. Route 1's clerk gives one Potion, which the Bag shows, and only once | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 3, step 3b | After 3a's battle, walking north in "Viridian City" (Floccesy Town's way up) stops at the old man's warning and steps the player back; his granddaughter apologizes. Entering the Mart (a house) has the clerk call out and give the Parcel, which the Bag's Key Items show as "Parcel"; talking to him again asks the player to deliver it. Talking to Oak with it runs the delivery: the rival comes back, the Pokédex animation and FireRed's line play, five Poké Balls arrive, and the rival leaves; the Pokédex then works from the menu. Afterwards the old man lets the player by, the Mart sells (Black 2's list), Daisy gives the Town Map once, the Center's nurse heals with Black 2's sequence, and its PC opens. Note where losing all Pokémon wakes the player, which nothing here sets | `build/firered/kaleido-firered.nds` (rebuild it) |
 | Phase 3, step 4 | With the DS clock's month set to any of the year's, FireRed shows no season banner (at a new game or on going outside) and the maps look as in spring. After the delivery, the Pokédex is "KANTO POKÉDEX": its list runs from Bulbasaur to Mew numbered 001 to 151, and the seen and caught counts count only those | `build/firered/kaleido-firered.nds` (rebuild it) |
+| Generated maps, step 2 | **The spike, the owner's to judge.** A new game of `firered_spike` starts outdoors in front of the player's house in Pallet Town generated from FireRed. Check that the ground, paths, flower bed, fences, pond, trees and signs stand where FireRed has them, with Black 2's textures, and that Black 2's two houses and larger building stand on FireRed's houses and lab. Walk the edges: trees, buildings, fences and the pond block, and the north exit is closed. The doors lead into the stand-in houses and lab and back out to the same door. Watch the camera, the lights over a day, and anything missing, untextured or floating. Then judge the look | `build/firered_spike/kaleido-firered_spike.nds` (rebuild it), or `~/kaleido-work/spike/kaleido-firered_spike.nds` |
 | E9 | Game A saves and reloads (Continue shows). A's `.sav` copied to game B's name: B offers only New Game. A on a Black 2 save (save once in Black 2 first; none exists yet): only New Game. Black 2 on A's save: only New Game | `~/kaleido-work/e9/kaleido-e9-a.nds`, `kaleido-e9-b.nds` |
 
 Risk of waiting: a runtime-only break, such as code that fails after overlays move, surfaces later. Phase 1's emulator
