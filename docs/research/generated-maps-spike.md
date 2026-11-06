@@ -84,9 +84,15 @@ everything around it, on FireRed's grid. Black 2's houses are about 5.5 by 5 til
 `framework/kaleido/mapgen.py`, run by the recipe kind `gba_gen3_map_model` (`framework/kaleido/extract.py`). It reads
 the layout with `framework/extractors/gba_gen3_layout.py`, gives each tile its kind from the labels, and places the
 map at its origin in a 32×32 chunk:
+- **Textures:** the model binds the kit's texture set (Aspertia City's), so a template material can show another of
+  its textures. The packer rebinds a material by its PNG's name (`patch_material_bindings`); the material keeps its
+  own settings: all 29 of the template's draw modulated, none as a decal or depth-equal, from the front, and most
+  repeat both ways (**Verified** from their `POLYGON_ATTR` and `TEXIMAGE_PARAM`).
 - **Ground:** the tiles of each surface (grass, path, water, flowers) merge into rectangles, a quad each. Its texture
-  repeats at the template's density, on the chunk's coordinates, so neighboring quads meet. Flowers are a second quad
-  2 units up; water is at y = 8, with banks facing it. A fence run is the template's two flat strips.
+  repeats at the kit's density, on the chunk's coordinates, so neighboring quads meet. Where a path meets grass, a
+  strip a tile wide across the edge blends them, with the template's path-edge texture. Flowers are a second quad
+  1 unit up; water is at y = 8, with banks facing it.
+- **Fences and mailboxes:** upright quads facing the camera, near their tile's south edge.
 - **Trees:** each 2×2 group of tree tiles gets a copy of the template's tree, 20 triangles. A one-wide pair gets one
   half a tile out. **Verified** against the template's collision: a tree's base is the two rows starting one tile
   past its first upright plane, and its canopy leans back over the two rows behind, as Black 2's trees do.
@@ -94,7 +100,8 @@ map at its origin in a 32×32 chunk:
 - **Collision:** FireRed's, with water's edge tiles as shore and the rest as water to surf. A building's body blocks
   the tiles it covers up to its door's row, since Black 2's buildings aren't FireRed's shapes, but never the tile in
   front of a door.
-- **Outside the map:** blocked grass, and the map's edge water runs on to the chunk's edge.
+- **Outside the map:** forest, blocked: a canopy 40 units up with walls down from it, and in front of it, where the
+  map's edge isn't trees, a row of the template's trees. The map's edge water runs on to the chunk's edge.
 - A material the map doesn't use keeps one degenerate triangle, since a draw call needs one.
 
 ## 6. The spike's results
@@ -119,14 +126,30 @@ map at its origin in a 32×32 chunk:
   - A kit goes per template: one JSON file, measured from the template.
   - A recipe goes per map: its origin and its buildings.
 
-**Touch-ups the spike found**, for the owner's playtest and step 3:
-- **Buildings:** with their doors on FireRed's, Black 2's houses reach about a tile left of FireRed's (over the
-  mailboxes), and the lab stands about two tiles right and reaches two rows deeper.
-- **Outside the map:** plain blocked grass. FireRed shows its border trees there.
-- **The bottom edge:** the tree tops along it (Route 21's trees) are drawn as grass.
+## 7. The first playtest and the texture pass
+
+The owner's verdict on the first spike ROM (`ce083c99…`, 2026-11-06): "some resemblance to Pallet Town but seems a bit
+off (texturing and some layout)". A software preview of the chunk and its props through Black 2's field camera
+(camera setup 0: pitch 9688 of 65536, distance 237), drawn on the builder's machine and kept out of the repository,
+showed why:
+- **The path texture was a border strip.** `michi01a` is grass fading into sand, made to repeat along a path's edge
+  only; tiled over every path tile it striped them. The fill is `michi01b`, and `michi01a` now blends the edges.
+- **The pond had nothing under it.** Its texture is translucent over the template's riverbed (`mizu_sita2`), which the
+  chunk didn't draw. The water is now Aspertia's opaque sea (`sea_mizu1`).
+- **The fence was two flat strips,** barely visible from the camera. It is now Aspertia's white picket fence standing.
+- **Smaller misses:** yellow flowers where FireRed has red ones (now Aspertia's red), grey blocks for mailboxes (now
+  Aspertia's red post), and an open field around the town where FireRed shows forest.
+- **Buildings remain the main mismatch** (below). The owner chose to continue with Black 2's textures rather than
+  generate new art (2026-11-06).
+
+**Verified** for the textured spike (`022bd2c9…`): 1,004 triangles, 49 trees with the forest's, and 6 props. The
+chunk packs to 100,308 bytes of its 110,600, the rebound textures packed without complaint, and the patch applies.
+
+**Touch-ups left**, for the owner's next playtest and step 3:
+- **Buildings:** with their doors on FireRed's, Black 2's houses reach about a tile left of FireRed's, and the lab
+  stands about two tiles right and reaches two rows deeper.
 - **Stand-ins:**
-  - mailboxes use a small sign prop;
   - signs can't be read, since the spike has no events;
   - the map's name is Aspertia City's.
 
-**Unverified:** how all of it looks and plays in game. That is the owner's playtest of the spike ROM.
+**Unverified:** how the textured version looks and plays in game. That is the owner's next playtest.
