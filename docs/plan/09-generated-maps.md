@@ -1,7 +1,7 @@
 # 09 — Plan: Kanto's maps generated from FireRed
 
-Status: **accepted** (owner, 2026-11-06), for ADR 0006 (D10 in `08-phase3.md`). It replaces Phase 3's step 5 (W6, map art)
-and changes how the story's maps are laid out. It estimates sizes, not time.
+Status: **accepted** (owner, 2026-11-06), for ADR 0006 (D10 in `08-phase3.md`). It replaces Phase 3's step 5 (W6,
+map art) and changes how the story's maps are laid out. It estimates sizes, not time.
 
 ## Goal
 
