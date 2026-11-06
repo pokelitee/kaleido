@@ -7,7 +7,7 @@
     "labels": ["families/frlg/maps/labels/general.json", "families/frlg/maps/labels/pallet_town.json"],
     "origin": [4, 6],
     "buildings": [
-        { "door": [6, 7], "prop": 305 },
+        { "door": [6, 7], "prop": 306 },
         { "door": [15, 7], "prop": 306 },
         { "door": [16, 13], "prop": 304 }
     ],
