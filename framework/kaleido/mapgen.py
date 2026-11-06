@@ -58,6 +58,8 @@ class Kit:
     props: dict[str, int]
     # A building prop's door, from its origin, in tiles
     doors: dict[int, tuple[int, int]]
+    # A building prop's model's x and z bounds from its origin, in units: x0, z0, x1, z1
+    footprints: dict[int, tuple[float, float, float, float]]
 
     @staticmethod
     def load(path: Path) -> "Kit":
@@ -81,6 +83,7 @@ class Kit:
                 tile_types={name: int(value, 0) for name, value in data["tile_types"].items()},
                 props={name: int(value) for name, value in data["props"].items()},
                 doors={int(prop): (int(x), int(z)) for prop, (x, z) in data["doors"].items()},
+                footprints={int(prop): tuple(float(v) for v in box) for prop, box in data["footprints"].items()},
             )
         except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as error:
             raise ConfigError(f"{where}: {error!r}") from error
@@ -421,12 +424,20 @@ def generate(
     if doors != listed:
         missing, extra = sorted(doors - listed), sorted(listed - doors)
         raise ConfigError(f"doors without a building: {missing}; buildings on no door: {extra}")
+    # The tile in front of each door stays as the map has it, so that a building's body never shuts another's door
+    fronts = {(x + ox, z + oz + 1) for x, z in doors}
     for building in buildings:
-        if building.prop not in kit.doors:
-            raise ConfigError(f"the kit has no door for prop {building.prop}")
+        if building.prop not in kit.doors or building.prop not in kit.footprints:
+            raise ConfigError(f"the kit has no door or footprint for prop {building.prop}")
         dx, dz = kit.doors[building.prop]
         x, z = building.door[0] + ox - dx, building.door[1] + oz - dz
         props.append((building.prop, (tile_x(x), kit.ground_y, tile_x(z))))
+        # Black 2's building blocks the tiles its body covers, up to its door's row: it isn't FireRed's shape
+        x0, z0, x1, z1 = kit.footprints[building.prop]
+        for cell in kinds:
+            cx, cz = cell[0] * TILE + TILE / 2 - x * TILE, cell[1] * TILE + TILE / 2 - z * TILE
+            if cell not in water and cell not in fronts and cell[1] <= z + dz and x0 <= cx <= x1 and z0 <= cz <= z1:
+                blocked[cell] = True
     for cell, kind in sorted(kinds.items(), key=lambda item: (item[0][1], item[0][0])):
         if kind in ("sign", "mailbox"):
             x, z = cell

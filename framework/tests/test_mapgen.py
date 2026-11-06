@@ -24,6 +24,7 @@ KIT = mapgen.Kit(
     tile_types={"walk": 0x800000, "block": 0x810001, "water": 0x16003F, "shore": 0xC30041},
     props={"sign": 152, "mailbox": 153},
     doors={305: (0, 1)},
+    footprints={305: (-35, -47.3, 55.5, 34.3)},
 )
 # Metatiles of the synthetic map and their kinds; 6 is a door
 LABELS = {
@@ -155,11 +156,26 @@ class GenerateTest(unittest.TestCase):
         tiles = terrain(generate())
         self.assertEqual(len(tiles), 32 * 32)
         self.assertEqual(tiles[0, 0], (51, KIT.tile_types["block"]))
-        self.assertEqual(tiles[2 + 2, 3 + 0], (51, KIT.tile_types["walk"]))
+        self.assertEqual(tiles[2 + 2, 3 + 2], (51, KIT.tile_types["walk"]))
         self.assertEqual(tiles[2 + 0, 3 + 0], (51, KIT.tile_types["block"]))
         self.assertEqual(tiles[2 + 2, 3 + 3], (169, KIT.tile_types["shore"]))
         # The water at the map's edge runs on to the chunk's
         self.assertEqual(tiles[2 + 3, 31][0], 169)
+
+    def test_a_buildings_body_blocks_up_to_its_door_row(self) -> None:
+        tiles = terrain(generate())
+        # The path at map (2, 0) is under the building's body; map (2, 2), past its door row, isn't
+        self.assertEqual(tiles[2 + 2, 3 + 0][1], KIT.tile_types["block"])
+        self.assertEqual(tiles[2 + 2, 3 + 2][1], KIT.tile_types["walk"])
+
+    def test_a_buildings_body_never_blocks_the_tile_in_front_of_a_door(self) -> None:
+        # A second door at map (2, 0), whose front, map (2, 1), the first building's body would otherwise cover
+        grid = [row[:] for row in GRID]
+        grid[0][2] = 6
+        buildings = [mapgen.Building((4, 1), 305), mapgen.Building((2, 0), 305)]
+        tiles = terrain(generate(grid, buildings))
+        self.assertEqual(tiles[2 + 2, 3 + 1][1], KIT.tile_types["walk"])
+        self.assertEqual(terrain(generate())[2 + 2, 3 + 1][1], KIT.tile_types["block"])
 
     def test_needs_every_metatile_labeled(self) -> None:
         grid = [row[:] for row in GRID]
