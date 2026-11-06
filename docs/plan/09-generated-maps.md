@@ -30,8 +30,9 @@ City, and the converter's cost and the touch-ups per map are recorded.
 - **Zones:** a zone names a map matrix and an area. A matrix is a grid of chunks, each a map model; the overworld's
   also has a zone per chunk. An area names a texture set, a prop bundle and lights.
 - **Chunks:** each chunk is 32×32 tiles: `model.glb`, `terrain_0.csv` (each tile's shape, slope, height and tile
-  type) and props placed as empties in the GLB. Each chunk has a size budget of 86,020 bytes for most map types (E4b).
-- **New chunks** come in by template-append (ADR 0003, engine patch to come): new geometry and collision with a
+  type) and props placed as empties in the GLB. Each chunk has its map type's size budget: 86,020 or 110,600 bytes
+  for most, down to 40,964 (E4b).
+- **New chunks** come in by template-append (ADR 0003, engine patch `0011`): new geometry and collision with a
   template's materials. Areas are capped at 409, so generated maps reuse existing areas' texture sets and props.
 
 ## The converter
@@ -80,7 +81,7 @@ Each step lands as its own pull requests, validated and built.
 | Unknown | Why it matters | How it's settled |
 | --- | --- | --- |
 | Gen 5's tile types for tall grass, water, ledges and doors | Encounters, surfing, jumps and warps depend on them | Read the field code and Black 2's own chunks |
-| A chunk of quads against the 86,020-byte budget | A tile per quad may not fit | Merge quads by kind; measure the spike |
+| A chunk of quads against its map type's budget | A tile per quad may not fit | Merge quads by kind; measure the spike |
 | Buildings | FireRed draws them from metatiles, Gen 5 builds them as 3D | First blocks, then copies of Black 2's houses |
 | A second matrix with its own zones | Kanto's overworld beside Unova's | Read the matrix loader; else Kanto's chunks go into an unused corner of the overworld matrix |
 | FireRed's elevations as Gen 5 heights | Ledges, bridges and stairs | Start flat except ledges; heights where a map needs them |

@@ -1,11 +1,12 @@
 """kaleido build <game>: builds a game's ROM in its own engine worktree, build/<game>/engine/: its layers extracted
-and merged in, its defines passed, the ROM copied to build/<game>/kaleido-<game>.nds (03-architecture.md §7)."""
+and merged in, its defines passed, its map chunks checked against their buffers (chunks.py), the ROM copied to
+build/<game>/kaleido-<game>.nds (03-architecture.md §7)."""
 
 import shutil
 from functools import partial
 from pathlib import Path
 
-from kaleido import dsd, engine, enginebuild, games, merge, validate
+from kaleido import chunks, dsd, engine, enginebuild, games, merge, validate
 from kaleido.config import Paths, load_engine_config
 from kaleido.process import CommandError
 
@@ -52,6 +53,13 @@ def main(paths: Paths, game_id: str) -> int:
     if result.returncode != 0:
         say(f"{game.id}: FAILED")
         return 1
+    over = chunks.check(worktree)
+    for problem in over:
+        say(f"{game.id}: {problem}")
+    if over:
+        say(f"{game.id}: FAILED, {len(over)} map chunks over their buffers, which the field would overrun")
+        return 1
+    say(f"{game.id}: every map chunk fits its map type's buffer")
     rom = out / f"kaleido-{game.id}.nds"
     shutil.copyfile(worktree / enginebuild.ROM, rom)
     say(f"{game.id}: {rom.relative_to(paths.root)}, SHA1 {enginebuild.rom_sha1(worktree)}")

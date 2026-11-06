@@ -24,11 +24,12 @@ Kaleido's engine: [pokebw2](https://github.com/fuddlesworth/pokebw2) pinned to o
 | `0008` | `KALEIDO_KANTO_STARTERS`: Black 2's starter screen offers Bulbasaur, Charmander and Squirtle, its sub screen drawing their own sprites | Phase 3 |
 | `0009` | `KALEIDO_NO_SEASONS`: the season stays spring, so it never changes and no season banner shows (`docs/research/b2w2-systems.md`) | Phase 3 |
 | `0010` | `KALEIDO_KANTO_POKEDEX`: the regional Pokédex is Kanto's 151, numbered as in the national one, complete without Mew | Phase 3 |
+| `0011` | Template-append: a map model or texture set listed after the originals starts from an original one, its template, and is appended to the archive (ADR 0003). Tooling only, so no define: with no new entries the archives are packed as before | E4b |
 
 - Every behavior change sits behind a `KALEIDO_*` define. With all defines off, the patched engine must still rebuild
   Black 2 byte for byte (`e51e6dfb8678a3d19dcd2a10691b96a569ca0abb`).
 - Patches come from `git format-patch --zero-commit --no-signature --no-numbered` with fixed dates, so exporting an
   unchanged series gives the same files, and adding a patch leaves the others' files as they were.
-- Changes that upstream would want are offered upstream first, which shrinks the series. `0001`, `0002`, `0004` and
-  `0005` are candidates.
+- Changes that upstream would want are offered upstream first, which shrinks the series. `0001`, `0002`, `0004`,
+  `0005` and `0011` are candidates.
 - Moving the pin: [`docs/engine-sync.md`](../docs/engine-sync.md).

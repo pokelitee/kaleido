@@ -1,0 +1,132 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Allen Zheng <zhenga8533@gmail.com>
+Date: Wed, 4 Nov 2026 00:00:00 +0000
+Subject: [PATCH] map models: append new map models and texture sets from
+ templates
+
+The map model and map texture set packers refused any entry the original
+archives don't have. Now a model listed after the originals in
+generated/map_models.txt names a template in its data.json, an original
+model whose chunk it starts from: it keeps the template's materials, draw
+calls and texture names, and its GLB, terrain CSVs and props apply as they
+do to any model. A texture set listed after the originals names its
+template set in a template.json and is encoded onto a copy of it.
+
+With no new entries the archives are packed exactly as before, so this
+needs no define.
+---
+ res/field/maps/models/map_model.schema.json |  4 +++
+ tools/data/map_model_data.py                | 28 ++++++++++++++++-----
+ tools/data/map_texture_data.py              | 19 +++++++++++---
+ 3 files changed, 42 insertions(+), 9 deletions(-)
+
+diff --git a/res/field/maps/models/map_model.schema.json b/res/field/maps/models/map_model.schema.json
+index 6c1944784..925198a16 100644
+--- a/res/field/maps/models/map_model.schema.json
++++ b/res/field/maps/models/map_model.schema.json
+@@ -18,6 +18,10 @@
+         "transformed": {
+             "enum": [ true ],
+             "description": "Set when the GLB's positions went through the model's node transforms on export, which the packer reverses"
++        },
++        "template": {
++            "type": "string", "x-constant": "MAP_MODEL_",
++            "description": "Only for a map model the original archive doesn't have, listed after its models in generated/map_models.txt: the original model whose chunk it starts from. It keeps the template's materials, draw calls and texture names, and its GLB, terrain CSVs and props apply as they do to any model"
+         }
+     }
+ }
+diff --git a/tools/data/map_model_data.py b/tools/data/map_model_data.py
+index dfa29d151..191ff2d37 100644
+--- a/tools/data/map_model_data.py
++++ b/tools/data/map_model_data.py
+@@ -56,12 +56,19 @@ def u32(data, offset):
+ 
+ 
+ def models(directory, count):
+-    """Returns the map models' directories, in archive order, and their data, which name their texture sets."""
++    """Returns the map models' directories, in archive order, and their data, which name their texture sets. The
++    models past the original archive's count are new, and each names the original model it starts from."""
+     folders = directories("a/0/0/8", directory)
+-    if len(folders) != count:
+-        raise ValueError(f"a/0/0/8 has {count} map models and map_models.txt {len(folders)}")
++    if len(folders) < count:
++        raise ValueError(f"a/0/0/8 has {count} map models and map_models.txt only {len(folders)}")
+     schema = load_schema(ROOT / "res/field/maps/models/map_model.schema.json")
+-    return [(folder, load(folder / "data.json", schema)) for folder in folders]
++    result = [(folder, load(folder / "data.json", schema)) for folder in folders]
++    for model_id, (folder, data) in enumerate(result):
++        if model_id < count and "template" in data:
++            raise ValueError(f"{folder}: only a map model the original archive doesn't have names a template")
++        if model_id >= count and "template" not in data:
++            raise ValueError(f"{folder}: a map model the original archive doesn't have needs a template")
++    return result
+ 
+ 
+ def texture_set(data, where):
+@@ -1229,10 +1236,19 @@ def pack(directory, game, output):
+     version = {"black2": "b2_us", "white2": "w2_us"}[game]
+     source = ROOT / "extract" / version / "files/a/0/0/8"
+     archive = read_narc(source.read_bytes())
++    originals = list(archive)
+     texture_archive = read_narc((ROOT / "extract" / version / "files/a/0/1/4").read_bytes())
+     texture_dirs = directories("a/0/1/4")
+-    for chunk_id, (model_dir, data) in enumerate(models(directory, len(archive))):
+-        original = archive[chunk_id]
++    for chunk_id, (model_dir, data) in enumerate(models(directory, len(originals))):
++        if chunk_id < len(originals):
++            original = originals[chunk_id]
++        else:
++            # A new model starts from its template's original chunk, not from the template's own edits
++            template = value(data["template"], str(model_dir / "data.json"))
++            if not 0 <= template < len(originals):
++                raise ValueError(f"{model_dir}: template {data['template']} isn't a model of the original archive")
++            original = originals[template]
++            archive.append(original)
+         name = model_name(model_bytes(original))
+         mapping = {"direct": not data.get("transformed", False)}
+         doc, primitives, binary = mesh_primitives(model_dir, name)
+diff --git a/tools/data/map_texture_data.py b/tools/data/map_texture_data.py
+index 7973275c6..00e1a04f6 100644
+--- a/tools/data/map_texture_data.py
++++ b/tools/data/map_texture_data.py
+@@ -8,13 +8,14 @@ ARCHIVE is a/0/1/4, the map texture sets (the default), or a/1/7/4 or a/1/7/5, t
+ textures. Each texture set is a directory of PNGs named after its constant in the archive's list (graphics_paths.py).
+ """
+ 
++import json
+ import struct
+ import sys
+ import zlib
+ from pathlib import Path
+ 
+ from narc import read_narc, write_narc
+-from graphics_paths import directories
++from graphics_paths import ARCHIVES, directories
+ 
+ 
+ ROOT = Path(__file__).resolve().parents[2]
+@@ -388,10 +389,22 @@ def pack(directory, game, output):
+         raise ValueError(f"output {output} names no field texture archive")
+     archive = read_narc((ROOT / "extract" / version / "files" / archive_name).read_bytes())
+     folders = directories(archive_name, directory)
+-    if len(folders) != len(archive):
+-        raise ValueError(f"{archive_name} has {len(archive)} texture sets and its list {len(folders)}")
++    if len(folders) < len(archive):
++        raise ValueError(f"{archive_name} has {len(archive)} texture sets and its list only {len(folders)}")
+     result = [pack_textures(original, folder, f"texture set {set_id}")
+               for set_id, (original, folder) in enumerate(zip(archive, folders))]
++    # A set the original archive doesn't have starts from the original set that its template.json names
++    names = [folder.name for folder in folders[:len(archive)]]
++    prefix = ARCHIVES[archive_name][1]
++    for set_id, folder in enumerate(folders[len(archive):], len(archive)):
++        path = folder / "template.json"
++        if not path.is_file():
++            raise ValueError(f"{folder}: a texture set the original archive doesn't have needs a template.json")
++        template = json.loads(path.read_text())["template"]
++        name = template.removeprefix(prefix).lower()
++        if not template.startswith(prefix) or name not in names:
++            raise ValueError(f"{path}: template {template!r} isn't a set of the original {archive_name}")
++        result.append(pack_textures(archive[names.index(name)], folder, f"texture set {set_id}"))
+     destination = Path(output)
+     destination.parent.mkdir(parents=True, exist_ok=True)
+     destination.unlink(missing_ok=True)
