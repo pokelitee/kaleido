@@ -1,0 +1,29 @@
+{
+    "notes": "Kaleido's labels for FireRed's primary tileset (metatiles 0x000 to 0x27f), by what each metatile shows, for generated maps (docs/plan/09-generated-maps.md). Only the metatiles the generated maps use so far are labeled; a map that uses another stops the converter until it is.",
+    "kinds": {
+        "0x002": "sign",
+        "0x003": "sign",
+        "0x004": "flowers",
+        "0x008": "grass",
+        "0x009": "grass",
+        "0x00e": "grass",
+        "0x00f": "grass",
+        "0x011": "grass",
+        "0x014": "tree",
+        "0x015": "tree",
+        "0x016": "tree",
+        "0x017": "tree",
+        "0x01c": "tree",
+        "0x01d": "tree",
+        "0x01e": "tree",
+        "0x01f": "tree",
+        "0x024": "tree",
+        "0x025": "tree",
+        "0x026": "tree",
+        "0x027": "tree",
+        "0x123": "water",
+        "0x12a": "water",
+        "0x12b": "water",
+        "0x12c": "water"
+    }
+}

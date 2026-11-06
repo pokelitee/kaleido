@@ -1,0 +1,17 @@
+{
+    "entries": [
+        {
+            "paths": ["res/field/zones/aspertia_city.json.merge.json", "res/field/events/aspertia_city.json.merge.json"],
+            "category": "original"
+        },
+        {
+            "paths": [
+                "res/field/maps/models/kanto_pallet_town/*",
+                "generated/map_models.txt",
+                "res/field/matrices/overworld.json.merge.json"
+            ],
+            "category": "extracted",
+            "recipe": "extract/pallet_town_model.json"
+        }
+    ]
+}

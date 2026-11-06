@@ -31,7 +31,8 @@ one or the other. `./kaleido build <game>` reads it.
 
 - Every game has its own `KALEIDO_SAVE_MAGIC` (E9). It is never Black 2's two magics, 0 or 0xffffffff, nor another
   game's, and it never changes once a release is out: a game with a new magic finds no saves.
-- `firered`'s is `0x4b465231` ("KFR1"); `red`'s is `0x4b524431` ("KRD1").
+- `firered`'s is `0x4b465231` ("KFR1"); `red`'s is `0x4b524431` ("KRD1"); `firered_spike`'s is `0x4b465331`
+  ("KFS1").
 
 ## Test layers (Phases 1 and 2)
 
@@ -40,6 +41,7 @@ one or the other. `./kaleido build <game>` reads it.
 | `regions/kanto` | Phase 3's stand-ins (`docs/plan/08-phase3.md`, D1): nine Kanto locations on Unova zones in `zones.json`. Pallet Town is on Aspertia City, Route 1 on Route 19 and Viridian City on Floccesy Town, which Unova's maps already join. Each stand-in, and Aspertia's gate to Route 19, loses Black 2's NPCs, triggers, signs and map scripts and keeps its warps. FireRed and Red share it |
 | `families/frlg` | `extract/route_1_encounters.json`: FireRed's Route 1 land encounters, into that zone's encounter table. `extract/place_names.json`: Pallet Town, Viridian City and Route 1's names from FireRed's map sections, onto their stand-ins' places (Red, with no FireRed source, keeps Unova's). `extract/map_text.json`: the messages of the nine maps' scripts, appended to their stand-ins' text banks. `res/field/events/` and `res/field/scripts/`: FireRed's always-present people and its signs on Black 2's own NPC and sign spots of each stand-in, with placeholder models, and talk scripts that show those messages (`docs/research/frlg-dialogue.md` §5). `extract/trainers.json`: the rival's three Oak's Lab parties, prizes and battle lines, onto Black 2's three first rival battles (`docs/research/frlg-trainers.md`). The story's scripts (step 3): Oak's escort, the starter scene and the rival battle, Mom's healing and Route 1's Potion; the Parcel errand, the Pokédex and Poké Balls, Viridian's old man, Daisy's Town Map, and the Pokémon Center and Mart through Black 2's own scripts. The story's flags and variables are in `res/field/scripts/frlg_story.inc` |
 | `games/firered` | Professor Juniper's first line replaced with original text, as E1 did |
+| `games/firered_spike` | The generated-maps spike (`docs/plan/09-generated-maps.md`, step 2): a game of its own, so FireRed's story stays on its stand-ins. `extract/pallet_town_model.json` generates Pallet Town from the player's FireRed into Aspertia City's southern overworld cell, emptying the northern one. A new game starts in front of the player's house, and Aspertia's warps to the stand-in houses and lab move to Pallet Town's doors. It uses `families/frlg/maps/`: `labels/`, Kaleido's label for each FireRed metatile (`general.json` for the primary tileset, `pallet_town.json` for Pallet Town's), and `kits/route_19.json`, which of a Route 19 chunk's materials, heights, tree, props and tile types draw each kind (`docs/research/generated-maps-spike.md`) |
 | `families/rby` | Juniper's second line replaced with original text, so the family layer shows under the game's |
 | `games/red` | A stub with no source ROM: Juniper's first line replaced with original text, and no C-Gear (`KALEIDO_NO_CGEAR`) |
 

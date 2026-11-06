@@ -1,0 +1,11 @@
+{
+    "warps": [
+        { "zone": "ZONE_ASPERTIA_GATE", "warp": 0, "unk4": 2, "transition": 4, "grid": { "x": 840, "y": 16, "z": 11368, "width": 3, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_2", "warp": 0, "unk4": 2, "transition": 3, "grid": { "x": 760, "y": 16, "z": 12184, "width": 1, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_5", "warp": 0, "unk4": 2, "transition": 3, "grid": { "x": 824, "y": 16, "z": 11992, "width": 1, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_3", "warp": 0, "unk4": 2, "transition": 3, "grid": { "x": 680, "y": 16, "z": 11992, "width": 1, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_9", "warp": 0, "unk4": 2, "transition": 57, "grid": { "x": 840, "y": 16, "z": 12088, "width": 1, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_POKEMON_CENTER", "warp": 0, "unk4": 2, "transition": 3, "grid": { "x": 776, "y": 16, "z": 11832, "width": 1, "height": 1, "unk0a": 0 } },
+        { "zone": "ZONE_ASPERTIA_CITY_7", "warp": 0, "unk4": 2, "transition": 3, "grid": { "x": 952, "y": 16, "z": 11576, "width": 1, "height": 1, "unk0a": 0 } }
+    ]
+}

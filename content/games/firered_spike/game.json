@@ -1,0 +1,11 @@
+{
+    "name": "FireRed map spike",
+    "title": ["Kaleido", "FireRed map spike"],
+    "layers": ["regions/kanto", "games/firered_spike"],
+    "sources": ["firered"],
+    "start": "pallet_town",
+    "defines": {
+        "KALEIDO_NO_SEASONS": "",
+        "KALEIDO_SAVE_MAGIC": "0x4b465331"
+    }
+}

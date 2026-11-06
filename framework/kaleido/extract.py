@@ -26,15 +26,26 @@ says: `PalletTown_Text_Npc2_0` is the first message of the NPC whose local ID is
 Each Gen 5 trainer's party, battle style and prize from the source's trainer of that number, and its battle lines from
 the battle that the source map's scripts start with it, as a merge patch on the Gen 5 trainer's file. Its name, class
 and AI stay Gen 5's. Party members keep their species, level, IV level and custom moves; the prize multiplier is the
-source class's, doubled for a double battle, since Gen 5 multiplies by the level and 4 as Gen 3 does."""
+source class's, doubled for a double battle, since Gen 5 multiplies by the level and 4 as Gen 3 does.
+
+    { "kind": "gba_gen3_map_model", "source": "firered", "map": [3, 0], "model": "MAP_MODEL_KANTO_PALLET_TOWN",
+      "kit": "families/frlg/maps/kits/route_19.json", "labels": ["families/frlg/maps/labels/general.json"],
+      "origin": [4, 6], "buildings": [{"door": [6, 7], "prop": 305}], "matrix": "MAP_MATRIX_OVERWORLD",
+      "cell": [1, 23], "clear": [[1, 22]] }
+
+The source map generated as a new map model (mapgen.py, ADR 0006): its directory, from the kit's template, and its
+constant appended to generated/map_models.txt. The map's top-left tile is at origin in the chunk, each building's prop
+stands at its door, and the model goes into the matrix's cell (column, row), the clear cells emptied, as a merge patch
+on upstream's matrix. The kit and labels are paths under content/."""
 
 import json
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
-from extractors import gba_gen3, gba_gen3_maps, gba_gen3_trainers
+from extractors import gba_gen3, gba_gen3_layout, gba_gen3_maps, gba_gen3_trainers
 from kaleido import layers as layer_module
+from kaleido import mapgen
 from kaleido.config import ConfigError, Paths
 from kaleido.games import Game
 from kaleido.hashing import file_hash
@@ -240,11 +251,69 @@ def _trainers(
     return outputs
 
 
+def _cell(where: str, value) -> tuple[int, int]:
+    if not (isinstance(value, list) and len(value) == 2 and all(isinstance(n, int) and n >= 0 for n in value)):
+        raise ConfigError(f"{where}: a cell or tile is [x, z], as [1, 23]; not {value!r}")
+    return value[0], value[1]
+
+
+def _map_model(
+    paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[str, gba_gen3.Rom]
+) -> list[tuple[str, str | bytes]]:
+    model = recipe["model"]
+    if not model.startswith("MAP_MODEL_"):
+        raise ConfigError(f"{model} isn't a MAP_MODEL_ constant")
+    content = paths.root / "content"
+    kit = mapgen.Kit.load(content / recipe["kit"])
+    labels = mapgen.load_labels([content / path for path in recipe["labels"]])
+    buildings = []
+    for building in recipe["buildings"]:
+        if not isinstance(building, dict) or not isinstance(building.get("prop"), int):
+            raise ConfigError(f"{model}: a building is {{'door': [x, z], 'prop': res_id}}; not {building!r}")
+        buildings.append(mapgen.Building(_cell(model, building.get("door")), building["prop"]))
+    models = paths.engine / "res" / "field" / "maps" / "models"
+    template_dir = models / kit.template.removeprefix("MAP_MODEL_").lower()
+    rom = _rom(paths, game, recipe, roms)
+    layout = gba_gen3_layout.layout(rom, gba_gen3_maps.map_header(rom, *_map_id(model, recipe["map"])))
+    chunk = mapgen.generate(
+        layout,
+        labels,
+        kit,
+        (template_dir / "model.glb").read_bytes(),
+        _cell(model, recipe["origin"]),
+        buildings,
+        {gba_gen3_layout.WARP_DOOR},
+    )
+    template_data = json.loads((template_dir / "data.json").read_text(encoding="utf-8"))
+    data = {key: value for key, value in template_data.items() if key not in ("transformed", "template")}
+    data["template"] = kit.template
+
+    matrix = recipe["matrix"]
+    matrix_file = f"res/field/matrices/{matrix.removeprefix('MAP_MATRIX_').lower()}.json"
+    grid = json.loads((paths.engine / matrix_file).read_text(encoding="utf-8"))["maps"]
+    for value, cell in [(None, cell) for cell in recipe.get("clear", [])] + [(model, recipe["cell"])]:
+        x, z = _cell(model, cell)
+        if not (z < len(grid) and x < len(grid[z])):
+            raise ConfigError(f"{model}: {matrix} has no cell {cell}")
+        grid[z][x] = value
+
+    directory = f"res/field/maps/models/{model.removeprefix('MAP_MODEL_').lower()}"
+    return [
+        (f"{directory}/model.glb", chunk.glb),
+        (f"{directory}/terrain_0.csv", chunk.terrain),
+        (f"{directory}/terrain_0_splits.csv", chunk.splits),
+        (f"{directory}/data.json", json.dumps(data, indent=4) + "\n"),
+        ("generated/map_models.txt", f"{model}\n"),
+        (matrix_file + ".merge.json", json.dumps({"maps": grid}) + "\n"),
+    ]
+
+
 KINDS = {
     "gba_gen3_wild_land": _wild_land,
     "gba_gen3_place_names": _place_names,
     "gba_gen3_map_text": _map_text,
     "gba_gen3_trainers": _trainers,
+    "gba_gen3_map_model": _map_model,
 }
 # Each kind's fields and their types
 FIELDS = {
@@ -252,6 +321,17 @@ FIELDS = {
     "gba_gen3_place_names": {"source": str, "places": dict},
     "gba_gen3_map_text": {"source": str, "maps": dict},
     "gba_gen3_trainers": {"source": str, "trainers": dict},
+    "gba_gen3_map_model": {
+        "source": str,
+        "map": list,
+        "model": str,
+        "kit": str,
+        "labels": list,
+        "origin": list,
+        "buildings": list,
+        "matrix": str,
+        "cell": list,
+    },
 }
 
 
@@ -287,7 +367,10 @@ def run(paths: Paths, game: Game) -> list[Extracted]:
                 if target.exists():
                     raise ConfigError(f"{where}: {path} is also another recipe's output in {layer.id}")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_text(content, encoding="utf-8")
+                if isinstance(content, bytes):
+                    target.write_bytes(content)
+                else:
+                    target.write_text(content, encoding="utf-8")
                 results.append(Extracted(layer.id, path, recipe_path))
     return results
 

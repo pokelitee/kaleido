@@ -1,0 +1,17 @@
+{
+    "kind": "gba_gen3_map_model",
+    "source": "firered",
+    "map": [3, 0],
+    "model": "MAP_MODEL_KANTO_PALLET_TOWN",
+    "kit": "families/frlg/maps/kits/route_19.json",
+    "labels": ["families/frlg/maps/labels/general.json", "families/frlg/maps/labels/pallet_town.json"],
+    "origin": [4, 6],
+    "buildings": [
+        { "door": [6, 7], "prop": 306 },
+        { "door": [15, 7], "prop": 306 },
+        { "door": [16, 13], "prop": 304 }
+    ],
+    "matrix": "MAP_MATRIX_OVERWORLD",
+    "cell": [1, 23],
+    "clear": [[1, 22]]
+}
