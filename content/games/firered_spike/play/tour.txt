@@ -13,7 +13,7 @@ check not save-exists
 # is open ground, so the walls follow the building that shows
 walk RIGHT 3, walk UP 1
 check at 45 749
-walk DOWN 8
+walk RIGHT 1, walk DOWN 8, walk LEFT 1
 check at 45 757
 DOWN/30
 shot pond
