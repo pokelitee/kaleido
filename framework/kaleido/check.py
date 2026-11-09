@@ -5,7 +5,7 @@
   extension, has the name of a file unpacked from a DS ROM or lies in its overlay directory, starts with a ROM's, a
   patch's or a Nitro file's header, or is larger than MAX_BYTES;
 - every layer under content/ loads, with one provenance entry for each content file and recipes of a known kind with
-  that kind's fields, and so does every game's config and layer stack;
+  that kind's fields, and so does every game's config and layer stack, and every game's harness routes parse;
 - the links between the repository's Markdown files lead to files that exist."""
 
 import re
@@ -13,7 +13,7 @@ from functools import partial
 from pathlib import Path
 from urllib.parse import unquote
 
-from kaleido import extract, games, layers
+from kaleido import extract, games, layers, play
 from kaleido.config import ConfigError, Paths
 from kaleido.process import run
 
@@ -157,6 +157,11 @@ def layer_problems(paths: Paths) -> list[str]:
             games.build_defines(paths, game)
         except ConfigError as error:
             problems[str(error)] = None
+    for route in sorted(games.directory(paths).glob("*/play/*.txt")):
+        try:
+            play.parse_route(route.read_text(encoding="utf-8"))
+        except play.PlayError as error:
+            problems[f"{route.relative_to(paths.root).as_posix()}: {error}"] = None
     for directory in layers.DIRECTORIES.values():
         for manifest in sorted((paths.root / "content" / directory).glob("*/layer.json")):
             try:

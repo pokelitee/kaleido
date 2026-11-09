@@ -1,0 +1,3 @@
+# The emulator harness's environment (./kaleido play, ADR 0005), on the builder's machine only; never CI's. SkyTemple's
+# binding of DeSmuME 0.9.12's core, GPL-3.0; the release the harness spike verified
+py-desmume==0.0.9

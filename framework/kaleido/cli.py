@@ -4,7 +4,7 @@ import argparse
 import sys
 
 from extractors.gba_gen3 import ExtractError
-from kaleido import baseline, bootstrap, build, check, doctor, enginecompile, extract, games, patch, validate
+from kaleido import baseline, bootstrap, build, check, doctor, enginecompile, extract, games, patch, play, validate
 from kaleido.config import ROOT, ConfigError, Paths
 from kaleido.engine import EngineError
 from kaleido.process import CommandError
@@ -39,6 +39,11 @@ def main(argv: list[str] | None = None) -> int:
                 action="store_true",
                 help="skip extraction and check only the committed layer files, as CI does without source ROMs",
             )
+    play_command = commands.add_parser(
+        "play", help="run a route through a game's built ROM in py-desmume; on the builder's machine only"
+    )
+    play_command.add_argument("game", help="a directory of content/games/, such as firered")
+    play_command.add_argument("route", help="a route of the game, content/games/<game>/play/<route>.txt")
     args = parser.parse_args(argv)
     paths = Paths(ROOT)
     try:
@@ -62,6 +67,8 @@ def main(argv: list[str] | None = None) -> int:
             result = validate.run(paths, game, build.prepare(paths, game, extract_sources=not args.no_extract))
             validate.report(paths, game, result)
             return 1 if result.problems else 0
+        if args.command == "play":
+            return play.main(paths, games.load(paths, args.game), args.route)
         if args.command == "patch":
             return patch.main(paths, games.load(paths, args.game))
         return build.main(paths, args.game)

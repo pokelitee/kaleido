@@ -50,6 +50,7 @@ From the repository's root, in Linux or WSL2 (never native Windows; upstream req
 | `./kaleido merge <game>` | extracts, then lays the game's layers over its engine worktree, `build/<game>/engine/` |
 | `./kaleido validate <game>` | extracts, merges, then checks the merged tree: layer JSON against pokebw2's schemas, and cross-references; `--no-extract` merges only committed files, as CI does |
 | `./kaleido build <game>` | extracts, merges, validates and builds the ROM, then checks each map chunk against its buffer: `build/<game>/kaleido-<game>.nds` |
+| `./kaleido play <game> <route>` | the built ROM in py-desmume, driven by `content/games/<game>/play/<route>.txt`, which waits on the game's state; its checks pass or fail. Builder's machine only (ADR 0005) |
 | `./kaleido patch <game>` | `dist/kaleido-<game>.xdelta` against your Black 2, checked by applying it (xdelta3 3.0.11) |
 | `python3 -m unittest discover -s framework -t framework` | the framework's tests |
 

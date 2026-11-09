@@ -91,6 +91,20 @@ Each problem names the file, the field and the layers that wrote the file.
 `./kaleido extract <game>`, `merge <game>` and `validate <game>` run the first steps alone, to look at their output.
 `validate <game> --no-extract` skips extraction and merges only the committed layer files, as CI does (section 6).
 
+### Playing a route
+
+```bash
+python3 -m venv build/harness-venv && build/harness-venv/bin/pip install -r framework/requirements-harness.txt
+./kaleido play firered_spike new_game
+```
+
+`play` runs a built game in py-desmume (ADR 0005) and drives it with a route, `content/games/<game>/play/<route>.txt`.
+The harness's environment is set up once; `./kaleido play` finds it in `build/harness-venv/`. A route's steps press
+buttons and wait on the game's state, read through the build's link map: the field, a running script, the zone, the
+player's tile and visibility, saved flags and variables. Its `check` steps are playtest checks; `play` exits 1 if one
+fails. The step syntax is in `framework/kaleido/play.py`. Screenshots and savestates go to `build/<game>/play/<route>/`
+and are never committed. It runs on the builder's machine only, never in CI.
+
 ## 4. A patch
 
 ```bash
