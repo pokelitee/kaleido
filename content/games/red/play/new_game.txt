@@ -1,0 +1,9 @@
+# A new game, from power-on to the player's room upstairs, beside the bed. Presses before the game has booted leave the
+# screen white for good, so the route waits first. START at the name screens moves the cursor to OK, and A takes it
+wait 900
+repeat A/60 START/60 until field for 120 timeout 30000
+check zone ZONE_ASPERTIA_CITY_4
+check at 4 4
+check player-visible
+shot players-room
+save players-room

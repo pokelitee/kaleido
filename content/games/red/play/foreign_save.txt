@@ -1,0 +1,10 @@
+# Phase 2 and E9: given FireRed's save, Red offers only New Game, since each game's save carries its own magic. First,
+# as a control, Red's own save goes in the same way and loads, so the refusal can't be an import that did nothing
+import-save red save red
+wait 1200
+check save-exists
+check not new-game
+import-save firered save firered
+wait 1200
+check new-game
+shot title

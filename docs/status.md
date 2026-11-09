@@ -587,6 +587,32 @@ The harness got faster (2026-11-09):
   Parcel, the Poké Balls), text, the old man letting the player by afterwards, Daisy's Town Map, the Center and the
   Mart's shop, and everything visual.
 
+Saves and the C-Gear in the harness (2026-11-09):
+- **New conditions:** `new-game` and `save-exists` (the save control's bytes), and `cgear` (the field's lower screen
+  is the C-Gear's).
+- **New steps:** `export-save`, `import-save GAME ROUTE NAME` (another route's save, of this game or another, made
+  first if it's missing), `reset`, and `cgear-on` (the save's C-Gear byte, as script command `0x197` sets it).
+- **Proved offsets:** each new offset is proved by its accessor's code, like the others. Two layout facts come from
+  pokebw2's source rather than checked code: the save table's `blocks` pointer and its 12-byte entries.
+
+**Verified**, 2026-11-09, FireRed `fe7ad58e…` and Red `f1f4de14…`:
+- **E9, saving:** `firered/save` and `red/save` save from the field menu (X, then Save). After a reset the save
+  loads (`not new-game`), so the title offers Continue.
+- **Phase 2 and E9, each game refuses the other's save:**
+  - `firered/foreign_save` imports FireRed's own save, which loads, then Red's, which leaves `new-game` set;
+  - `red/foreign_save` does the same the other way.
+
+  Black 2's side of E9 (A on a Black 2 save, Black 2 on A's) still waits, since Black 2 isn't a game the harness
+  plays.
+- **Phase 2, the C-Gear:** with the save's C-Gear turned on, FireRed's lower screen becomes the C-Gear after the field
+  restarts (`firered/cgear`, its screenshot showing it). Red's never does (`red/cgear`): patch `0006`'s
+  `CGearSettings_IsOn` answers no, so the field puts its blank lower screen there. A first try read the C-Gear's
+  `wasOn` byte instead, which follows the player's C-Gear power option, not whether the game has a C-Gear.
+- **Isolated saves:** DeSmuME keeps a battery save per ROM file name in `~/.config/desmume/` and loads it with the ROM.
+  `play` now opens each run's ROM through a link named for the game and route, and clears that battery before and
+  after. Older harness runs used `kaleido-firered.dsv` and `kaleido-red.dsv`, which these routes' first runs left
+  holding saves. `play` no longer reads them.
+
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
 `KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is
 **Unverified**.

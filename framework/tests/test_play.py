@@ -12,12 +12,12 @@ class FakeMemory:
 
     def __init__(self) -> None:
         self.bytes: dict[int, int] = {}
-        self.symbols = {"g_GameSystem": 0x02100000}
+        self.symbols = {"g_GameSystem": 0x02100000, "SaveControlWork": 0x02100004}
         address = 0x02000100
-        for name, (code, _, _) in {**play.ACCESSORS, **play.FIELD_ACCESSORS}.items():
+        for name, (code, _, _) in {**play.ACCESSORS, **play.FIELD_ACCESSORS, **play.SAVE_ACCESSORS}.items():
             self.symbols[name] = address | 1
             for i, half in enumerate(code):
-                self.put(address + 2 * i, half, 2)
+                self.put(address + 2 * i, half or 0, 2)
             address += 0x20
 
     def put(self, address: int, value: int, size: int) -> None:
@@ -32,7 +32,27 @@ class FakeMemory:
             value = self.get(address, 2)
             return value - 0x10000 if value & 0x8000 else value
 
-        return play.Memory(lambda a: self.get(a, 1), lambda a: self.get(a, 2), lambda a: self.get(a, 4), s16)
+        return play.Memory(
+            lambda a: self.get(a, 1),
+            lambda a: self.get(a, 2),
+            lambda a: self.get(a, 4),
+            s16,
+            lambda a, value: self.put(a, value, 1),
+        )
+
+    def start_save(self, new_game: bool, exists: bool) -> int:
+        """A SaveControl with its save data and the C-Gear's block; returns the C-Gear settings' address."""
+        control, save, table, blocks, data = (0x02280000 + 0x1000 * i for i in range(5))
+        self.put(self.symbols["SaveControlWork"], control, 4)
+        self.put(control, int(new_game), 1)
+        self.put(control + 1, int(exists), 1)
+        self.put(control + 0x10, save, 4)
+        self.put(save + 0x2C, table, 4)
+        self.put(save + play.SAVE_DATA, data, 4)
+        self.put(table + play.SAVE_TABLE_BLOCKS, blocks, 4)
+        entry = blocks + play.SAVE_BLOCK_CGEAR * play.SAVE_BLOCK_INFO_SIZE + play.SAVE_BLOCK_INFO_OFFSET
+        self.put(entry, 0x500, 4)
+        return data + 0x500 + 0x28
 
     def start_field(self, hidden: bool = False, event: bool = False) -> None:
         gsys, game_data, field, player, core, actor, work = (0x02200000 + 0x1000 * i for i in range(7))
@@ -49,6 +69,9 @@ class FakeMemory:
         self.put(actor + 0x3C, 42, 2)
         self.put(actor + 0x40, 750, 2)
         self.work = work
+        self.subscreen = 0x02200000 + 0x1000 * 7
+        self.put(field + 0x24, self.subscreen, 4)
+        self.put(self.subscreen, 5, 4)
 
 
 NAMES = {
@@ -92,6 +115,24 @@ class StateTest(unittest.TestCase):
         self.fake.put(self.fake.symbols["GetGPosX"] & ~1, 0x2140, 2)
         with self.assertRaisesRegex(play.PlayError, "GetGPosX .* isn't the code that reads FieldActor.gx at 0x3c"):
             self.state.tile()
+
+    def test_reads_the_save_and_turns_the_c_gear_on(self) -> None:
+        self.assertIsNone(self.state.new_game())
+        settings = self.fake.start_save(new_game=True, exists=False)
+        self.assertTrue(self.state.new_game())
+        self.assertFalse(self.state.save_exists())
+        self.state.set_cgear_on()
+        self.assertEqual(self.fake.get(settings + 7, 1), 1)
+        self.assertFalse(self.state.cgear())
+        self.fake.start_field()
+        self.assertFalse(self.state.cgear())
+        self.fake.put(self.fake.subscreen, 0, 4)
+        self.assertTrue(self.state.cgear())
+        self.fake.start_save(new_game=False, exists=True)
+        holds = {"new-game": False, "not new-game": True, "save-exists": True}
+        for text, expected in holds.items():
+            with self.subTest(text):
+                self.assertEqual(play.parse_condition(text.split(), "t", NAMES).holds(self.state), expected)
 
     def test_conditions(self) -> None:
         self.fake.start_field()
@@ -236,6 +277,21 @@ class RouteTest(unittest.TestCase):
         ):
             with self.subTest(route), self.assertRaisesRegex(play.PlayError, message):
                 play.parse_route(route, NAMES)
+
+    def test_parses_the_save_steps(self) -> None:
+        steps = play.parse_route("export-save firered\nimport-save firered save firered\nreset\ncgear-on")
+        self.assertEqual(
+            [(s.kind, s.args) for s in steps],
+            [
+                ("export-save", ("firered",)),
+                ("import-save", ("firered", "save", "firered")),
+                ("reset", ()),
+                ("cgear-on", ()),
+            ],
+        )
+        for route in ("import-save firered save", "reset now", "export-save ../x"):
+            with self.subTest(route), self.assertRaisesRegex(play.PlayError, "isn't a step"):
+                play.parse_route(route)
 
     def test_start_comes_first_and_once(self) -> None:
         [start, wait] = play.parse_route("start new_game pallet-town\nwait 10")
