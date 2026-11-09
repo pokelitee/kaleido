@@ -621,7 +621,7 @@ Step C, the spike's grass and path (2026-11-09):
 - **The color was the difference.** The kit drew FireRed's pale path with the template's sand (`michi01b`). It now
   draws Aspertia's pale green ground (`michi03b`, its edge `michi03a`), so the town reads as FireRed's light ground.
   That green is brighter than FireRed's near-white path, and closer to the grass, so the lots stand out less. The
-  owner judges it (D11).
+  owner kept it over the sand (2026-11-09).
 - **The spike rebuilt** (`a3aca316…`). Its `new_game` passes. A new route, `firered_spike/tour`, screenshots the
   house, the pond, the lab and the north edge (closed by forest, as the spike has no Route 1). The pond now shows.
 
