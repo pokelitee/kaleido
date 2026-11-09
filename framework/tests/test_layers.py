@@ -91,6 +91,17 @@ class LayersTest(unittest.TestCase):
         with self.assertRaisesRegex(ConfigError, "no region layer maps"):
             layers.zone_of(stack, "route_2")
 
+    def test_a_layer_reserves_runs_of_flags_and_vars(self) -> None:
+        reserves = {"flags": ["0x01F2", "0x025B"], "vars": ["0x404E", "0x406F"]}
+        write(self.content / "families/f/layer.json", {"kind": "family", "reserves": reserves})
+        self.assertEqual(
+            layers.load(self.paths, "families/f").reserves, {"flags": (0x1F2, 0x25B), "vars": (0x404E, 0x406F)}
+        )
+        for bad in ({"items": ["0x1", "0x2"]}, {"flags": ["0x2", "0x1"]}, {"flags": [498, 603]}, {"vars": ["0x1"]}):
+            write(self.content / "families/g/layer.json", {"kind": "family", "reserves": bad})
+            with self.assertRaisesRegex(ConfigError, "reserves maps flags or vars"):
+                layers.load(self.paths, "families/g")
+
     def test_git_ignores_nothing_under_content(self) -> None:
         # A rule meant for the root's extracted files once hid every layer's extract/ recipes
         root = Path(__file__).resolve().parents[2]

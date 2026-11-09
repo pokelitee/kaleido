@@ -12,7 +12,7 @@ games/firered/, red/      one ROM each: game.json, its own text, save magic, B2W
 
 | File | What |
 | --- | --- |
-| `layer.json` | `{"kind": "region" \| "family" \| "game"}`, matching its directory |
+| `layer.json` | `{"kind": "region" \| "family" \| "game"}`, matching its directory. Optional `"reserves": {"flags": [first, last], "vars": [first, last]}`, in hexadecimal strings: saved event flags and variables that only this layer uses. `kaleido validate` checks that none of Black 2's scripts or events uses them, and that no two layers of a game reserve the same ones |
 | `provenance.json` | `{"entries": [{"paths": [patterns], "category": …}]}`: every file under `res/` and `generated/` matches exactly one entry. `original` content is CC BY-SA 4.0 ([`LICENSE-CONTENT`](../LICENSE-CONTENT)); `third-party` entries add `license`, `author` and `source`; `extracted` entries name their `recipe` and are never committed |
 | `res/`, `generated/` | content at upstream's paths. `res/P` replaces upstream's file; `res/P.merge.json` patches it (RFC 7396 for JSON; message labels and their text for `res/text/`, with new messages under `"$append"`); `generated/<list>.txt` appends constants |
 | `extract/<name>.json` | a recipe: what to read from the player's source ROM (`kaleido extract`). The output lands in `build/<game>/extracted/`, never in git |

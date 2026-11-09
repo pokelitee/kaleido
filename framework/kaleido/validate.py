@@ -6,7 +6,9 @@ something fails here, naming the file, the field, and the layers that wrote the 
   --no-extract. A file whose "$schema" is missing or names no file is listed as unchecked.
 - Cross-references, which span files: warps lead to a zone that has the target warp; events name scripts that their
   zone's script file has; zone headers name encounter tables that exist; encounter slots name species and sane levels;
-  regions map their locations to zones that exist."""
+  regions map their locations to zones that exist.
+- Reserved state: no script or event of Black 2's uses the saved flags and variables that a layer reserves in its
+  layer.json, and no two layers of a game reserve the same ones."""
 
 import importlib
 import json
@@ -28,6 +30,10 @@ SEASONS = ("all_year", "spring", "summer", "autumn", "winter")
 MAX_LEVEL = 100
 GLOBAL_SCRIPTS = 2000
 SCRIPT_ENTRY = re.compile(r"^\s*ScriptEntry\s", re.MULTILINE)
+TOKEN = re.compile(r"\b(?:0x[0-9A-Fa-f]+|[A-Za-z_][A-Za-z0-9_]*)\b")
+HEX = re.compile(r"0x[0-9A-Fa-f]+")
+# The event fields that name a flag or a variable, as a number or a constant
+EVENT_STATE = {"flag": "flags", "var": "vars"}
 
 say = partial(print, flush=True)
 
@@ -221,6 +227,115 @@ def check_region_zones(paths: Paths, game: Game, tree: Path) -> list[Problem]:
     ]
 
 
+def constant_values(tree: Path, list_name: str) -> dict[str, int]:
+    """A generated list's constants and their values: each one more than the last, unless it says `= value`."""
+    values, value = {}, 0
+    for line in (tree / "generated" / f"{list_name}.txt").read_text(encoding="utf-8").splitlines():
+        if line and not line.startswith("#"):
+            name, _, given = line.partition("=")
+            value = int(given, 0) if given.strip() else value
+            values[name.strip()] = value
+            value += 1
+    return values
+
+
+@dataclass(frozen=True)
+class Reserve:
+    layer: str
+    state: str
+    first: int
+    last: int
+
+
+def reserves(stack: list) -> tuple[list[Reserve], list[Problem]]:
+    """The stack's reserved runs, and a problem for each two that overlap."""
+    found = [Reserve(layer.id, state, *run) for layer in stack for state, run in layer.reserves.items()]
+    problems = [
+        Problem(f"content/{b.layer}/layer.json", f"reserves.{b.state}", f"overlaps {a.layer}'s reserved {a.state}")
+        for i, a in enumerate(found)
+        for b in found[i + 1 :]
+        if a.state == b.state and a.first <= b.last and b.first <= a.last
+    ]
+    return found, problems
+
+
+def _numbered(value) -> int | None:
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, str) and HEX.fullmatch(value):
+        return int(value, 16)
+    return None
+
+
+def check_reserved_state(
+    tree: Path, found: list[Reserve], written: dict[str, list[dict]], upstream: Callable[[str], str | None]
+) -> list[Problem]:
+    """No script or event of Black 2's names a flag or variable that a layer reserves: by its constant, as a
+    hexadecimal number in a script, or as an event's flag or var. Of a file the layers patched, upstream's version is
+    read; one they replaced is theirs. A flag reached by arithmetic, or written in decimal in a script, escapes the
+    check, and so does C code."""
+    if not found:
+        return []
+    names = {"flags": constant_values(tree, "flags"), "vars": constant_values(tree, "vars")}
+
+    def reserver(state: str, value: int | None) -> Reserve | None:
+        return next((r for r in found if r.state == state and value is not None and r.first <= value <= r.last), None)
+
+    def problem(file: str, where: str, what: str, reserve: Reserve) -> Problem:
+        return Problem(file, where, f"{what} is in {reserve.layer}'s reserved {reserve.state}")
+
+    def black2(path: Path) -> str | None:
+        file = path.relative_to(tree).as_posix()
+        if file not in written:
+            return path.read_text(encoding="utf-8")
+        if any(part["how"] == "replace" for part in written[file]):
+            return None
+        return upstream(file)
+
+    reserved_names = {
+        name: reserve
+        for state, values in names.items()
+        for name, value in values.items()
+        if (reserve := reserver(state, value))
+    }
+    problems = []
+    for path in sorted((tree / "res" / "field" / "scripts").glob("*.s")):
+        text = black2(path)
+        file = path.relative_to(tree).as_posix()
+        for number, line in enumerate((text or "").splitlines(), 1):
+            for token in TOKEN.findall(line.split("//")[0]):
+                number_value = _numbered(token)
+                reserve = reserved_names.get(token) or reserver("vars", number_value) or reserver("flags", number_value)
+                if reserve:
+                    problems.append(problem(file, f"line {number}", token, reserve))
+    for path in _data_files(tree / "res" / "field" / "events"):
+        text = black2(path)
+        file = path.relative_to(tree).as_posix()
+        for where, state, value in _state_fields(json.loads(text), "") if text else ():
+            named = names[state].get(value) if isinstance(value, str) else None
+            reserve = reserver(state, _numbered(value) if named is None else named)
+            if reserve:
+                problems.append(problem(file, where, repr(value), reserve))
+    return problems
+
+
+def _state_fields(data, where: str):
+    """Each field of an event file that names a flag or variable: where it is, which state, and its value."""
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key in EVENT_STATE:
+                yield f"{where}{key}", EVENT_STATE[key], value
+            yield from _state_fields(value, f"{where}{key}.")
+    elif isinstance(data, list):
+        for i, item in enumerate(data):
+            yield from _state_fields(item, f"{where.removesuffix('.')}[{i}].")
+
+
+def _upstream_text(tree: Path, path: str) -> str | None:
+    content = merge._upstream(tree, path)
+    return content.decode("utf-8") if content is not None else None
+
+
 def _merged_files(paths: Paths, game: Game) -> dict[str, list[dict]]:
     """The merge report's files: each path the layers wrote, with its layers."""
     report_file = merge.report_path(paths, game)
@@ -228,9 +343,13 @@ def _merged_files(paths: Paths, game: Game) -> dict[str, list[dict]]:
 
 
 def run(paths: Paths, game: Game, tree: Path, schema_check: SchemaCheck | None = None) -> Result:
-    schemas = check_schemas(tree, list(_merged_files(paths, game)), schema_check or upstream_schema_check(tree))
+    written = _merged_files(paths, game)
+    schemas = check_schemas(tree, list(written), schema_check or upstream_schema_check(tree))
+    found, overlaps = reserves(layer_module.load_stack(paths, list(game.layers)))
     problems = [
         *schemas.problems,
+        *overlaps,
+        *check_reserved_state(tree, found, written, partial(_upstream_text, tree)),
         *check_region_zones(paths, game, tree),
         *check_warps(tree),
         *check_event_scripts(tree),

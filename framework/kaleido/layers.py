@@ -1,12 +1,12 @@
 """Content layers: content/<kind>s/<name>/ (03-architecture.md §5, §6).
 
-A layer holds layer.json (its kind), provenance.json (a category for every content file), content at upstream's paths
-under res/ and generated/, extraction recipes under extract/, and, for a region, zones.json: which existing zone ID
-holds each of its locations (ADR 0004)."""
+A layer holds layer.json (its kind, and the saved event flags and variables it reserves), provenance.json (a category
+for every content file), content at upstream's paths under res/ and generated/, extraction recipes under extract/, and,
+for a region, zones.json: which existing zone ID holds each of its locations (ADR 0004)."""
 
 import fnmatch
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from kaleido.config import ConfigError, Paths
@@ -15,6 +15,7 @@ KINDS = ("region", "family", "game")
 DIRECTORIES = {"region": "regions", "family": "families", "game": "games"}
 CATEGORIES = ("original", "third-party", "extracted")
 CONTENT_DIRS = ("res", "generated")
+RESERVABLE = ("flags", "vars")
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,8 @@ class Layer:
     provenance: tuple[ProvenanceEntry, ...]
     # Location name -> ZONE_* constant
     zones: dict[str, str]
+    # "flags" or "vars" -> the first and last of a run of saved event flags or variables that only this layer uses
+    reserves: dict[str, tuple[int, int]] = field(default_factory=dict)
 
     def content_files(self) -> list[str]:
         """The committed content files, as POSIX paths relative to the layer."""
@@ -93,6 +96,21 @@ def _provenance(path: Path) -> tuple[ProvenanceEntry, ...]:
     return tuple(entries)
 
 
+def _reserves(path: Path, manifest: dict) -> dict[str, tuple[int, int]]:
+    reserves = {}
+    for state, run in manifest.get("reserves", {}).items():
+        try:
+            first, last = (int(bound, 16) for bound in run)
+        except (TypeError, ValueError):
+            first = last = -1
+        if state not in RESERVABLE or not 0 <= first <= last:
+            raise ConfigError(
+                f'{path}: reserves.{state}: reserves maps flags or vars to their first and last, ["0x01F2", "0x025B"]'
+            )
+        reserves[state] = (first, last)
+    return reserves
+
+
 def load(paths: Paths, layer_id: str) -> Layer:
     path = paths.root / "content" / layer_id
     manifest = _read_json(path / "layer.json")
@@ -105,7 +123,7 @@ def load(paths: Paths, layer_id: str) -> Layer:
     if zones and kind != "region":
         raise ConfigError(f"{zones_file}: only a region maps its locations to zones")
     provenance = _provenance(path / "provenance.json") if (path / "provenance.json").exists() else ()
-    layer = Layer(layer_id, path, kind, provenance, dict(zones))
+    layer = Layer(layer_id, path, kind, provenance, dict(zones), _reserves(path / "layer.json", manifest))
     for file in layer.content_files():
         layer.category_of(file)
     return layer

@@ -469,6 +469,22 @@ Step A2 is done too (2026-11-08). The ROM-content guard (`./kaleido check`) also
 **Verified**, 2026-11-08: unit tests. On the 318 files under `files/` that dsd unpacks from Black 2, the magic check
 finds every NARC (308), the sound archive and the two embedded DS ROMs.
 
+Step A3 is done (2026-11-08). The FRLG family's `layer.json` reserves the story's runs, flags 0x01F2 to 0x025B and
+variables 0x404E to 0x406F, and `kaleido validate` checks that none of Black 2's scripts or events uses them:
+- by a constant from `generated/flags.txt` or `vars.txt`, or a hexadecimal number in a script;
+- by an event's `flag` or `var`, as a number, a hexadecimal string or a constant.
+
+Of a file a layer patched, upstream's version is read; a file a layer replaced is the layer's own. Two layers of a game
+that reserve the same flags or variables are refused too.
+
+**Verified**, 2026-11-08:
+- unit tests;
+- on FireRed's merged tree (the texture pass), no problems in Black 2's 1,290 scripts and their events;
+- read the same way, Kaleido's own story files show all 11 of their uses.
+
+The story's runs were an **Assumption** from a one-time scan. For scripts and events this check now settles it. A flag
+reached by arithmetic, written in decimal in a script, or named in C still escapes it.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
