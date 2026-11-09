@@ -1,0 +1,11 @@
+# Phase 3's step 3a, the rival: from the lab with a starter, a step toward the door starts his challenge, and A presses
+# fight with the first move until the battle ends, won or lost, and the story moves on
+start lab lab
+walk DOWN 1
+until event timeout 300
+repeat A/60 until var KANTO_VAR_STORY == KANTO_STORY_RIVAL_BATTLED timeout 30000
+repeat A/60 until field for 120 timeout 6000
+check zone ZONE_ASPERTIA_CITY_9
+check player-visible
+shot after-battle
+save after-battle

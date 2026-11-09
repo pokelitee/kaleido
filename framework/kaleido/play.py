@@ -9,8 +9,10 @@ A route is content/games/<game>/play/<route>.txt. Its steps are separated by com
     wait N                  run N frames
     KEY[*N][/F]             press KEY (A B X Y L R START SELECT UP DOWN LEFT RIGHT) N times, F frames after each (30)
     hold KEY N              hold KEY for N frames
-    walk DIRECTION N        walk N tiles UP, DOWN, LEFT or RIGHT, holding the key until the player's tile has moved
-                            that far; fail if something stops the player first
+    walk DIRECTION N [fight]
+                            walk N tiles UP, DOWN, LEFT or RIGHT, holding the key until the player's tile has moved
+                            that far; fail if something stops the player first. With fight, an event that starts on the
+                            way, such as a wild battle in the grass, is pressed through with A, and the walk goes on
     repeat PRESSES until CONDITION [for N] [timeout N]
                             press each of PRESSES in turn until CONDITION holds for N frames (1); fail after timeout
                             frames (36000, ten minutes of game time)
@@ -34,9 +36,6 @@ Conditions, each one optionally after `not`:
 Constants come from the game's merged tree: generated/zones.txt, flags.txt and vars.txt, and the `#define`s of
 res/field/scripts/*.inc (frlg_story.inc's KANTO_VAR_STORY). The game's state is read through the build's own link
 map, build/<game>/engine/build/b2_us/arm9.o.xMAP, so it follows Kaleido's changes to ARM9 and the overlays.
-
-The emulator skips drawing the frames that no screenshot shows, which runs about a quarter faster; a screenshot draws
-one frame first.
 
 Screenshots and savestates come from the ROM: they go to build/<game>/play/<route>/ and are never committed."""
 
@@ -77,6 +76,11 @@ DIRECTIONS = {"UP": (0, -1), "DOWN": (0, 1), "LEFT": (-1, 0), "RIGHT": (1, 0)}
 WALK_FRAMES_PER_TILE = 90
 # After the last tile, the frames the step takes to finish
 WALK_SETTLE_FRAMES = 20
+# A walk that fights presses A this often until the field is back and has stayed up this long, or fails after the
+# timeout: a wild battle at level 5 takes a few thousand frames
+FIGHT_AFTER = 30
+FIGHT_SETTLE_FRAMES = 60
+FIGHT_TIMEOUT = 20_000
 MAIN_RAM = range(0x02000000, 0x02400000)
 VARS_START = 0x4000
 EVENT_FLAG_TEMP_0 = 0x4000
@@ -264,6 +268,9 @@ class Condition:
         return result != self.negated
 
 
+FIELD = Condition("field", (), text="field")
+
+
 @dataclass(frozen=True)
 class Step:
     kind: str
@@ -354,10 +361,12 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
                 args = (_number(rest[0], where),)
             elif command == "hold" and len(rest) == 2:
                 args = (_press(rest[0], where)[0], _number(rest[1], where))
-            elif command == "walk" and len(rest) == 2:
+            elif command == "walk" and len(rest) in (2, 3):
                 if rest[0] not in DIRECTIONS:
                     raise PlayError(f"{where}: walk goes {' '.join(DIRECTIONS)}, not {rest[0]!r}")
-                args = (rest[0], _number(rest[1], where))
+                if len(rest) == 3 and rest[2] != "fight":
+                    raise PlayError(f"{where}: a walk ends with fight or nothing, not {rest[2]!r}")
+                args = (rest[0], _number(rest[1], where), len(rest) == 3)
             elif command in ("shot", "save", "load") and len(rest) == 1 and re.fullmatch(r"[\w-]+", rest[0]):
                 args = (rest[0],)
             elif command == "repeat" and "until" in rest:
@@ -390,8 +399,10 @@ class Player:
         self.failed: list[str] = []
 
     def run(self, frames: int) -> None:
+        # Every frame is drawn. Skipping frames (py-desmume's skip_next_frame each frame) ran a quarter faster, but the
+        # screenshots then showed frames from long before, and a savestate made so crashed DeSmuME's software 3D
+        # renderer when loaded in the lab
         for _ in range(frames):
-            self.emulator.skip_next_frame()
             self.emulator.cycle(with_joystick=False)
         self.frames += frames
 
@@ -423,8 +434,9 @@ class Player:
         self.shot(f"timeout-line-{step.line}")
         raise PlayError(f"line {step.line}: {condition.text} didn't hold within {timeout} frames ({step.text})")
 
-    def walk(self, step: Step, direction: str, tiles: int) -> None:
-        """Holds the direction until the player's tile is `tiles` away; the tile turns over as a step starts."""
+    def walk(self, step: Step, direction: str, tiles: int, fight: bool = False) -> None:
+        """Holds the direction until the player's tile is `tiles` away; the tile turns over as a step starts. With
+        fight, an event on the way is pressed through with A, and the walk goes on from where it stopped."""
         start = self.state.tile()
         if start is None:
             raise PlayError(f"line {step.line}: no player to walk ({step.text})")
@@ -433,6 +445,13 @@ class Player:
         self.emulator.input.keypad_add_key(self.keys[direction])
         try:
             while moved < tiles:
+                if fight and self.state.event_running():
+                    self.emulator.input.keypad_rm_key(self.keys[direction])
+                    print(f"line {step.line}: an event at {tile}, pressed through with A", flush=True)
+                    self.wait_for(step, (("A", 1, FIGHT_AFTER),), FIELD, FIGHT_SETTLE_FRAMES, FIGHT_TIMEOUT)
+                    self.emulator.input.keypad_add_key(self.keys[direction])
+                    frames = 0
+                    continue
                 if frames >= WALK_FRAMES_PER_TILE:
                     self.shot(f"stopped-line-{step.line}")
                     raise PlayError(
@@ -450,9 +469,6 @@ class Player:
         self.run(WALK_SETTLE_FRAMES)
 
     def shot(self, name: str) -> None:
-        # The frames before were skipped, not drawn: draw one to show
-        self.emulator.cycle(with_joystick=False)
-        self.frames += 1
         self.emulator.screenshot().save(self.out / f"{name}.png")
 
     def save(self, name: str) -> None:

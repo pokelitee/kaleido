@@ -547,11 +547,13 @@ The harness got faster (2026-11-09):
 - **Checkpoints.** A route can begin with `start ROUTE SAVE`, from another route's savestate instead of from power-on.
   Each savestate records the SHA1 of the ROM it was made on. When the savestate is missing or comes from another
   build, `play` runs that route first.
-- **Frame skipping.** `play` skips drawing the frames no screenshot shows, and a screenshot draws one first.
+- **Frame skipping, tried and left out.** py-desmume's `skip_next_frame` before every frame ran FireRed's field at
+  87–89 frames per second, against 70–72 drawn. But the screenshots then showed frames from long before (the title
+  screen for the player's room). A savestate made so crashed DeSmuME's software 3D renderer when loaded in the lab
+  (`_UpdateEdgeMarkColorTable`). Every frame is drawn. Most of the time goes to emulating the CPU, and py-desmume
+  offers no switch for DeSmuME's JIT.
 
 **Verified**, 2026-11-09:
-- Rendering skipped, FireRed's field ran at 87–89 frames per second, against 70–72 drawn. Most of the time goes to
-  emulating the CPU, and py-desmume offers no switch for DeSmuME's JIT.
 - **FireRed's second route,** `firered/lab` (step 3a's first half), starts from `new_game`'s Pallet Town checkpoint:
   - Oak calls out at Route 1's gate and brings the player to the lab;
   - A presses name the rival, pick Charmander on Black 2's starter screen (drawing Kanto's starters on its sub
@@ -559,6 +561,11 @@ The harness got faster (2026-11-09):
   - it ends in the lab with `KANTO_VAR_STORY` at `KANTO_STORY_HAS_STARTER`.
 - From a stale checkpoint, `lab` ran `new_game` first, 165 s in all. From the checkpoint it took 80 s, both times
   6,038 frames.
+- **FireRed's third route,** `firered/rival`, starts from `lab`'s checkpoint. A step toward the door starts the rival's
+  challenge, and A presses fight with the first move until the story reaches `KANTO_STORY_RIVAL_BATTLED` and the field
+  is back. The battle's length varies from run to run (5,897 and 6,685 frames), since its random numbers follow the
+  clock.
+- From nothing, `rival` ran `lab`, which ran `new_game`, all passing, in 410 s; each screenshot shows its own scene.
 
 For routes: the rival's name screen starts empty, so START there (which moves the cursor to OK) leaves nothing to
 confirm. A presses type until the name is full, which moves the cursor to OK by itself. At the starter's yes/no
