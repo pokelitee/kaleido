@@ -6,6 +6,7 @@ repeat A/60 START/60 until field for 120 timeout 30000
 check zone ZONE_ASPERTIA_CITY
 check at 42 750
 shot pallet-town
+save pallet-town
 # The spike's open question (docs/plan/10-next-steps.md, D11): is the player drawn?
 check player-visible
 hold LEFT 16, wait 30

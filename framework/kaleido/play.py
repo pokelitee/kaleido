@@ -5,7 +5,9 @@ A route is content/games/<game>/play/<route>.txt. Its steps are separated by com
 
     wait N                  run N frames
     KEY[*N][/F]             press KEY (A B X Y L R START SELECT UP DOWN LEFT RIGHT) N times, F frames after each (30)
-    hold KEY N              hold KEY for N frames (walking)
+    hold KEY N              hold KEY for N frames
+    walk DIRECTION N        walk N tiles UP, DOWN, LEFT or RIGHT, holding the key until the player's tile has moved
+                            that far; fail if something stops the player first
     repeat PRESSES until CONDITION [for N] [timeout N]
                             press each of PRESSES in turn until CONDITION holds for N frames (1); fail after timeout
                             frames (36000, ten minutes of game time)
@@ -23,7 +25,8 @@ Conditions, each one optionally after `not`:
     at X Z                  the player stands on tile (X, Z)
     player-visible          the player's actor isn't hidden
     flag FLAG               a saved event flag is set (a constant or a number)
-    var VAR OP VALUE        a saved event variable compares as OP (== != < <= > >=) with VALUE
+    var VAR OP VALUE        a saved event variable compares as OP (== != < <= > >=) with VALUE (a number or a
+                            constant, such as KANTO_STORY_IN_LAB)
 
 Constants come from the game's merged tree: generated/zones.txt, flags.txt and vars.txt, and the `#define`s of
 res/field/scripts/*.inc (frlg_story.inc's KANTO_VAR_STORY). The game's state is read through the build's own link
@@ -33,6 +36,7 @@ Screenshots and savestates come from the ROM: they go to build/<game>/play/<rout
 
 import os
 import re
+import shutil
 import sys
 import time
 from collections.abc import Callable
@@ -58,6 +62,13 @@ COMPARISONS = {
 DEFAULT_AFTER = 30
 DEFAULT_TIMEOUT = 36_000
 PRESS_FRAMES = 6
+# A tile's step on the field's grid, x to the right and z down
+DIRECTIONS = {"UP": (0, -1), "DOWN": (0, 1), "LEFT": (-1, 0), "RIGHT": (1, 0)}
+# A walk that hasn't moved the player a tile in this many frames is stopped. The first tile also turns the player:
+# FireRed's new game, facing down, took more than 40 frames to step left and fewer than 60
+WALK_FRAMES_PER_TILE = 90
+# After the last tile, the frames the step takes to finish
+WALK_SETTLE_FRAMES = 20
 MAIN_RAM = range(0x02000000, 0x02400000)
 VARS_START = 0x4000
 EVENT_FLAG_TEMP_0 = 0x4000
@@ -296,7 +307,7 @@ def parse_condition(words: list[str], where: str, names: dict | None) -> Conditi
     elif kind == "var":
         if args[1] not in COMPARISONS:
             raise PlayError(f"{where}: {args[1]!r} isn't a comparison ({' '.join(COMPARISONS)})")
-        resolved = (value(args[0], "vars"), args[1], _number(args[2], where))
+        resolved = (value(args[0], "vars"), args[1], value(args[2], "vars"))
     else:
         resolved = ()
     return Condition(kind, resolved, negated, text)
@@ -327,6 +338,10 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
                 args = (_number(rest[0], where),)
             elif command == "hold" and len(rest) == 2:
                 args = (_press(rest[0], where)[0], _number(rest[1], where))
+            elif command == "walk" and len(rest) == 2:
+                if rest[0] not in DIRECTIONS:
+                    raise PlayError(f"{where}: walk goes {' '.join(DIRECTIONS)}, not {rest[0]!r}")
+                args = (rest[0], _number(rest[1], where))
             elif command in ("shot", "save", "load") and len(rest) == 1 and re.fullmatch(r"[\w-]+", rest[0]):
                 args = (rest[0],)
             elif command == "repeat" and "until" in rest:
@@ -391,6 +406,32 @@ class Player:
         self.shot(f"timeout-line-{step.line}")
         raise PlayError(f"line {step.line}: {condition.text} didn't hold within {timeout} frames ({step.text})")
 
+    def walk(self, step: Step, direction: str, tiles: int) -> None:
+        """Holds the direction until the player's tile is `tiles` away; the tile turns over as a step starts."""
+        start = self.state.tile()
+        if start is None:
+            raise PlayError(f"line {step.line}: no player to walk ({step.text})")
+        dx, dz = DIRECTIONS[direction]
+        tile, moved, frames = start, 0, 0
+        self.emulator.input.keypad_add_key(self.keys[direction])
+        try:
+            while moved < tiles:
+                if frames >= WALK_FRAMES_PER_TILE:
+                    self.shot(f"stopped-line-{step.line}")
+                    raise PlayError(
+                        f"line {step.line}: the player stopped at {tile} after {moved} of {tiles} tiles ({step.text})"
+                    )
+                self.run(1)
+                frames += 1
+                now = self.state.tile()
+                if now is not None and now != tile:
+                    if now != (tile[0] + dx, tile[1] + dz):
+                        raise PlayError(f"line {step.line}: the player went from {tile} to {now} ({step.text})")
+                    tile, moved, frames = now, moved + 1, 0
+        finally:
+            self.emulator.input.keypad_rm_key(self.keys[direction])
+        self.run(WALK_SETTLE_FRAMES)
+
     def shot(self, name: str) -> None:
         self.emulator.screenshot().save(self.out / f"{name}.png")
 
@@ -403,6 +444,8 @@ class Player:
                 self.press(key, after=after)
         elif step.kind == "hold":
             self.press(step.args[0], hold=step.args[1], after=0)
+        elif step.kind == "walk":
+            self.walk(step, *step.args)
         elif step.kind == "repeat":
             self.wait_for(step, *step.args)
         elif step.kind == "until":
@@ -462,7 +505,10 @@ def main(paths: Paths, game: Game, route_name: str) -> int:
         steps = parse_route(route_file.read_text(encoding="utf-8"), read_names(tree))
         symbols, work_count = read_symbols(xmap), event_work_count(tree)
         out = paths.root / "build" / game.id / "play" / route_name
-        out.mkdir(parents=True, exist_ok=True)
+        # A run starts clean, so that a screenshot of an earlier run's failure can't be taken for this one's
+        if out.exists():
+            shutil.rmtree(out)
+        out.mkdir(parents=True)
         emulator = emulator_class()
         emulator.open(str(rom))
         memory = Memory(
