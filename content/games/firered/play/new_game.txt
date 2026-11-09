@@ -4,13 +4,15 @@
 wait 900
 repeat A/60 START/60 until field for 120 timeout 30000
 check zone ZONE_ASPERTIA_CITY_4
+# Beside the bed, the room's Fly position as the Kanto region sets it, not on the bed itself
+check at 4 4
 check player-visible
 check var KANTO_VAR_STORY == KANTO_STORY_NEW_GAME
 shot players-room
 save players-room
 
 # Around the room to the stairs, which the player steps onto from the right
-walk LEFT 1, walk DOWN 4, walk RIGHT 4, walk UP 4, walk RIGHT 2, walk UP 2, walk LEFT 1
+walk DOWN 4, walk RIGHT 4, walk UP 4, walk RIGHT 2, walk UP 2, walk LEFT 1
 until zone ZONE_ASPERTIA_CITY_3 timeout 600
 until field for 60 timeout 600
 check at 6 1

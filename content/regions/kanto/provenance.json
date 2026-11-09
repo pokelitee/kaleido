@@ -3,6 +3,7 @@
         {
             "paths": [
                 "res/field/events/*.json.merge.json",
+                "res/field/zones/*.json.merge.json",
                 "res/field/scripts/init_*.s"
             ],
             "category": "original"
