@@ -1,0 +1,16 @@
+# A look around the generated Pallet Town for the owner's verdict (docs/plan/10-next-steps.md, D11): above the pond, in
+# front of the lab and at the north exit. FireRed's tile (x, z) is the spike's (36 + x, 742 + z); the paths come from the
+# merged tree's collision tiles
+start new_game pallet-town
+shot house
+walk RIGHT 4, walk DOWN 7, walk LEFT 1
+check at 45 757
+DOWN/30
+shot pond
+walk RIGHT 7
+check at 52 757
+UP/30
+shot lab
+walk LEFT 4, walk UP 14
+check at 48 743
+shot north-exit

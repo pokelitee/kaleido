@@ -611,7 +611,21 @@ Saves and the C-Gear in the harness (2026-11-09):
 - **Isolated saves:** DeSmuME keeps a battery save per ROM file name in `~/.config/desmume/` and loads it with the ROM.
   `play` now opens each run's ROM through a link named for the game and route, and clears that battery before and
   after. Older harness runs used `kaleido-firered.dsv` and `kaleido-red.dsv`, which these routes' first runs left
-  holding saves. `play` no longer reads them.
+  holding saves. `play` no longer reads them. They were deleted afterwards, with the owner's go-ahead.
+
+Step C, the spike's grass and path (2026-11-09):
+- **The split is FireRed's.** A rendering of FireRed's own Pallet Town from the ROM, beside Kaleido's labels (on the
+  builder's machine, never committed), shows the town really is mostly path. The pale, speckled ground between the
+  houses is path; grass is only the darker patches around the lots and along the south. The labels match FireRed
+  tile for tile. **Verified**, 2026-11-09; this settles the earlier **Unverified** note.
+- **The color was the difference.** The kit drew FireRed's pale path with the template's sand (`michi01b`). It now
+  draws Aspertia's pale green ground (`michi03b`, its edge `michi03a`), so the town reads as FireRed's light ground.
+  That green is brighter than FireRed's near-white path, and closer to the grass, so the lots stand out less. The
+  owner kept it over the sand (2026-11-09).
+- **The spike rebuilt** (`a3aca316…`). Its `new_game` passes. A new route, `firered_spike/tour`, screenshots the
+  house, the pond, the lab and the north edge (closed by forest, as the spike has no Route 1). The pond now shows.
+
+Still in step C: the buildings' fit, and the town's name (Aspertia City's place).
 
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
 `KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is
