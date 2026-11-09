@@ -16,6 +16,7 @@ games/firered/, red/      one ROM each: game.json, its own text, save magic, B2W
 | `provenance.json` | `{"entries": [{"paths": [patterns], "category": …}]}`: every file under `res/` and `generated/` matches exactly one entry. `original` content is CC BY-SA 4.0 ([`LICENSE-CONTENT`](../LICENSE-CONTENT)); `third-party` entries add `license`, `author` and `source`; `extracted` entries name their `recipe` and are never committed |
 | `res/`, `generated/` | content at upstream's paths. `res/P` replaces upstream's file; `res/P.merge.json` patches it (RFC 7396 for JSON; message labels and their text for `res/text/`, with new messages under `"$append"`); `generated/<list>.txt` appends constants |
 | `extract/<name>.json` | a recipe: what to read from the player's source ROM (`kaleido extract`). The output lands in `build/<game>/extracted/`, never in git |
+| `play/<route>.txt` | a game's harness route (`kaleido play`): button presses, waits on the game's state, and playtest checks. Routes are original and committed; what they produce (screenshots, savestates) lands in `build/<game>/play/`, never in git |
 | `zones.json` (regions) | `{"locations": {"route_1": "ZONE_ROUTE_19"}}`: which existing zone holds each location |
 
 Black 2/White 2 data comes from the engine. A layer never commits a copy of upstream's files: it patches them, or

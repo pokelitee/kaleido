@@ -485,6 +485,29 @@ that reserve the same flags or variables are refused too.
 The story's runs were an **Assumption** from a one-time scan. For scripts and events this check now settles it. A flag
 reached by arithmetic, written in decimal in a script, or named in C still escapes it.
 
+Step B has started (2026-11-08) with `./kaleido play <game> <route>`. It runs the built ROM in py-desmume, from its
+own environment in `build/harness-venv/`, and drives it with a route under `content/games/<game>/play/`. The route
+presses buttons, waits on the game's state, and makes playtest checks. The state is read through the build's link map
+(`arm9.o.xMAP`), not dsd's `symbols.txt`: Kaleido's patches move ARM9's data. `g_GameSystem` is at `0x02141114` in
+FireRed's build and `0x021410f4` in Black 2's and the spike's. The harness reads:
+- through `g_GameSystem`: the running event, the zone, and the saved flags and variables;
+- through the field: the player's actor, its tile and its hidden flag.
+
+Each offset is proved by the accessor function that reads it: the harness compares that function's Thumb code with
+the code at pokebw2's pin, and stops on a difference.
+
+**Verified**, 2026-11-08:
+- **The spike's missing player is the ROM's.** The player's actor has its hidden flag set (`flags 0x27`) in the
+  spike's Pallet Town, from a savestate and from a new game.
+- **Black 2's control.** Four of E6b's field savestates read `0x23`, not hidden, in Aspertia City (zone 427) and
+  zone 428.
+- **The spike's first route,** `firered_spike/new_game`, reaches Pallet Town from power-on in about 8,700 frames,
+  through both name screens, at tile (42, 750). Its `player-visible` check fails, as it should until step C.
+- **Presses before the game boots** leave the screen white for good in py-desmume, so routes wait 900 frames first.
+  The cause is **Unverified**.
+
+Not yet: the battle state, temporary flags, saves and the routes for the deferred playtest checks.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.

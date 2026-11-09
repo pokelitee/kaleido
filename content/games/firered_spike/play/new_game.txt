@@ -1,0 +1,13 @@
+# A new game, from power-on to the generated Pallet Town, which stands in Aspertia City's southern cell.
+# Presses before the game has booted leave the screen white for good, so the route waits first. START at the name
+# screens moves the cursor to OK, and A takes it; elsewhere START does nothing before the field
+wait 900
+repeat A/60 START/60 until field for 120 timeout 30000
+check zone ZONE_ASPERTIA_CITY
+check at 42 750
+shot pallet-town
+# The spike's open question (docs/plan/10-next-steps.md, D11): is the player drawn?
+check player-visible
+hold LEFT 16, wait 30
+check field
+shot after-a-step
