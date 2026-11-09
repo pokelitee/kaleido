@@ -1,0 +1,26 @@
+# A new game, from power-on to the player's room upstairs, then down the stairs and out into Pallet Town (Phase 3's
+# step 1). Presses before the game has booted leave the screen white for good, so the route waits first. START at the
+# name screens moves the cursor to OK, and A takes it
+wait 900
+repeat A/60 START/60 until field for 120 timeout 30000
+check zone ZONE_ASPERTIA_CITY_4
+check player-visible
+check var KANTO_VAR_STORY == KANTO_STORY_NEW_GAME
+shot players-room
+save players-room
+
+# Around the room to the stairs, which the player steps onto from the right
+walk LEFT 1, walk DOWN 4, walk RIGHT 4, walk UP 4, walk RIGHT 2, walk UP 2, walk LEFT 1
+until zone ZONE_ASPERTIA_CITY_3 timeout 600
+until field for 60 timeout 600
+check at 6 1
+shot downstairs
+
+# Out of the front door: onto the mat, then a step down off it
+walk DOWN 10
+check at 6 11
+hold DOWN 30
+until zone ZONE_ASPERTIA_CITY timeout 600
+until field for 60 timeout 600
+check player-visible
+shot pallet-town

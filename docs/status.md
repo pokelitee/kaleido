@@ -522,6 +522,20 @@ player's room), so the change reaches them too; neither was run in the harness y
 `./kaleido play` also switches into `build/harness-venv/` by itself now. It compared resolved interpreters, which are
 the same file for a virtual environment and the system.
 
+FireRed's first route, `firered/new_game` (2026-11-09), runs most of the "Phase 3, step 1" playtest row:
+- a new game reaches the player's room upstairs (`ZONE_ASPERTIA_CITY_4`), with the player shown and
+  `KANTO_VAR_STORY` at `KANTO_STORY_NEW_GAME`;
+- the player walks around the room to the stairs, and down them to `ZONE_ASPERTIA_CITY_3`, arriving at (6, 1);
+- the player walks out of the front door into "Pallet Town" (`ZONE_ASPERTIA_CITY`).
+
+It passes in 9,778 frames, about 107 s, on FireRed `bc6ccb44…`. A new step, `walk DIRECTION N`, holds a direction
+until the player's tile has moved N tiles, and fails where something stops them.
+
+For the owner (**Verified** from the screenshots, 2026-11-09): the new game puts the player at the room's Fly position,
+(5, 4). That is a blocked tile, the bed, so the player is drawn over the pillow, but they can walk off it. Black 2
+never starts there, since its opening scene places the player. The rest of the step 1 row (the other doors, the gate,
+Route 1 and Viridian City) has no route yet.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.

@@ -54,7 +54,7 @@ class FakeMemory:
 NAMES = {
     "zones": {"ZONE_ASPERTIA_CITY": 427, "KANTO_VAR_STORY": 0x404E},
     "flags": {"EVENT_FLAG_0x01f2": 0x1F2, "KANTO_FLAG_GOT_POTION": 0x1F5},
-    "vars": {"EVENT_WORK_0x404e": 0x404E, "KANTO_VAR_STORY": 0x404E},
+    "vars": {"EVENT_WORK_0x404e": 0x404E, "KANTO_VAR_STORY": 0x404E, "KANTO_STORY_HAS_STARTER": 2},
 }
 
 
@@ -107,11 +107,75 @@ class StateTest(unittest.TestCase):
             "flag KANTO_FLAG_GOT_POTION": False,
             "not flag 0x1f5": True,
             "var KANTO_VAR_STORY >= 2": True,
+            "var KANTO_VAR_STORY == KANTO_STORY_HAS_STARTER": True,
             "var EVENT_WORK_0x404e == 3": False,
         }
         for text, expected in holds.items():
             with self.subTest(text):
                 self.assertEqual(play.parse_condition(text.split(), "t", NAMES).holds(self.state), expected)
+
+
+class FakeEmulator:
+    """Moves the fake player a tile per `frames_per_tile` frames that a direction is held, unless the tile ahead is a
+    wall."""
+
+    def __init__(self, fake: FakeMemory, frames_per_tile: int, walls: set) -> None:
+        self.fake, self.frames_per_tile, self.walls = fake, frames_per_tile, walls
+        self.held: set[int] = set()
+        self.input = self
+        self.counter = 0
+        self.actor = 0x02200000 + 0x1000 * 5
+
+    def keypad_add_key(self, key: int) -> None:
+        self.held.add(key)
+        self.counter = 0
+
+    def keypad_rm_key(self, key: int) -> None:
+        self.held.discard(key)
+
+    def cycle(self, with_joystick: bool) -> None:
+        if not self.held:
+            return
+        self.counter += 1
+        if self.counter < self.frames_per_tile:
+            return
+        self.counter = 0
+        dx, dz = play.DIRECTIONS[play.KEYS[next(iter(self.held))]]
+        x, z = self.fake.get(self.actor + 0x3C, 2), self.fake.get(self.actor + 0x40, 2)
+        if (x + dx, z + dz) not in self.walls:
+            self.fake.put(self.actor + 0x3C, x + dx, 2)
+            self.fake.put(self.actor + 0x40, z + dz, 2)
+
+    def screenshot(self):
+        return self
+
+    def save(self, path) -> None:
+        pass
+
+
+class WalkTest(unittest.TestCase):
+    def player(self, frames_per_tile: int, walls: set = frozenset()) -> play.Player:
+        fake = FakeMemory()
+        fake.start_field()
+        emulator = FakeEmulator(fake, frames_per_tile, walls)
+        keys = {key: i for i, key in enumerate(play.KEYS)}
+        return play.Player(emulator, keys, play.GameState(fake.memory(), fake.symbols, WORKS), Path("."))
+
+    def test_walks_until_the_tile_has_moved_that_far(self) -> None:
+        player = self.player(frames_per_tile=16)
+        [step] = play.parse_route("walk LEFT 3")
+        player.step(step)
+        self.assertEqual(player.state.tile(), (39, 750))
+
+    def test_a_wall_stops_the_walk(self) -> None:
+        player = self.player(frames_per_tile=16, walls={(42, 752)})
+        [step] = play.parse_route("walk DOWN 3")
+        with self.assertRaisesRegex(play.PlayError, r"stopped at \(42, 751\) after 1 of 3 tiles"):
+            player.step(step)
+
+    def test_refuses_a_direction_it_doesnt_know(self) -> None:
+        with self.assertRaisesRegex(play.PlayError, "walk goes UP DOWN LEFT RIGHT"):
+            play.parse_route("walk NORTH 2")
 
 
 class RouteTest(unittest.TestCase):
