@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-06
+Last updated: 2026-11-08
 
 ## Current phase
 
@@ -451,6 +451,17 @@ The owner chose Black 2's textures over generated art. The textured spike is `02
 
 Next: the owner plays the textured spike (the playtest row below) and judges the look. That decides whether the plan's
 step 3 goes ahead as written.
+
+`docs/plan/10-next-steps.md` (proposed, 2026-11-08) orders the rest of Phase 3 and outlines Phase 3.5. Its decisions
+D11 to D14 wait for the owner. Its step A2 is done (2026-11-08). The ROM-content guard (`./kaleido check`) also
+refuses:
+- the files a DS ROM unpacks into, by ndstool's and dsd's names (`arm9.bin`, `header_logo.png`, `ov012.bin`, …), and
+  anything in an `overlay/` or `arm9_overlays/` directory;
+- Nitro files by their magic and byte-order mark (`NARC`, `BMD0`, `BTX0`, sound and 2D graphics);
+- BPS, IPS and UPS patches, by extension and magic.
+
+**Verified**, 2026-11-08: unit tests. On the 318 files under `files/` that dsd unpacks from Black 2, the magic check finds every NARC
+(308), the sound archive and the two embedded DS ROMs.
 
 Outside Phases 1 and 2:
 

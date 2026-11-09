@@ -40,6 +40,15 @@ class RomKindTest(unittest.TestCase):
         self.assertEqual(check.rom_kind(gba_header(), 0xC0), "a GBA ROM")
         self.assertEqual(check.rom_kind(gb_header(), 0x8000), "a Game Boy ROM")
         self.assertEqual(check.rom_kind(bytes([0xD6, 0xC3, 0xC4, 0, 5]), 5), "a VCDIFF (xdelta) patch")
+        self.assertEqual(check.rom_kind(b"PATCH\x00\x00\x00EOF", 11), "an IPS patch")
+        self.assertEqual(check.rom_kind(b"BPS1\x80\x80", 6), "a BPS patch")
+        self.assertEqual(check.rom_kind(b"UPS1\x80\x80", 6), "a UPS patch")
+
+    def test_recognizes_nitro_files_by_magic_and_byte_order_mark(self) -> None:
+        self.assertEqual(check.rom_kind(b"NARC\xfe\xff\x00\x01", 8), "a Nitro NARC file")
+        self.assertEqual(check.rom_kind(b"BMD0\xff\xfe\x02\x00", 8), "a Nitro BMD0 file")
+        self.assertEqual(check.rom_kind(b"BTX0\xff\xfe\x01\x00", 8), "a Nitro BTX0 file")
+        self.assertIsNone(check.rom_kind(b"NARC is the archive format\n", 27))
 
     def test_a_wrong_checksum_is_not_a_rom(self) -> None:
         for header, size, offset in (
@@ -104,6 +113,29 @@ class GuardTest(unittest.TestCase):
             "game.GBA",
         ]
         self.assertEqual(flagged, sorted([*expected, "orig/notes.txt"]))
+
+    def test_flags_files_unpacked_from_a_ds_rom_and_other_patch_formats(self) -> None:
+        files = {
+            "dump/arm9/arm9.bin": b"x",
+            "dump/ARM7.BIN": b"x",
+            "dump/y9.bin": b"x",
+            "dump/header_logo.png": b"x",
+            "dump/arm9_overlays/ov012.bin": b"x",
+            "dump/overlay/overlay_0012.bin": b"x",
+            "dump/overlay/notes.txt": b"x",
+            "content/a.narc": b"NARC\xfe\xff\x00\x01",
+            "hack.bps": b"x",
+            "hack.IPS": b"x",
+            "hack.ups": b"x",
+            "engine/patches/0005-add-banner-title.patch": b"diff\n",
+            "docs/overlays.md": b"# Overlays\n",
+            "config/arm9/overlays/ov012.yaml": b"x: 1\n",
+        }
+        for path, data in files.items():
+            self.put(path, data)
+        flagged = sorted({problem.split(":")[0] for problem in check.guard(self.root, sorted(files))})
+        fine = {"engine/patches/0005-add-banner-title.patch", "docs/overlays.md", "config/arm9/overlays/ov012.yaml"}
+        self.assertEqual(flagged, sorted(set(files) - fine))
 
 
 class LayerProblemsTest(unittest.TestCase):
