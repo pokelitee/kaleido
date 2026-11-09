@@ -1,3 +1,4 @@
 {
-    "kind": "family"
+    "kind": "family",
+    "reserves": { "flags": ["0x01F2", "0x025B"], "vars": ["0x404E", "0x406F"] }
 }

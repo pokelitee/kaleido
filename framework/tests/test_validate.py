@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from kaleido import validate
+from kaleido import layers, validate
 from kaleido.config import Paths
 from kaleido.games import Game
 
@@ -121,6 +121,73 @@ class ValidateTest(unittest.TestCase):
         game = Game("g", "G", {}, ("regions/r",), ())
         problems = validate.check_region_zones(Paths(root), game, self.tree)
         self.assertEqual([p.field for p in problems], ["locations.route_2"])
+
+    def test_reads_a_lists_values(self) -> None:
+        put(
+            self.tree / "generated/vars.txt",
+            "# Vars\nEVENT_WORK_0x4000 = 0x4000\nEVENT_WORK_0x4001\nVAR_X = 9\nVAR_Y\n",
+        )
+        self.assertEqual(
+            validate.constant_values(self.tree, "vars"),
+            {"EVENT_WORK_0x4000": 0x4000, "EVENT_WORK_0x4001": 0x4001, "VAR_X": 9, "VAR_Y": 10},
+        )
+
+    def test_layers_reserves_must_not_overlap(self) -> None:
+        a = layers.Layer("families/a", Path(), "family", (), {}, {"flags": (10, 20)})
+        b = layers.Layer("games/b", Path(), "game", (), {}, {"flags": (20, 30), "vars": (10, 20)})
+        found, problems = validate.reserves([a, b])
+        self.assertEqual(len(found), 3)
+        self.assertEqual(
+            [(p.file, p.field, p.message) for p in problems],
+            [("content/games/b/layer.json", "reserves.flags", "overlaps families/a's reserved flags")],
+        )
+
+    def test_black_2s_scripts_and_events_leave_reserved_state_alone(self) -> None:
+        put(
+            self.tree / "generated/flags.txt",
+            "# Flags\nEVENT_FLAG_0x0001 = 0x1\nEVENT_FLAG_0x0002\nEVENT_FLAG_0x0003\n",
+        )
+        put(self.tree / "generated/vars.txt", "# Vars\nEVENT_WORK_0x4000 = 0x4000\nEVENT_WORK_0x4001\n")
+        found = [validate.Reserve("families/f", "flags", 2, 3), validate.Reserve("families/f", "vars", 0x4001, 0x4001)]
+        scripts = self.tree / "res/field/scripts"
+        put(
+            scripts / "black2.s",
+            "    FlagSet EVENT_FLAG_0x0001\n"
+            "    FlagSet EVENT_FLAG_0x0002\n"
+            "    MapScriptCondition 0x4001, 1, 9 // EVENT_FLAG_0x0003 in a comment\n"
+            "    FlagSet 0x0003\n",
+        )
+        put(scripts / "ours.s", "    FlagSet EVENT_FLAG_0x0002\n")
+        put(scripts / "patched.s", "    FlagSet EVENT_FLAG_0x0002\n")
+        events = self.tree / "res/field/events"
+        put(
+            events / "c.json", {"npcs": [{"flag": 1}, {"flag": 3}], "init_scripts": [{"conditions": [{"var": 0x4000}]}]}
+        )
+        put(events / "d.json", {"triggers": [{"var": "EVENT_WORK_0x4001"}, {"var": "0x4001"}]})
+        put(events / "merged.json", {"npcs": [{"flag": "EVENT_FLAG_0x0002"}]})
+        written = {
+            "res/field/scripts/ours.s": [{"layer": "families/f", "how": "replace"}],
+            "res/field/scripts/patched.s": [{"layer": "families/f", "how": "merge"}],
+            "res/field/events/merged.json": [{"layer": "families/f", "how": "merge"}],
+        }
+        upstream = {
+            "res/field/scripts/patched.s": "    FlagSet EVENT_FLAG_0x0001\n",
+            "res/field/events/merged.json": json.dumps({"npcs": [{"flag": 1}, {"flag": "0x0003"}]}),
+        }
+        problems = validate.check_reserved_state(self.tree, found, written, upstream.get)
+        self.assertEqual(
+            [(p.file, p.field, p.message) for p in problems],
+            [
+                ("res/field/scripts/black2.s", "line 2", "EVENT_FLAG_0x0002 is in families/f's reserved flags"),
+                ("res/field/scripts/black2.s", "line 3", "0x4001 is in families/f's reserved vars"),
+                ("res/field/scripts/black2.s", "line 4", "0x0003 is in families/f's reserved flags"),
+                ("res/field/events/c.json", "npcs[1].flag", "3 is in families/f's reserved flags"),
+                ("res/field/events/d.json", "triggers[0].var", "'EVENT_WORK_0x4001' is in families/f's reserved vars"),
+                ("res/field/events/d.json", "triggers[1].var", "'0x4001' is in families/f's reserved vars"),
+                ("res/field/events/merged.json", "npcs[1].flag", "'0x0003' is in families/f's reserved flags"),
+            ],
+        )
+        self.assertEqual(validate.check_reserved_state(self.tree, [], written, upstream.get), [])
 
     def test_merged_json_is_checked_against_the_schema_it_names(self) -> None:
         put(self.tree / "res/field/encounters/encounters.schema.json", {"required": ["all_year"]})

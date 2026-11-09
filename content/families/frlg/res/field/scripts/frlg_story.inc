@@ -1,5 +1,6 @@
 // The FRLG family's story state, in saved event flags and variables that no Black 2 script, event or C source names
-// (docs/status.md, Phase 3 step 3), and the comparisons its scripts make
+// (docs/status.md, Phase 3 step 3), and the comparisons its scripts make. The family's layer.json reserves the runs
+// they come from, flags 0x01F2 to 0x025B and variables 0x404E to 0x406F, and kaleido validate checks them
 
 // Where the story is
 #define KANTO_VAR_STORY 0x404E
