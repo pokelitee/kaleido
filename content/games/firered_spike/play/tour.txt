@@ -3,15 +3,12 @@
 # merged tree's collision tiles
 start new_game pallet-town
 shot house
-# Into the house and out again, for the place-name banner that entering the town shows
-walk UP 1
-until zone ZONE_ASPERTIA_CITY_3 timeout 600
-until field for 30 timeout 600
-hold DOWN 30
-until zone ZONE_ASPERTIA_CITY timeout 600
-until field for 30 timeout 600
-check at 42 750
+# The town's name, as the save dialog shows it (field menu: X, then Save), then back out without saving. The banner
+# that shows a place's name on arrival doesn't show on leaving a house of the same town, and the spike has no route in
+X/90, DOWN/30, DOWN/30, A/90
 shot name
+repeat B/60 until field for 60 timeout 3000
+check not save-exists
 walk RIGHT 4, walk DOWN 7, walk LEFT 1
 check at 45 757
 DOWN/30

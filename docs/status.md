@@ -625,7 +625,13 @@ Step C, the spike's grass and path (2026-11-09):
 - **The spike rebuilt** (`a3aca316…`). Its `new_game` passes. A new route, `firered_spike/tour`, screenshots the
   house, the pond, the lab and the north edge (closed by forest, as the spike has no Route 1). The pond now shows.
 
-Still in step C: the buildings' fit, and the town's name (Aspertia City's place).
+- **The town's name** (2026-11-09). The spike leaves out the FRLG family, whose recipe names the stand-ins, so its
+  town kept Aspertia City's place name. The spike's own `place_names` recipe now names Pallet Town from FireRed's map
+  section 88. **Verified** on the spike `d4a16e17…`: the merged tree's place reads "Pallet Town", and so does the save
+  dialog, which the tour opens and leaves without saving. The banner that names a place on arrival doesn't show on
+  leaving a house of the same town, and the spike has no route to arrive from, so the banner is unseen.
+
+Still in step C: the buildings' fit.
 
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
 `KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is
