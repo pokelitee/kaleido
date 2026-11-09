@@ -1,0 +1,28 @@
+# From the lab after the rival's battle, out to Pallet Town, through Route 1's gate and up Route 1 into Viridian City,
+# where the old man stops the player (Phase 3's steps 1 and 3b). The lab's and the gate's exits are mats that take one
+# more step. Route 1's grass can start wild battles, which the walks fight through with A
+start rival after-battle
+walk DOWN 1, hold DOWN 30
+until zone ZONE_ASPERTIA_CITY timeout 600
+until field for 60 timeout 600
+check at 39 739
+
+# North through the gate. Oak's call at its door is over: the story is past it
+walk DOWN 1, walk RIGHT 13, walk UP 30
+until zone ZONE_ASPERTIA_GATE timeout 600
+until field for 60 timeout 600
+walk UP 13, hold UP 30
+until zone ZONE_ROUTE_19 timeout 600
+until field for 60 timeout 600
+check at 52 702
+shot route-1
+
+# Up Route 1 and east into Viridian City, to the old man's warning on the way north
+walk UP 7 fight, walk RIGHT 60 fight, walk UP 25 fight
+check zone ZONE_FLOCCESY_TOWN
+until event timeout 300
+repeat A/60 until field for 120 timeout 6000
+check at 112 671
+check var KANTO_VAR_STORY == KANTO_STORY_RIVAL_BATTLED
+shot viridian-city
+save viridian-city

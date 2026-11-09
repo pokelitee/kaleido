@@ -566,6 +566,20 @@ The harness got faster (2026-11-09):
   is back. The battle's length varies from run to run (5,897 and 6,685 frames), since its random numbers follow the
   clock.
 - From nothing, `rival` ran `lab`, which ran `new_game`, all passing, in 410 s; each screenshot shows its own scene.
+- **FireRed's fourth route,** `firered/route_1` (2026-11-09), starts from `rival`'s checkpoint and passes in 3,559
+  frames, 101 s:
+  - out of the lab to Pallet Town (39, 739);
+  - north through the gate to Route 1 (52, 702);
+  - up Route 1 and east into Viridian City;
+  - the old man's warning at (112, 670) steps the player back to (112, 671), with the story still at
+    `KANTO_STORY_RIVAL_BATTLED`.
+
+  Its path came from the merged tree's collision tiles, the overworld matrix's chunks' `terrain_0.csv`. Route 1's
+  walks fight through wild battles with A; none started in that run.
+
+For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
+`KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is
+**Unverified**.
 
 For routes: the rival's name screen starts empty, so START there (which moves the cursor to OK) leaves nothing to
 confirm. A presses type until the name is full, which moves the cursor to OK by itself. At the starter's yes/no
