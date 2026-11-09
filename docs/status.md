@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-11-06
+Last updated: 2026-11-08
 
 ## Current phase
 
@@ -451,6 +451,14 @@ The owner chose Black 2's textures over generated art. The textured spike is `02
 
 Next: the owner plays the textured spike (the playtest row below) and judges the look. That decides whether the plan's
 step 3 goes ahead as written.
+
+`docs/plan/10-next-steps.md` (proposed, 2026-11-08) orders the rest of Phase 3 and outlines Phase 3.5. Its decisions
+D11 to D14 wait for the owner. Its step A1 is done (2026-11-08): a `gba_gen3_map_model` recipe now lists every
+generated map of one matrix, so two maps no longer write the same `generated/map_models.txt` and matrix patch. A lower
+layer that also changes the matrix is refused, since the recipe's merge patch would replace its change.
+
+**Verified**, 2026-11-08: unit tests, including two maps in one matrix; the spike's extract, byte-identical to the
+texture pass's.
 
 Outside Phases 1 and 2:
 
