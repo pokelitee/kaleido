@@ -28,15 +28,16 @@ the battle that the source map's scripts start with it, as a merge patch on the 
 and AI stay Gen 5's. Party members keep their species, level, IV level and custom moves; the prize multiplier is the
 source class's, doubled for a double battle, since Gen 5 multiplies by the level and 4 as Gen 3 does.
 
-    { "kind": "gba_gen3_map_model", "source": "firered", "map": [3, 0], "model": "MAP_MODEL_KANTO_PALLET_TOWN",
-      "kit": "families/frlg/maps/kits/route_19.json", "labels": ["families/frlg/maps/labels/general.json"],
-      "origin": [4, 6], "buildings": [{"door": [6, 7], "prop": 305}], "matrix": "MAP_MATRIX_OVERWORLD",
-      "cell": [1, 23], "clear": [[1, 22]] }
+    { "kind": "gba_gen3_map_model", "source": "firered", "matrix": "MAP_MATRIX_OVERWORLD", "clear": [[1, 22]],
+      "maps": [{ "map": [3, 0], "model": "MAP_MODEL_KANTO_PALLET_TOWN", "kit": "families/frlg/maps/kits/route_19.json",
+                 "labels": ["families/frlg/maps/labels/general.json"], "origin": [4, 6],
+                 "buildings": [{"door": [6, 7], "prop": 305}], "cell": [1, 23] }] }
 
-The source map generated as a new map model (mapgen.py, ADR 0006): its directory, from the kit's template, and its
+Each source map generated as a new map model (mapgen.py, ADR 0006): its directory, from the kit's template, and its
 constant appended to generated/map_models.txt. The map's top-left tile is at origin in the chunk, each building's prop
-stands at its door, and the model goes into the matrix's cell (column, row), the clear cells emptied, as a merge patch
-on upstream's matrix. The kit and labels are paths under content/."""
+stands at its door, and the model goes into the matrix's cell (column, row). The clear cells are emptied. One recipe
+holds every generated map of a matrix, since the matrix is one merge patch on upstream's, which replaces the whole
+grid: a lower layer that also changes the matrix is refused. The kit and labels are paths under content/."""
 
 import json
 import shutil
@@ -257,54 +258,98 @@ def _cell(where: str, value) -> tuple[int, int]:
     return value[0], value[1]
 
 
-def _map_model(
-    paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[str, gba_gen3.Rom]
+def _matrix_file(matrix: str) -> str:
+    return f"res/field/matrices/{matrix.removeprefix('MAP_MATRIX_').lower()}.json"
+
+
+def place_in_matrix(grid: list[list], matrix: str, cells: dict[str, tuple[int, int]], clear: list) -> list[list]:
+    """The matrix's grid with each model in its cell and the clear cells emptied."""
+    grid = [list(row) for row in grid]
+    taken: dict[tuple[int, int], str] = {}
+    changes = [(None, _cell(matrix, cell)) for cell in clear] + [(model, cell) for model, cell in cells.items()]
+    for value, cell in changes:
+        x, z = cell
+        if not (z < len(grid) and x < len(grid[z])):
+            raise ConfigError(f"{matrix} has no cell {list(cell)}")
+        if cell in taken:
+            raise ConfigError(f"{matrix}: cell {list(cell)} is both {taken[cell]} and {value or 'cleared'}")
+        taken[cell] = value or "cleared"
+        grid[z][x] = value
+    return grid
+
+
+def _generate_map(
+    paths: Paths, game: Game, source: str, entry: dict, roms: dict[str, gba_gen3.Rom]
 ) -> list[tuple[str, str | bytes]]:
-    model = recipe["model"]
+    model = entry["model"]
     if not model.startswith("MAP_MODEL_"):
         raise ConfigError(f"{model} isn't a MAP_MODEL_ constant")
     content = paths.root / "content"
-    kit = mapgen.Kit.load(content / recipe["kit"])
-    labels = mapgen.load_labels([content / path for path in recipe["labels"]])
+    kit = mapgen.Kit.load(content / entry["kit"])
+    labels = mapgen.load_labels([content / path for path in entry["labels"]])
     buildings = []
-    for building in recipe["buildings"]:
+    for building in entry["buildings"]:
         if not isinstance(building, dict) or not isinstance(building.get("prop"), int):
             raise ConfigError(f"{model}: a building is {{'door': [x, z], 'prop': res_id}}; not {building!r}")
         buildings.append(mapgen.Building(_cell(model, building.get("door")), building["prop"]))
     models = paths.engine / "res" / "field" / "maps" / "models"
     template_dir = models / kit.template.removeprefix("MAP_MODEL_").lower()
-    rom = _rom(paths, game, recipe, roms)
-    layout = gba_gen3_layout.layout(rom, gba_gen3_maps.map_header(rom, *_map_id(model, recipe["map"])))
+    rom = _rom(paths, game, {"source": source}, roms)
+    layout = gba_gen3_layout.layout(rom, gba_gen3_maps.map_header(rom, *_map_id(model, entry["map"])))
     chunk = mapgen.generate(
         layout,
         labels,
         kit,
         (template_dir / "model.glb").read_bytes(),
-        _cell(model, recipe["origin"]),
+        _cell(model, entry["origin"]),
         buildings,
         {gba_gen3_layout.WARP_DOOR},
     )
     # The model binds the kit's texture set, which lets its materials show that set's other textures
     data = {"$schema": "../map_model.schema.json", "texture_set": kit.texture_set, "template": kit.template}
-
-    matrix = recipe["matrix"]
-    matrix_file = f"res/field/matrices/{matrix.removeprefix('MAP_MATRIX_').lower()}.json"
-    grid = json.loads((paths.engine / matrix_file).read_text(encoding="utf-8"))["maps"]
-    for value, cell in [(None, cell) for cell in recipe.get("clear", [])] + [(model, recipe["cell"])]:
-        x, z = _cell(model, cell)
-        if not (z < len(grid) and x < len(grid[z])):
-            raise ConfigError(f"{model}: {matrix} has no cell {cell}")
-        grid[z][x] = value
-
     directory = f"res/field/maps/models/{model.removeprefix('MAP_MODEL_').lower()}"
     return [
         (f"{directory}/model.glb", chunk.glb),
         (f"{directory}/terrain_0.csv", chunk.terrain),
         (f"{directory}/terrain_0_splits.csv", chunk.splits),
         (f"{directory}/data.json", json.dumps(data, indent=4) + "\n"),
-        ("generated/map_models.txt", f"{model}\n"),
+    ]
+
+
+def _map_model(
+    paths: Paths, game: Game, stack: list, recipe: dict, roms: dict[str, gba_gen3.Rom]
+) -> list[tuple[str, str | bytes]]:
+    matrix = recipe["matrix"]
+    models = [entry["model"] for entry in recipe["maps"]]
+    repeated = sorted({model for model in models if models.count(model) > 1})
+    if repeated:
+        raise ConfigError(f"{matrix}: {', '.join(repeated)} appear more than once")
+    outputs = []
+    for entry in recipe["maps"]:
+        outputs += _generate_map(paths, game, recipe["source"], entry, roms)
+    matrix_file = _matrix_file(matrix)
+    grid = json.loads((paths.engine / matrix_file).read_text(encoding="utf-8"))["maps"]
+    cells = {entry["model"]: _cell(entry["model"], entry["cell"]) for entry in recipe["maps"]}
+    grid = place_in_matrix(grid, matrix, cells, recipe.get("clear", []))
+    return outputs + [
+        ("generated/map_models.txt", "".join(f"{model}\n" for model in models)),
         (matrix_file + ".merge.json", json.dumps({"maps": grid}) + "\n"),
     ]
+
+
+def matrix_changed_below(stack: list, layer: layer_module.Layer, recipe: dict) -> str | None:
+    """A lower layer's file or recipe that also changes a map-model recipe's matrix, a change that the recipe's merge
+    patch would replace."""
+    target = _matrix_file(recipe["matrix"])
+    for lower in stack[: stack.index(layer)]:
+        for path in lower.content_files():
+            if path in (target, target + ".merge.json"):
+                return f"{lower.id}/{path}"
+        for recipe_path in lower.recipes():
+            other = read_recipe(lower, recipe_path)
+            if other["kind"] == "gba_gen3_map_model" and _matrix_file(other["matrix"]) == target:
+                return f"{lower.id}/{recipe_path}"
+    return None
 
 
 KINDS = {
@@ -320,18 +365,10 @@ FIELDS = {
     "gba_gen3_place_names": {"source": str, "places": dict},
     "gba_gen3_map_text": {"source": str, "maps": dict},
     "gba_gen3_trainers": {"source": str, "trainers": dict},
-    "gba_gen3_map_model": {
-        "source": str,
-        "map": list,
-        "model": str,
-        "kit": str,
-        "labels": list,
-        "origin": list,
-        "buildings": list,
-        "matrix": str,
-        "cell": list,
-    },
+    "gba_gen3_map_model": {"source": str, "matrix": str, "maps": list},
 }
+# The fields of each map in a gba_gen3_map_model recipe
+MAP_FIELDS = {"map": list, "model": str, "kit": str, "labels": list, "origin": list, "buildings": list, "cell": list}
 
 
 def read_recipe(layer: layer_module.Layer, recipe_path: str) -> dict:
@@ -347,6 +384,14 @@ def read_recipe(layer: layer_module.Layer, recipe_path: str) -> dict:
     missing = [key for key, kind_of in FIELDS[kind].items() if not isinstance(recipe.get(key), kind_of)]
     if missing:
         raise ConfigError(f"{where}: missing {', '.join(missing)}, or not of the right type")
+    if kind == "gba_gen3_map_model":
+        if not recipe["maps"]:
+            raise ConfigError(f"{where}: maps is empty")
+        for index, entry in enumerate(recipe["maps"]):
+            entry = entry if isinstance(entry, dict) else {}
+            missing = [key for key, kind_of in MAP_FIELDS.items() if not isinstance(entry.get(key), kind_of)]
+            if missing:
+                raise ConfigError(f"{where}: map {index} is missing {', '.join(missing)}, or not of the right type")
     return recipe
 
 
@@ -360,6 +405,8 @@ def run(paths: Paths, game: Game) -> list[Extracted]:
         for recipe_path in layer.recipes():
             where = f"{layer.id}/{recipe_path}"
             recipe = read_recipe(layer, recipe_path)
+            if recipe["kind"] == "gba_gen3_map_model" and (below := matrix_changed_below(stack, layer, recipe)):
+                raise ConfigError(f"{where}: {below} also changes {recipe['matrix']}, and this recipe would replace it")
             for path, content in KINDS[recipe["kind"]](paths, game, stack, recipe, roms):
                 layer.category_of(path, recipe_path)
                 target = out / layer.id / path
