@@ -576,6 +576,16 @@ The harness got faster (2026-11-09):
 
   Its path came from the merged tree's collision tiles, the overworld matrix's chunks' `terrain_0.csv`. Route 1's
   walks fight through wild battles with A; none started in that run.
+- **FireRed's fifth route,** `firered/parcel` (2026-11-09, step 3b), starts from `route_1`'s Viridian checkpoint and
+  passes in 9,536 frames, 132 s:
+  - entering Viridian's Mart (a house) has the clerk give the Parcel, and the story reaches `KANTO_STORY_HAS_PARCEL`;
+  - back down Route 1, through the gate, and into the lab;
+  - talking to Oak (Juniper's look) runs the delivery, and the story reaches `KANTO_STORY_HAS_POKEDEX`, with Black 2's
+    Pokédex flag (`EVENT_FLAG_0x0962`) set.
+
+  The routes now chain from a new game to the Pokédex. Not checked by them: the Bag's contents (the Potion, the
+  Parcel, the Poké Balls), text, the old man letting the player by afterwards, Daisy's Town Map, the Center and the
+  Mart's shop, and everything visual.
 
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
 `KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is

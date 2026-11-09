@@ -1,0 +1,43 @@
+# Phase 3's step 3b, the Parcel: from the old man's warning in Viridian City, into the Mart, where the clerk gives the
+# Parcel; back down Route 1, through the gate and into the lab, where Oak takes it and gives the Pokédex. The paths come
+# from the merged tree's collision tiles. Doors and exits are mats: a step onto one leaves, and the Mart's scene ends
+# with the player on its mat
+start route_1 viridian-city
+
+# The Mart, its door at (117, 693)
+walk DOWN 23, walk RIGHT 5, walk UP 1
+until zone ZONE_FLOCCESY_TOWN_3 timeout 600
+repeat A/60 until var KANTO_VAR_STORY == KANTO_STORY_HAS_PARCEL timeout 6000
+repeat A/60 until field for 120 timeout 6000
+shot mart
+hold DOWN 30
+until zone ZONE_FLOCCESY_TOWN timeout 600
+until field for 60 timeout 600
+check at 117 694
+
+# Back down Route 1 and through the gate
+walk LEFT 28 fight, walk DOWN 2 fight, walk LEFT 37 fight, walk DOWN 6 fight
+walk DOWN 1, hold DOWN 30
+until zone ZONE_ASPERTIA_GATE timeout 600
+until field for 60 timeout 600
+walk DOWN 13, hold DOWN 30
+until zone ZONE_ASPERTIA_CITY timeout 600
+until field for 60 timeout 600
+check at 52 711
+
+# The lab, its door at (39, 738), and Oak at (9, 2), around the lab's tables
+walk DOWN 29, walk LEFT 13, walk UP 2
+until zone ZONE_ASPERTIA_CITY_9 timeout 600
+until field for 60 timeout 600
+check at 9 25
+walk UP 3, walk RIGHT 5, walk UP 19, walk LEFT 5
+UP/30
+check at 9 3
+A/60
+until event timeout 300
+repeat A/60 until var KANTO_VAR_STORY == KANTO_STORY_HAS_POKEDEX timeout 20000
+repeat A/60 until field for 120 timeout 6000
+# Black 2's flag for having the Pokédex (frlg_story.inc's B2_FLAG_HAS_POKEDEX)
+check flag EVENT_FLAG_0x0962
+shot pokedex
+save pokedex
