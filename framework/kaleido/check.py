@@ -2,7 +2,8 @@
 (docs/plan/06-testing.md, layer 1):
 
 - the ROM-content guard: no tracked file lies under orig/, extract/, build/ or dist/, has a ROM, save or patch
-  extension, starts with a ROM's or a VCDIFF patch's header, or is larger than MAX_BYTES;
+  extension, has the name of a file unpacked from a DS ROM or lies in its overlay directory, starts with a ROM's, a
+  patch's or a Nitro file's header, or is larger than MAX_BYTES;
 - every layer under content/ loads, with one provenance entry for each content file and recipes of a known kind with
   that kind's fields, and so does every game's config and layer stack;
 - the links between the repository's Markdown files lead to files that exist."""
@@ -20,7 +21,39 @@ FORBIDDEN_DIRECTORIES = ("orig/", "extract/", "build/", "dist/")
 ROM_SUFFIXES = (".nds", ".srl", ".dsi", ".gba", ".gb", ".gbc")
 # Saves, and emulator savestates, which hold the game's RAM: DeSmuME's .dst and slots .ds0-.ds9, melonDS's .mln
 SAVE_SUFFIXES = (".sav", ".dsv", ".dst", ".mln", *(f".ds{slot}" for slot in range(10)))
-FORBIDDEN_SUFFIXES = (*ROM_SUFFIXES, *SAVE_SUFFIXES, ".xdelta")
+PATCH_SUFFIXES = (".xdelta", ".bps", ".ips", ".ups")
+FORBIDDEN_SUFFIXES = (*ROM_SUFFIXES, *SAVE_SUFFIXES, *PATCH_SUFFIXES)
+# The files a DS ROM unpacks into, as ndstool and dsd name them; header_logo.png is the header's Nintendo logo
+ROM_FILE_NAMES = frozenset(
+    ("arm9.bin", "arm7.bin", "header.bin", "banner.bin", "y9.bin", "y7.bin", "dtcm.bin", "itcm.bin", "header_logo.png")
+)
+OVERLAY_DIRECTORIES = frozenset(("overlay", "arm9_overlays", "arm7_overlays"))
+OVERLAY_FILE = re.compile(r"(ov\d{3}|overlay_\d{4})\.bin", re.IGNORECASE)
+# Nitro files (an archive, a model, its textures and animations, 2D graphics, sound) start with their magic, then a
+# byte-order mark, which keeps text that happens to start with the same letters from matching
+NITRO_MAGICS = (
+    b"NARC",
+    b"BMD0",
+    b"BTX0",
+    b"BCA0",
+    b"BTP0",
+    b"BTA0",
+    b"BMA0",
+    b"BVA0",
+    b"RGCN",
+    b"RLCN",
+    b"RCSN",
+    b"RECN",
+    b"RNAN",
+    b"SDAT",
+    b"SSEQ",
+    b"SBNK",
+    b"SWAR",
+    b"SSAR",
+    b"STRM",
+)
+NITRO_BYTE_ORDER_MARKS = (b"\xff\xfe", b"\xfe\xff")
+PATCH_MAGICS = {b"PATCH": "an IPS patch", b"BPS1": "a BPS patch", b"UPS1": "a UPS patch"}
 # A backstop for ROMs and dumps under other names; every file in the repository is far smaller. Raise it here, with
 # the reason, if content ever needs larger files
 MAX_BYTES = 1024 * 1024
@@ -61,6 +94,11 @@ def rom_kind(header: bytes, size: int) -> str | None:
     for the Game Boy); None for anything else."""
     if header.startswith(VCDIFF_MAGIC):
         return "a VCDIFF (xdelta) patch"
+    for magic, kind in PATCH_MAGICS.items():
+        if header.startswith(magic):
+            return kind
+    if header[:4] in NITRO_MAGICS and header[4:6] in NITRO_BYTE_ORDER_MARKS:
+        return f"a Nitro {header[:4].decode()} file"
     if (
         len(header) >= 0x160
         and header[0x15C:0x15E] == b"\x56\xcf"
@@ -91,6 +129,9 @@ def guard(root: Path, files: list[str]) -> list[str]:
             problems.append(f"{path}: nothing under {path.split('/')[0]}/ is ever committed")
         if path.lower().endswith(FORBIDDEN_SUFFIXES):
             problems.append(f"{path}: a ROM, save, patch or savestate file by its extension")
+        *directories, name = path.lower().split("/")
+        if name in ROM_FILE_NAMES or OVERLAY_FILE.fullmatch(name) or OVERLAY_DIRECTORIES.intersection(directories):
+            problems.append(f"{path}: a file unpacked from a DS ROM by its name or directory")
         if not file.is_file():
             continue
         size = file.stat().st_size

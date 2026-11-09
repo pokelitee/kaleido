@@ -139,9 +139,9 @@ python3 -m unittest discover -s framework -t framework
 ```
 
 - `check` needs neither a ROM nor the engine. Its ROM-content guard reads every tracked file: nothing under `orig/`,
-  `extract/`, `build/` or `dist/`; no ROM, save, patch or emulator savestate by extension, or by a DS, GBA, Game Boy or
-  VCDIFF header;
-  nothing over 1 MiB. It also loads every layer (provenance, recipes) and game config, and follows every link between
+  `extract/`, `build/` or `dist/`; no ROM, save, patch (xdelta, BPS, IPS, UPS) or emulator savestate by extension, or
+  by a DS, GBA, Game Boy, patch or Nitro file's header; no file a DS ROM unpacks into, by its name (`arm9.bin`,
+  `header_logo.png`, `ov012.bin`, …) or overlay directory; nothing over 1 MiB. It also loads every layer (provenance, recipes) and game config, and follows every link between
   Markdown files.
 - `compile` runs upstream's `tools/decomp/compile_all.py` for Black 2, once with every define off and once per distinct
   set of game defines (patch `0004`). It needs the engine but no ROM: about 90 seconds per set on 12 cores once the tools
