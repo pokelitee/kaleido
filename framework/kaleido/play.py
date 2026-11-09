@@ -441,7 +441,9 @@ def main(paths: Paths, game: Game, route_name: str) -> int:
     loaded = _desmume()
     if loaded is None:
         python = paths.root / HARNESS_PYTHON
-        if python.exists() and Path(sys.executable).resolve() != python.resolve():
+        # A virtual environment's python is a link to the system's, so the environment is told by sys.prefix
+        environment = python.parent.parent
+        if python.exists() and Path(sys.prefix).resolve() != environment.resolve():
             os.execv(python, [str(python), str(paths.root / "kaleido"), *sys.argv[1:]])
         raise ConfigError(
             f"py-desmume isn't installed; set up the harness's environment once:\n"

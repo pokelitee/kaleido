@@ -6,15 +6,15 @@ Subject: [PATCH] field: add KALEIDO_NEW_GAME_ZONE for where a new game starts
 With KALEIDO_NEW_GAME_ZONE defined as a zone constant, a new game starts at
 that zone's Fly position instead of Aspertia City's. The opening then skips
 what belongs to Black 2's start: the 3D flight over Unova, and scripts 0x1d
-and 0x1e of the zone it starts in, which in Aspertia City are the opening scene.
-The season banner stays.
+and 0x1e of the zone it starts in, which in Aspertia City are the opening scene,
+with the hidden player that the scene starts from. The season banner stays.
 ---
- src/ov035/event_mapchange.c | 8 ++++++++
+ src/ov035/event_mapchange.c | 9 +++++++++
  src/system/zone_spawn.c     | 7 ++++++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/src/ov035/event_mapchange.c b/src/ov035/event_mapchange.c
-index 94608e9e9..d9063d592 100644
+index 94608e9e9..50d0e0bde 100644
 --- a/src/ov035/event_mapchange.c
 +++ b/src/ov035/event_mapchange.c
 @@ -189,7 +189,10 @@ GameEventReturnCode EventGameOpening_Callback(GameEvent *event, u32 *state, void
@@ -28,18 +28,20 @@ index 94608e9e9..d9063d592 100644
          (*state)++;
          break;
      case 3:
-@@ -244,7 +247,10 @@ GameEventReturnCode EventFieldFirst_Callback(GameEvent *event, u32 *state, void
+@@ -243,8 +246,12 @@ GameEventReturnCode EventFieldFirst_Callback(GameEvent *event, u32 *state, void
+         (*state)++;
          break;
      case 3:
-         SetActorFlag(FieldPlayer_GetActor(Field_GetPlayer(GSYS_GetField(gsys))), 4);
 +#ifndef KALEIDO_NEW_GAME_ZONE
-+        // Scripts 0x1d and 0x1e of the zone a new game starts in: Aspertia City's opening scene
++        // Scripts 0x1d and 0x1e of the zone a new game starts in: Aspertia City's opening scene, which starts with the
++        // player hidden. A game that starts elsewhere has no such scene, so its player is shown from the start
+         SetActorFlag(FieldPlayer_GetActor(Field_GetPlayer(GSYS_GetField(gsys))), 4);
          EventScriptCall_Start(event, 0x1d, NULL, 0, HEAPID_USER);
 +#endif
          (*state)++;
          break;
      case 4:
-@@ -253,7 +259,9 @@ GameEventReturnCode EventFieldFirst_Callback(GameEvent *event, u32 *state, void
+@@ -253,7 +260,9 @@ GameEventReturnCode EventFieldFirst_Callback(GameEvent *event, u32 *state, void
          (*state)++;
          break;
      case 5:

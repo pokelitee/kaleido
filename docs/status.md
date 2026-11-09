@@ -508,6 +508,20 @@ the code at pokebw2's pin, and stops on a difference.
 
 Not yet: the battle state, temporary flags, saves and the routes for the deferred playtest checks.
 
+Step C's first touch-up is done (2026-11-09): **the player is shown.** Black 2's first field event hides the player
+before Aspertia City's opening scripts `0x1d` and `0x1e`, which patch `0007` skips for a game with
+`KALEIDO_NEW_GAME_ZONE`. The hiding now sits behind the same `#ifndef`. FireRed and Red also start elsewhere (the
+player's room), so the change reaches them too; neither was run in the harness yet (**Unverified**).
+
+**Verified**, 2026-11-09:
+- `baseline` still matches Black 2 (`e51e6dfb…`);
+- the spike builds (`e64b7438…`), and `firered_spike/new_game` passes every check, `player-visible` included. Its
+  screenshots show the player in front of the house;
+- FireRed builds (`bc6ccb44…`). Its new game wasn't run in the harness.
+
+`./kaleido play` also switches into `build/harness-venv/` by itself now. It compared resolved interpreters, which are
+the same file for a virtual environment and the system.
+
 Outside Phases 1 and 2:
 
 - E7 waits for hardware.
