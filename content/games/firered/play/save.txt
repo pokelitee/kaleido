@@ -1,0 +1,14 @@
+# E9: the game saves, and after a reset the save loads, so the title offers Continue. Saving from the field menu: X opens
+# it on the lower screen, where a new game's items are Bag and Trainer Card, Save and Options; the first DOWN shows the
+# cursor on Bag. The exported save is red/foreign_save's (Phase 2: each game refuses the other's)
+start new_game players-room
+check not save-exists
+X/90, DOWN/30, DOWN/30, A/90
+repeat A/60 until save-exists timeout 3000
+repeat B/60 until field for 60 timeout 3000
+export-save firered
+reset
+wait 1200
+check save-exists
+check not new-game
+shot title

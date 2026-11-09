@@ -1,0 +1,13 @@
+# E9: the game saves, and after a reset the save loads, so the title offers Continue (firered/save.txt says how the
+# menu is reached). The exported save is firered/foreign_save's
+start new_game players-room
+check not save-exists
+X/90, DOWN/30, DOWN/30, A/90
+repeat A/60 until save-exists timeout 3000
+repeat B/60 until field for 60 timeout 3000
+export-save red
+reset
+wait 1200
+check save-exists
+check not new-game
+shot title

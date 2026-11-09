@@ -21,6 +21,12 @@ A route is content/games/<game>/play/<route>.txt. Its steps are separated by com
     check CONDITION         a playtest check: report whether it holds, and screenshot it when it doesn't
     shot NAME               screenshot to NAME.png
     save NAME / load NAME   savestate to NAME.dst, or restore it
+    export-save NAME        the save chip to NAME.sav
+    import-save GAME ROUTE NAME
+                            the save that ROUTE of GAME (this game or another) exported as NAME into the save chip,
+                            then reset the console; when it isn't there, ROUTE runs first to make it
+    reset                   reset the console
+    cgear-on                turn the C-Gear on in the save, as script command 0x197 does before the C-Gear shows
 
 Conditions, each one optionally after `not`:
 
@@ -29,6 +35,9 @@ Conditions, each one optionally after `not`:
     zone ZONE               the player is in ZONE (a ZONE_ constant or a number)
     at X Z                  the player stands on tile (X, Z)
     player-visible          the player's actor isn't hidden
+    new-game                no save was loaded (the game offers only New Game), once the save has been read
+    save-exists             the card holds this game's save
+    cgear                   the field's lower screen is the C-Gear's
     flag FLAG               a saved event flag is set (a constant or a number)
     var VAR OP VALUE        a saved event variable compares as OP (== != < <= > >=) with VALUE (a number or a
                             constant, such as KANTO_STORY_IN_LAB)
@@ -86,6 +95,8 @@ VARS_START = 0x4000
 EVENT_FLAG_TEMP_0 = 0x4000
 # Beside each savestate, the SHA1 of the ROM it was made on: a savestate holds the RAM of one build only
 ROM_ID_SUFFIX = ".rom"
+# An exported save chip, as DeSmuME writes it: a ROM-derived file, kept in build/ like the savestates
+SAVE_SUFFIX = ".sav"
 # The routes being run for each other's checkpoints, outermost first, so that a cycle of starts is refused
 CHAIN_VARIABLE = "KALEIDO_PLAY_CHAIN"
 HARNESS_PYTHON = Path("build/harness-venv/bin/python")
@@ -110,7 +121,34 @@ FIELD_ACCESSORS = {
     "CheckActorFlag": ((0x6800, 0x4008, 0x4770), "FieldActor.flags", 0x0),
     "GetGPosX": ((0x213C, 0x5E40, 0x4770), "FieldActor.gx", 0x3C),
     "GetGPosZ": ((0x2140, 0x5E40, 0x4770), "FieldActor.gz", 0x40),
+    "Field_GetSubscreen": ((0x6A40, 0x4770), "Field.subscreen", 0x24),
+    "FieldSubscreen_GetScreenID": ((0x6800, 0x4770), "FieldSubscreen.screenId", 0x0),
 }
+# The field's lower screens that are the C-Gear's (src/ov036/field_subscreen.c): FLD_SUBSCREEN_ID_DEFAULT and
+# FLD_SUBSCREEN_ID_CGEAR_WELCOME. Without the C-Gear (CGearSettings_IsOn says no, as it always does with
+# KALEIDO_NO_CGEAR), FieldSubscreen_GetOverrideScreen puts FLD_SUBSCREEN_ID_BLANK_STANDBY_2 there instead
+CGEAR_SCREENS = (0, 8)
+# The save, from SaveControlWork (src/system/save_control.c): None stands for a halfword that differs from build to
+# build, such as a call's
+SAVE_ACCESSORS = {
+    "SaveControl_GetStatus": ((0x7800, 0x4770), "SaveControl.newGame", 0x0),
+    "SaveControl_IsDataAlreadyPresent": ((0x7840, 0x4770), "SaveControl.dataExists", 0x1),
+    "SaveControl_GetBlockPtr": ((0x6900,), "SaveControl.sv", 0x10),
+    # The block's address is the data's start plus the block's offset in the table
+    "SaveData_GetBlockPtr": ((0xB510, 0x1C04, 0x6AE0, None, None, 0x6B61, 0x1808, 0xBD10), "SaveData.table", 0x2C),
+    "getStartOffsetOfSaveBlockDataInSave": ((0xB538, 0x1C05, 0x6868), "SaveDataTable.table_max", 0x4),
+    # Block 0x20, SAVE_BLOCK_CGEAR, and the settings 0x28 into it
+    "CGearSettings_GetFromSave": ((0xB508, 0x2120, None, None, 0x3028, 0xBD08), "the C-Gear's settings", 0x28),
+    "CGearSettings_SetOn": ((0x71C1, 0x4770), "CGearSettings.on", 0x7),
+}
+# SaveData.data, which SaveData_GetBlockPtr adds (its 0x6B61, ldr r1, [r4, #0x34])
+SAVE_DATA = 0x34
+# SaveDataTable.blocks and SaveBlockInfo's size and offset field (src/gfl/savedata.c). The function that reads them,
+# getStartOffsetOfSaveBlockDataInSave, does so after an assertion, so these come from the source, not checked code
+SAVE_TABLE_BLOCKS = 0x14
+SAVE_BLOCK_INFO_SIZE = 12
+SAVE_BLOCK_INFO_OFFSET = 8
+SAVE_BLOCK_CGEAR = 0x20
 # SetActorHidden (src/ov012/field_actor.c)
 ACTOR_HIDDEN = 0x4
 
@@ -122,8 +160,10 @@ class PlayError(Exception):
 class Memory:
     """Reads the console's memory; py-desmume's, or a test's."""
 
-    def __init__(self, u8: Callable, u16: Callable, u32: Callable, s16: Callable) -> None:
-        self.u8, self.u16, self.u32, self.s16 = u8, u16, u32, s16
+    def __init__(
+        self, u8: Callable, u16: Callable, u32: Callable, s16: Callable, write_u8: Callable | None = None
+    ) -> None:
+        self.u8, self.u16, self.u32, self.s16, self.write_u8 = u8, u16, u32, s16, write_u8
 
 
 def read_symbols(xmap: Path) -> dict[str, int]:
@@ -157,7 +197,8 @@ class GameState:
     """The game's state, read from memory through the build's symbols."""
 
     def __init__(self, memory: Memory, symbols: dict[str, int], work_count: int) -> None:
-        missing = [name for name in ("g_GameSystem", *ACCESSORS, *FIELD_ACCESSORS) if name not in symbols]
+        needed = ("g_GameSystem", "SaveControlWork", *ACCESSORS, *FIELD_ACCESSORS, *SAVE_ACCESSORS)
+        missing = [name for name in needed if name not in symbols]
         if missing:
             raise PlayError(f"the link map has no {', '.join(missing)}")
         self.memory, self.symbols, self.flags_offset = memory, symbols, work_count * 2
@@ -172,7 +213,7 @@ class GameState:
         for name, (code, what, offset) in accessors.items():
             address = self.symbols[name] & ~1
             found = tuple(self.memory.u16(address + 2 * i) for i in range(len(code)))
-            if found != code:
+            if any(want is not None and want != have for want, have in zip(code, found, strict=True)):
                 raise PlayError(
                     f"{name} at {address:#x} isn't the code that reads {what} at {offset:#x} "
                     f"({' '.join(f'{h:04x}' for h in found)}); pokebw2's structures changed, update kaleido/play.py"
@@ -183,7 +224,53 @@ class GameState:
         return value if value in MAIN_RAM else 0
 
     def _offset(self, name: str) -> int:
-        return {**ACCESSORS, **FIELD_ACCESSORS}[name][2]
+        return {**ACCESSORS, **FIELD_ACCESSORS, **SAVE_ACCESSORS}[name][2]
+
+    def save_control(self) -> int:
+        """The SaveControl, or 0 before the game has made it."""
+        control = self._pointer(self.symbols["SaveControlWork"])
+        if control:
+            self.verify(SAVE_ACCESSORS)
+        return control
+
+    def new_game(self) -> bool | None:
+        """Whether no save was loaded, so that the game starts anew; None before the save is read."""
+        control = self.save_control()
+        return bool(self.memory.u8(control + self._offset("SaveControl_GetStatus"))) if control else None
+
+    def save_exists(self) -> bool:
+        """Whether the card holds this game's save."""
+        control = self.save_control()
+        return bool(control and self.memory.u8(control + self._offset("SaveControl_IsDataAlreadyPresent")))
+
+    def _cgear_settings(self) -> int:
+        control = self.save_control()
+        save = self._pointer(control, self._offset("SaveControl_GetBlockPtr")) if control else 0
+        table = self._pointer(save, self._offset("SaveData_GetBlockPtr")) if save else 0
+        blocks = self._pointer(table, SAVE_TABLE_BLOCKS) if table else 0
+        data = self._pointer(save, SAVE_DATA) if save else 0
+        if not (blocks and data):
+            return 0
+        entry = blocks + SAVE_BLOCK_CGEAR * SAVE_BLOCK_INFO_SIZE + SAVE_BLOCK_INFO_OFFSET
+        return data + self.memory.u32(entry) + self._offset("CGearSettings_GetFromSave")
+
+    def cgear(self) -> bool:
+        """Whether the field's lower screen is the C-Gear's."""
+        gsys = self.game_system()
+        field = self._pointer(gsys, self._offset("GSYS_GetField")) if gsys else 0
+        if not field:
+            return False
+        self.verify(FIELD_ACCESSORS)
+        subscreen = self._pointer(field, self._offset("Field_GetSubscreen"))
+        screen = self.memory.u32(subscreen + self._offset("FieldSubscreen_GetScreenID")) if subscreen else None
+        return screen in CGEAR_SCREENS
+
+    def set_cgear_on(self) -> None:
+        """What script command 0x197 does to the save before the C-Gear shows: its on byte, 1."""
+        settings = self._cgear_settings()
+        if not settings or self.memory.write_u8 is None:
+            raise PlayError("no save to turn the C-Gear on in")
+        self.memory.write_u8(settings + self._offset("CGearSettings_SetOn"), 1)
 
     def game_system(self) -> int:
         gsys = self._pointer(self.symbols["g_GameSystem"])
@@ -260,6 +347,12 @@ class Condition:
             result = state.tile() == self.args
         elif self.kind == "player-visible":
             result = state.player_visible()
+        elif self.kind == "new-game":
+            result = state.new_game() is True
+        elif self.kind == "save-exists":
+            result = state.save_exists()
+        elif self.kind == "cgear":
+            result = state.cgear()
         elif self.kind == "flag":
             result = bool(state.flag(self.args[0]))
         else:
@@ -310,7 +403,18 @@ def parse_condition(words: list[str], where: str, names: dict | None) -> Conditi
             raise PlayError(f"{where}: {word} isn't a constant of generated/{list_name}.txt or the scripts' #defines")
         return names[list_name][word]
 
-    arity = {"field": 0, "event": 0, "player-visible": 0, "zone": 1, "at": 2, "flag": 1, "var": 3}
+    arity = {
+        "field": 0,
+        "event": 0,
+        "player-visible": 0,
+        "new-game": 0,
+        "save-exists": 0,
+        "cgear": 0,
+        "zone": 1,
+        "at": 2,
+        "flag": 1,
+        "var": 3,
+    }
     if kind not in arity:
         raise PlayError(f"{where}: {kind!r} isn't a condition ({', '.join(arity)})")
     if len(args) != arity[kind]:
@@ -367,8 +471,16 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
                 if len(rest) == 3 and rest[2] != "fight":
                     raise PlayError(f"{where}: a walk ends with fight or nothing, not {rest[2]!r}")
                 args = (rest[0], _number(rest[1], where), len(rest) == 3)
-            elif command in ("shot", "save", "load") and len(rest) == 1 and re.fullmatch(r"[\w-]+", rest[0]):
+            elif (
+                command in ("shot", "save", "load", "export-save")
+                and len(rest) == 1
+                and re.fullmatch(r"[\w-]+", rest[0])
+            ):
                 args = (rest[0],)
+            elif command == "import-save" and len(rest) == 3 and all(re.fullmatch(r"[\w-]+", w) for w in rest):
+                args = tuple(rest)
+            elif command in ("reset", "cgear-on") and not rest:
+                args = ()
             elif command == "repeat" and "until" in rest:
                 presses = rest[: rest.index("until")]
                 if not presses:
@@ -393,8 +505,18 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
 class Player:
     """The emulator, the game's state, and the route's outputs."""
 
-    def __init__(self, emulator, keys: dict[str, int], state: GameState, out: Path, rom_id: str = "") -> None:
+    def __init__(
+        self,
+        emulator,
+        keys: dict[str, int],
+        state: GameState,
+        out: Path,
+        rom_id: str = "",
+        save_files: Callable[[str, str, str], Path] | None = None,
+    ) -> None:
         self.emulator, self.keys, self.state, self.out, self.rom_id = emulator, keys, state, out, rom_id
+        # Where import-save finds a route's exported save, making it first if it must
+        self.save_files = save_files or (lambda game, route, name: out.parent / route / f"{name}{SAVE_SUFFIX}")
         self.frames = 0
         self.failed: list[str] = []
 
@@ -504,6 +626,18 @@ class Player:
             self.save(step.args[0])
         elif step.kind == "load":
             self.emulator.savestate.load_file(str(self.out / f"{step.args[0]}.dst"))
+        elif step.kind == "export-save":
+            if not self.emulator.backup.export_file(str(self.out / f"{step.args[0]}{SAVE_SUFFIX}")):
+                raise PlayError(f"line {step.line}: the save didn't export ({step.text})")
+        elif step.kind == "import-save":
+            save = self.save_files(*step.args)
+            if not self.emulator.backup.import_file(str(save)):
+                raise PlayError(f"line {step.line}: {save} didn't import ({step.text})")
+            self.emulator.reset()
+        elif step.kind == "reset":
+            self.emulator.reset()
+        elif step.kind == "cgear-on":
+            self.state.set_cgear_on()
         else:
             raise PlayError(f"line {step.line}: start comes before anything else ({step.text})")
 
@@ -520,6 +654,11 @@ def _desmume():
     except ImportError:
         return None
     return DeSmuME, {key: keymask(getattr(Keys, f"KEY_{key}")) for key in KEYS}
+
+
+def desmume_directory() -> Path:
+    """Where DeSmuME keeps its battery saves on Linux, its configuration directory (seen with py-desmume 0.0.9)."""
+    return Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config") / "desmume"
 
 
 def output_directory(paths: Paths, game: Game, route_name: str) -> Path:
@@ -549,6 +688,23 @@ def _checkpoint(paths: Paths, game: Game, route_name: str, source: str, save: st
         if result.returncode != 0 or not checkpoint_is_current(directory, save, rom_id):
             raise PlayError(f"start {source} {save}: {source} didn't pass, or doesn't save {save}")
     return directory / f"{save}.dst"
+
+
+def _save_file(paths: Paths, route_name: str, game_id: str, source: str, name: str) -> Path:
+    """A route's exported save, of this game or another, running that route first when the save isn't there."""
+    save = paths.root / "build" / game_id / "play" / source / f"{name}{SAVE_SUFFIX}"
+    if not save.exists():
+        chain = [entry for entry in os.environ.get(CHAIN_VARIABLE, "").split(",") if entry] + [route_name]
+        if source in chain:
+            raise PlayError(f"import-save {game_id} {source} {name}: the routes need each other ({' -> '.join(chain)})")
+        print(f"{route_name}: no {game_id}/{source}'s {name} save; running it first", flush=True)
+        result = subprocess.run(
+            [sys.executable, str(paths.root / "kaleido"), "play", game_id, source],
+            env={**os.environ, CHAIN_VARIABLE: ",".join(chain)},
+        )
+        if result.returncode != 0 or not save.exists():
+            raise PlayError(f"import-save {game_id} {source} {name}: {source} didn't pass, or doesn't export {name}")
+    return save
 
 
 def main(paths: Paths, game: Game, route_name: str) -> int:
@@ -585,8 +741,15 @@ def main(paths: Paths, game: Game, route_name: str) -> int:
         if out.exists():
             shutil.rmtree(out)
         out.mkdir(parents=True)
+        # DeSmuME keeps a battery save per ROM file name in its own directory, and loads it with the ROM. The run
+        # opens the ROM through a link of its own name, whose battery it clears before and after, so that no save of
+        # another run or of the builder's own play reaches it
+        link = out / f"kaleido-play-{game.id}-{route_name}.nds"
+        link.symlink_to(rom.resolve())
+        battery = desmume_directory() / f"{link.stem}.dsv"
+        battery.unlink(missing_ok=True)
         emulator = emulator_class()
-        emulator.open(str(rom))
+        emulator.open(str(link))
         if checkpoint is not None:
             emulator.savestate.load_file(str(checkpoint))
         memory = Memory(
@@ -594,13 +757,24 @@ def main(paths: Paths, game: Game, route_name: str) -> int:
             emulator.memory.unsigned.read_short,
             emulator.memory.unsigned.read_long,
             emulator.memory.signed.read_short,
+            emulator.memory.write_byte,
         )
-        player = Player(emulator, keys, GameState(memory, symbols, work_count), out, rom_id)
+        player = Player(
+            emulator,
+            keys,
+            GameState(memory, symbols, work_count),
+            out,
+            rom_id,
+            lambda game_id, source, name: _save_file(paths, route_name, game_id, source, name),
+        )
         start = time.monotonic()
         for step in steps:
             player.step(step)
     except PlayError as error:
         raise ConfigError(f"{route_file.relative_to(paths.root)}: {error}") from error
+    finally:
+        if "battery" in locals():
+            battery.unlink(missing_ok=True)
     elapsed = time.monotonic() - start
     print(f"{player.frames} frames in {elapsed:.0f} s; outputs in {out.relative_to(paths.root)}")
     if player.failed:

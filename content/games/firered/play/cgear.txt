@@ -1,0 +1,10 @@
+# Phase 2: FireRed has the C-Gear. With its save's C-Gear turned on, as the script command that hands it over does, the
+# field's lower screen becomes the C-Gear when the field next starts: here, after the stairs
+start new_game players-room
+check not cgear
+cgear-on
+walk DOWN 4, walk RIGHT 4, walk UP 4, walk RIGHT 2, walk UP 2, walk LEFT 1
+until zone ZONE_ASPERTIA_CITY_3 timeout 600
+until field for 60 timeout 600
+check cgear
+shot downstairs
