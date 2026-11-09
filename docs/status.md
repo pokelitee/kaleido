@@ -531,10 +531,17 @@ FireRed's first route, `firered/new_game` (2026-11-09), runs most of the "Phase 
 It passes in 9,778 frames, about 107 s, on FireRed `bc6ccb44…`. A new step, `walk DIRECTION N`, holds a direction
 until the player's tile has moved N tiles, and fails where something stops them.
 
-For the owner (**Verified** from the screenshots, 2026-11-09): the new game puts the player at the room's Fly position,
-(5, 4). That is a blocked tile, the bed, so the player is drawn over the pillow, but they can walk off it. Black 2
-never starts there, since its opening scene places the player. The rest of the step 1 row (the other doors, the gate,
-Route 1 and Viridian City) has no route yet.
+A new game put the player at the room's Fly position, Black 2's (5, 4). That is a blocked tile, the bed, so the player
+was drawn over the pillow, though they could walk off it. Black 2 never starts there, since its opening scene places
+the player. The Kanto region now moves the room's Fly position to (4, 4), the open floor beside the bed, for FireRed
+and Red alike.
+
+**Verified**, 2026-11-09:
+- FireRed (`fe7ad58e…`) and Red (`f1f4de14…`) build;
+- `firered/new_game` passes from the new start, and its screenshot shows the player standing beside the bed.
+
+Red's new game wasn't run. The rest of the step 1 row (the other doors, the gate, Route 1 and Viridian City) has no
+route yet.
 
 Outside Phases 1 and 2:
 
