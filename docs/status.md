@@ -631,7 +631,20 @@ Step C, the spike's grass and path (2026-11-09):
   dialog, which the tour opens and leaves without saving. The banner that names a place on arrival doesn't show on
   leaving a house of the same town, and the spike has no route to arrive from, so the banner is unseen.
 
-Still in step C: the buildings' fit.
+- **The buildings** (2026-11-09). Black 2's building props can't be scaled to FireRed's lots: a field prop's record
+  holds a position and a rotation around Y, and upstream's packer refuses a scaled prop node. Measured on FireRed's
+  Pallet Town, with each prop's door on FireRed's door:
+  - Black 2's houses have their door in the middle, FireRed's one tile from the left, so each stands a column left
+    of FireRed's;
+  - the lab building is narrower and deeper than FireRed's lab.
+
+  That left 16 FireRed building tiles outside Black 2's bodies, which were invisible walls on visible path. With the
+  owner's choice, walls now follow the buildings that show: those tiles are open ground (`mapgen.py`). In all, 50
+  tiles' collision differs from FireRed's, recorded as Approximate in `01-feasibility.md`. **Verified** on the spike
+  `2a5f6d0d…`: `firered_spike/tour` stands on FireRed's (9, 7), the house's former wall at the spike's (45, 749);
+  `tour` and `new_game` pass.
+
+Step C is done apart from the owner's play-through of the spike for D11.
 
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
 `KALEIDO_NO_SEASONS`, and step 4's playtest row expects no season banner. Whether this is the banner that row means is

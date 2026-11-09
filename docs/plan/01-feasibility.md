@@ -89,7 +89,7 @@ Presentation is always Gen 5. **Exact** = behaves as the original; **Approximate
 | Choosing the starter | Approximate | Black 2's starter screen offers Kanto's three, its sub screen drawing their own sprites. FireRed's lines for each ball on the table aren't shown | Phase 3 D8, engine patch `0008` |
 | Place names | Exact wording, Approximate case | Extracted from the source's map sections; Gen 3's capitals ("PALLET TOWN") become Gen 5's title case ("Pallet Town") | Phase 3 (`extract.py`, `gba_gen3_place_names`) |
 | Characters (battle sprites) | Approximate | Gen 5-style art; 11 Kanto characters already exist in B2W2 | **Verified** sprite list |
-| Map layouts and interiors | Approximate | Same layouts on Gen 5's tile grid and 3D models; generic interiors (Pokémon Center, Mart) use B2W2's | R-01, E4b |
+| Map layouts and interiors | Approximate | Same layouts on Gen 5's tile grid and 3D models; generic interiors (Pokémon Center, Mart) use B2W2's. A generated town's buildings are B2W2's, standing on FireRed's doors at their own size: a field prop can't be scaled (its record holds a position and a rotation around Y), and walls follow the building that shows, not FireRed's. In Pallet Town 50 tiles' collision differs (16 FireRed building tiles open, 34 others under B2W2's bodies) | R-01, E4b; `docs/research/generated-maps-spike.md`; `docs/status.md`, step C (2026-11-09) |
 | Grass encounters: slots and odds | Exact | Both 12 slots, `20,20,10,10,10,10,5,5,4,4,1,1` | **Verified** both sources |
 | Surf encounters | Exact | Both 5 slots, `60,30,5,4,1` | **Verified** |
 | Super Rod | Exact | FRLG Super Rod `40,40,15,4,1` = Gen 5 fishing | **Verified** |

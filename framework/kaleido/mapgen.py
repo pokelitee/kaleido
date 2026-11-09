@@ -525,6 +525,7 @@ def generate(
         raise ConfigError(f"doors without a building: {missing}; buildings on no door: {extra}")
     # The tile in front of each door stays as the map has it, so that a building's body never shuts another's door
     fronts = {(x + ox, z + oz + 1) for x, z in doors}
+    bodies: set[tuple[int, int]] = set()
     for building in buildings:
         if building.prop not in kit.doors or building.prop not in kit.footprints:
             raise ConfigError(f"the kit has no door or footprint for prop {building.prop}")
@@ -537,6 +538,12 @@ def generate(
             cx, cz = cell[0] * TILE + TILE / 2 - x * TILE, cell[1] * TILE + TILE / 2 - z * TILE
             if cell not in water and cell not in fronts and cell[1] <= z + dz and x0 <= cx <= x1 and z0 <= cz <= z1:
                 blocked[cell] = True
+                bodies.add(cell)
+    # A FireRed building's tile outside every Black 2 body is open ground, drawn as path: walls follow the buildings
+    # that show, not FireRed's, which Black 2's props can't be scaled to (owner's choice, 2026-11-09)
+    for cell, kind in kinds.items():
+        if kind == "building" and cell not in bodies:
+            blocked[cell] = False
     for (x, z), kind in sorted(kinds.items(), key=lambda item: (item[0][1], item[0][0])):
         if kind in kit.props:
             props.append((kit.props[kind], (tile_x(x) + TILE / 2, kit.ground_y, tile_x(z) + TILE / 2)))
