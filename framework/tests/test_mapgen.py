@@ -227,6 +227,15 @@ class GenerateTest(unittest.TestCase):
         self.assertEqual(tiles[2 + 2, 3 + 0][1], KIT.tile_types["block"])
         self.assertEqual(tiles[2 + 2, 3 + 2][1], KIT.tile_types["walk"])
 
+    def test_a_firered_building_tile_outside_every_body_is_open(self) -> None:
+        # A building tile at map (0, 2), past the body's door row, which FireRed's collision blocks
+        grid = [row[:] for row in GRID]
+        grid[2][0] = 5
+        tiles = terrain(generate(grid))
+        self.assertEqual(tiles[2 + 0, 3 + 2][1], KIT.tile_types["walk"])
+        # The building tile under the body, map (3, 1), stays blocked
+        self.assertEqual(tiles[2 + 3, 3 + 1][1], KIT.tile_types["block"])
+
     def test_a_buildings_body_never_blocks_the_tile_in_front_of_a_door(self) -> None:
         # A second door at map (2, 0), whose front, map (2, 1), the first building's body would otherwise cover
         grid = [row[:] for row in GRID]

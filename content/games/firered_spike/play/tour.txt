@@ -9,7 +9,11 @@ X/90, DOWN/30, DOWN/30, A/90
 shot name
 repeat B/60 until field for 60 timeout 3000
 check not save-exists
-walk RIGHT 4, walk DOWN 7, walk LEFT 1
+# FireRed's house is a column wider than Black 2's, which stands a column to the left: that column, FireRed's (9, 7),
+# is open ground, so the walls follow the building that shows
+walk RIGHT 3, walk UP 1
+check at 45 749
+walk DOWN 8
 check at 45 757
 DOWN/30
 shot pond
