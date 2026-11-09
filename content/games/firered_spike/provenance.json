@@ -12,6 +12,11 @@
             ],
             "category": "extracted",
             "recipe": "extract/pallet_town_model.json"
+        },
+        {
+            "paths": ["res/field/places/*.json.merge.json"],
+            "category": "extracted",
+            "recipe": "extract/place_names.json"
         }
     ]
 }

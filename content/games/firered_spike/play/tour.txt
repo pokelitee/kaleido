@@ -3,6 +3,15 @@
 # merged tree's collision tiles
 start new_game pallet-town
 shot house
+# Into the house and out again, for the place-name banner that entering the town shows
+walk UP 1
+until zone ZONE_ASPERTIA_CITY_3 timeout 600
+until field for 30 timeout 600
+hold DOWN 30
+until zone ZONE_ASPERTIA_CITY timeout 600
+until field for 30 timeout 600
+check at 42 750
+shot name
 walk RIGHT 4, walk DOWN 7, walk LEFT 1
 check at 45 757
 DOWN/30
