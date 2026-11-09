@@ -133,6 +133,9 @@ class FakeEmulator:
     def keypad_rm_key(self, key: int) -> None:
         self.held.discard(key)
 
+    def skip_next_frame(self) -> None:
+        pass
+
     def cycle(self, with_joystick: bool) -> None:
         if not self.held:
             return
@@ -218,6 +221,23 @@ class RouteTest(unittest.TestCase):
         ):
             with self.subTest(route), self.assertRaisesRegex(play.PlayError, message):
                 play.parse_route(route, NAMES)
+
+    def test_start_comes_first_and_once(self) -> None:
+        [start, wait] = play.parse_route("start new_game pallet-town\nwait 10")
+        self.assertEqual((start.kind, start.args), ("start", ("new_game", "pallet-town")))
+        for route in ("wait 10\nstart new_game pallet-town", "start new_game", "start ../new_game x"):
+            with self.subTest(route), self.assertRaisesRegex(play.PlayError, "comes first, and once"):
+                play.parse_route(route)
+
+    def test_a_checkpoint_is_current_only_for_the_rom_it_was_made_on(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "abc"))
+            (directory / "town.dst").write_bytes(b"state")
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "abc"))
+            (directory / f"town{play.ROM_ID_SUFFIX}").write_text("abc\n", encoding="utf-8")
+            self.assertTrue(play.checkpoint_is_current(directory, "town", "abc"))
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "def"))
 
     def test_without_names_constants_are_left_for_the_run(self) -> None:
         [step] = play.parse_route("check zone ZONE_ANYWHERE")

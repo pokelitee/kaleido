@@ -105,6 +105,10 @@ player's tile and visibility, saved flags and variables. Its `check` steps are p
 fails. The step syntax is in `framework/kaleido/play.py`. Screenshots and savestates go to `build/<game>/play/<route>/`
 and are never committed. It runs on the builder's machine only, never in CI.
 
+A route that begins with `start ROUTE SAVE` starts from another route's savestate instead of from power-on, so each
+part of a game is played from its own checkpoint (`firered/lab` starts where `firered/new_game` leaves the player).
+A savestate made on another build doesn't count: `play` runs the route that makes it first.
+
 ## 4. A patch
 
 ```bash
