@@ -1,0 +1,14 @@
+# Phase 3's step 3a, the lab: from outside the house, north to Route 1's gate, where Oak calls out and brings the
+# player to the lab. The rival's name screen starts empty, and A presses type until the name is full, which moves the
+# cursor to OK; START there would refuse an empty name. On the starter screen A picks the middle ball (Charmander) and
+# takes YES; at the yes/no questions UP would wrap to NO
+start new_game pallet-town
+walk DOWN 1, walk RIGHT 9, walk UP 40
+until event timeout 300
+check var KANTO_VAR_STORY == KANTO_STORY_NEW_GAME
+repeat A/60 until var KANTO_VAR_STORY == KANTO_STORY_HAS_STARTER timeout 20000
+repeat A/60 until field for 120 timeout 6000
+check zone ZONE_ASPERTIA_CITY_9
+check player-visible
+shot lab
+save lab

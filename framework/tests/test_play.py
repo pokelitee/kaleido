@@ -119,22 +119,27 @@ class FakeEmulator:
     """Moves the fake player a tile per `frames_per_tile` frames that a direction is held, unless the tile ahead is a
     wall."""
 
-    def __init__(self, fake: FakeMemory, frames_per_tile: int, walls: set) -> None:
+    def __init__(self, fake: FakeMemory, frames_per_tile: int, walls: set, battles: set = frozenset()) -> None:
         self.fake, self.frames_per_tile, self.walls = fake, frames_per_tile, walls
+        # Tiles where a battle (an event) starts as the player steps on them; an A press ends it
+        self.battles = set(battles)
         self.held: set[int] = set()
         self.input = self
         self.counter = 0
         self.actor = 0x02200000 + 0x1000 * 5
+        self.event = 0x02200000 + 0x18
 
     def keypad_add_key(self, key: int) -> None:
         self.held.add(key)
         self.counter = 0
+        if play.KEYS[key] == "A":
+            self.fake.put(self.event, 0, 4)
 
     def keypad_rm_key(self, key: int) -> None:
         self.held.discard(key)
 
     def cycle(self, with_joystick: bool) -> None:
-        if not self.held:
+        if not self.held or self.fake.get(self.event, 4):
             return
         self.counter += 1
         if self.counter < self.frames_per_tile:
@@ -145,6 +150,9 @@ class FakeEmulator:
         if (x + dx, z + dz) not in self.walls:
             self.fake.put(self.actor + 0x3C, x + dx, 2)
             self.fake.put(self.actor + 0x40, z + dz, 2)
+            if (x + dx, z + dz) in self.battles:
+                self.battles.discard((x + dx, z + dz))
+                self.fake.put(self.event, 0x02300000, 4)
 
     def screenshot(self):
         return self
@@ -154,10 +162,10 @@ class FakeEmulator:
 
 
 class WalkTest(unittest.TestCase):
-    def player(self, frames_per_tile: int, walls: set = frozenset()) -> play.Player:
+    def player(self, frames_per_tile: int, walls: set = frozenset(), battles: set = frozenset()) -> play.Player:
         fake = FakeMemory()
         fake.start_field()
-        emulator = FakeEmulator(fake, frames_per_tile, walls)
+        emulator = FakeEmulator(fake, frames_per_tile, walls, battles)
         keys = {key: i for i, key in enumerate(play.KEYS)}
         return play.Player(emulator, keys, play.GameState(fake.memory(), fake.symbols, WORKS), Path("."))
 
@@ -171,6 +179,16 @@ class WalkTest(unittest.TestCase):
         player = self.player(frames_per_tile=16, walls={(42, 752)})
         [step] = play.parse_route("walk DOWN 3")
         with self.assertRaisesRegex(play.PlayError, r"stopped at \(42, 751\) after 1 of 3 tiles"):
+            player.step(step)
+
+    def test_a_fighting_walk_presses_through_a_battle_and_goes_on(self) -> None:
+        [step] = play.parse_route("walk UP 4 fight")
+        player = self.player(frames_per_tile=16, battles={(42, 748)})
+        player.step(step)
+        self.assertEqual(player.state.tile(), (42, 746))
+        [step] = play.parse_route("walk UP 4")
+        player = self.player(frames_per_tile=16, battles={(42, 748)})
+        with self.assertRaisesRegex(play.PlayError, r"stopped at \(42, 748\) after 2 of 4 tiles"):
             player.step(step)
 
     def test_refuses_a_direction_it_doesnt_know(self) -> None:
@@ -218,6 +236,23 @@ class RouteTest(unittest.TestCase):
         ):
             with self.subTest(route), self.assertRaisesRegex(play.PlayError, message):
                 play.parse_route(route, NAMES)
+
+    def test_start_comes_first_and_once(self) -> None:
+        [start, wait] = play.parse_route("start new_game pallet-town\nwait 10")
+        self.assertEqual((start.kind, start.args), ("start", ("new_game", "pallet-town")))
+        for route in ("wait 10\nstart new_game pallet-town", "start new_game", "start ../new_game x"):
+            with self.subTest(route), self.assertRaisesRegex(play.PlayError, "comes first, and once"):
+                play.parse_route(route)
+
+    def test_a_checkpoint_is_current_only_for_the_rom_it_was_made_on(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "abc"))
+            (directory / "town.dst").write_bytes(b"state")
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "abc"))
+            (directory / f"town{play.ROM_ID_SUFFIX}").write_text("abc\n", encoding="utf-8")
+            self.assertTrue(play.checkpoint_is_current(directory, "town", "abc"))
+            self.assertFalse(play.checkpoint_is_current(directory, "town", "def"))
 
     def test_without_names_constants_are_left_for_the_run(self) -> None:
         [step] = play.parse_route("check zone ZONE_ANYWHERE")

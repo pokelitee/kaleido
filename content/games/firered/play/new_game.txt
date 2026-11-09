@@ -25,4 +25,6 @@ hold DOWN 30
 until zone ZONE_ASPERTIA_CITY timeout 600
 until field for 60 timeout 600
 check player-visible
+check at 43 751
 shot pallet-town
+save pallet-town

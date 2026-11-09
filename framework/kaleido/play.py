@@ -3,11 +3,16 @@ the game's state instead of counting frames. On the builder's machine only, neve
 
 A route is content/games/<game>/play/<route>.txt. Its steps are separated by commas or lines; # starts a comment:
 
+    start ROUTE SAVE        first, if at all: begin from savestate SAVE of another route of the game, instead of
+                            from power-on. Each savestate records the ROM it was made on; when SAVE is missing or
+                            comes from another build, ROUTE runs first to make it
     wait N                  run N frames
     KEY[*N][/F]             press KEY (A B X Y L R START SELECT UP DOWN LEFT RIGHT) N times, F frames after each (30)
     hold KEY N              hold KEY for N frames
-    walk DIRECTION N        walk N tiles UP, DOWN, LEFT or RIGHT, holding the key until the player's tile has moved
-                            that far; fail if something stops the player first
+    walk DIRECTION N [fight]
+                            walk N tiles UP, DOWN, LEFT or RIGHT, holding the key until the player's tile has moved
+                            that far; fail if something stops the player first. With fight, an event that starts on the
+                            way, such as a wild battle in the grass, is pressed through with A, and the walk goes on
     repeat PRESSES until CONDITION [for N] [timeout N]
                             press each of PRESSES in turn until CONDITION holds for N frames (1); fail after timeout
                             frames (36000, ten minutes of game time)
@@ -37,6 +42,7 @@ Screenshots and savestates come from the ROM: they go to build/<game>/play/<rout
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 from collections.abc import Callable
@@ -45,6 +51,7 @@ from pathlib import Path
 
 from kaleido.config import ConfigError, Paths
 from kaleido.games import Game
+from kaleido.hashing import file_hash
 from kaleido.validate import constant_values
 
 KEYS = ("A", "B", "X", "Y", "L", "R", "START", "SELECT", "UP", "DOWN", "LEFT", "RIGHT")
@@ -69,9 +76,18 @@ DIRECTIONS = {"UP": (0, -1), "DOWN": (0, 1), "LEFT": (-1, 0), "RIGHT": (1, 0)}
 WALK_FRAMES_PER_TILE = 90
 # After the last tile, the frames the step takes to finish
 WALK_SETTLE_FRAMES = 20
+# A walk that fights presses A this often until the field is back and has stayed up this long, or fails after the
+# timeout: a wild battle at level 5 takes a few thousand frames
+FIGHT_AFTER = 30
+FIGHT_SETTLE_FRAMES = 60
+FIGHT_TIMEOUT = 20_000
 MAIN_RAM = range(0x02000000, 0x02400000)
 VARS_START = 0x4000
 EVENT_FLAG_TEMP_0 = 0x4000
+# Beside each savestate, the SHA1 of the ROM it was made on: a savestate holds the RAM of one build only
+ROM_ID_SUFFIX = ".rom"
+# The routes being run for each other's checkpoints, outermost first, so that a cycle of starts is refused
+CHAIN_VARIABLE = "KALEIDO_PLAY_CHAIN"
 HARNESS_PYTHON = Path("build/harness-venv/bin/python")
 HARNESS_REQUIREMENTS = "framework/requirements-harness.txt"
 
@@ -252,6 +268,9 @@ class Condition:
         return result != self.negated
 
 
+FIELD = Condition("field", (), text="field")
+
+
 @dataclass(frozen=True)
 class Step:
     kind: str
@@ -334,14 +353,20 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
                 continue
             where = f"line {number}"
             command, rest = words[0], words[1:]
-            if command == "wait" and len(rest) == 1:
+            if command == "start":
+                if steps or len(rest) != 2 or not all(re.fullmatch(r"[\w-]+", word) for word in rest):
+                    raise PlayError(f"{where}: start ROUTE SAVE comes first, and once")
+                args = tuple(rest)
+            elif command == "wait" and len(rest) == 1:
                 args = (_number(rest[0], where),)
             elif command == "hold" and len(rest) == 2:
                 args = (_press(rest[0], where)[0], _number(rest[1], where))
-            elif command == "walk" and len(rest) == 2:
+            elif command == "walk" and len(rest) in (2, 3):
                 if rest[0] not in DIRECTIONS:
                     raise PlayError(f"{where}: walk goes {' '.join(DIRECTIONS)}, not {rest[0]!r}")
-                args = (rest[0], _number(rest[1], where))
+                if len(rest) == 3 and rest[2] != "fight":
+                    raise PlayError(f"{where}: a walk ends with fight or nothing, not {rest[2]!r}")
+                args = (rest[0], _number(rest[1], where), len(rest) == 3)
             elif command in ("shot", "save", "load") and len(rest) == 1 and re.fullmatch(r"[\w-]+", rest[0]):
                 args = (rest[0],)
             elif command == "repeat" and "until" in rest:
@@ -368,12 +393,15 @@ def parse_route(text: str, names: dict | None = None) -> list[Step]:
 class Player:
     """The emulator, the game's state, and the route's outputs."""
 
-    def __init__(self, emulator, keys: dict[str, int], state: GameState, out: Path) -> None:
-        self.emulator, self.keys, self.state, self.out = emulator, keys, state, out
+    def __init__(self, emulator, keys: dict[str, int], state: GameState, out: Path, rom_id: str = "") -> None:
+        self.emulator, self.keys, self.state, self.out, self.rom_id = emulator, keys, state, out, rom_id
         self.frames = 0
         self.failed: list[str] = []
 
     def run(self, frames: int) -> None:
+        # Every frame is drawn. Skipping frames (py-desmume's skip_next_frame each frame) ran a quarter faster, but the
+        # screenshots then showed frames from long before, and a savestate made so crashed DeSmuME's software 3D
+        # renderer when loaded in the lab
         for _ in range(frames):
             self.emulator.cycle(with_joystick=False)
         self.frames += frames
@@ -406,8 +434,9 @@ class Player:
         self.shot(f"timeout-line-{step.line}")
         raise PlayError(f"line {step.line}: {condition.text} didn't hold within {timeout} frames ({step.text})")
 
-    def walk(self, step: Step, direction: str, tiles: int) -> None:
-        """Holds the direction until the player's tile is `tiles` away; the tile turns over as a step starts."""
+    def walk(self, step: Step, direction: str, tiles: int, fight: bool = False) -> None:
+        """Holds the direction until the player's tile is `tiles` away; the tile turns over as a step starts. With
+        fight, an event on the way is pressed through with A, and the walk goes on from where it stopped."""
         start = self.state.tile()
         if start is None:
             raise PlayError(f"line {step.line}: no player to walk ({step.text})")
@@ -416,6 +445,13 @@ class Player:
         self.emulator.input.keypad_add_key(self.keys[direction])
         try:
             while moved < tiles:
+                if fight and self.state.event_running():
+                    self.emulator.input.keypad_rm_key(self.keys[direction])
+                    print(f"line {step.line}: an event at {tile}, pressed through with A", flush=True)
+                    self.wait_for(step, (("A", 1, FIGHT_AFTER),), FIELD, FIGHT_SETTLE_FRAMES, FIGHT_TIMEOUT)
+                    self.emulator.input.keypad_add_key(self.keys[direction])
+                    frames = 0
+                    continue
                 if frames >= WALK_FRAMES_PER_TILE:
                     self.shot(f"stopped-line-{step.line}")
                     raise PlayError(
@@ -434,6 +470,10 @@ class Player:
 
     def shot(self, name: str) -> None:
         self.emulator.screenshot().save(self.out / f"{name}.png")
+
+    def save(self, name: str) -> None:
+        self.emulator.savestate.save_file(str(self.out / f"{name}.dst"))
+        (self.out / f"{name}{ROM_ID_SUFFIX}").write_text(self.rom_id + "\n", encoding="utf-8")
 
     def step(self, step: Step) -> None:
         if step.kind == "wait":
@@ -461,9 +501,11 @@ class Player:
         elif step.kind == "shot":
             self.shot(step.args[0])
         elif step.kind == "save":
-            self.emulator.savestate.save_file(str(self.out / f"{step.args[0]}.dst"))
-        else:
+            self.save(step.args[0])
+        elif step.kind == "load":
             self.emulator.savestate.load_file(str(self.out / f"{step.args[0]}.dst"))
+        else:
+            raise PlayError(f"line {step.line}: start comes before anything else ({step.text})")
 
     def describe(self) -> str:
         state = self.state
@@ -478,6 +520,35 @@ def _desmume():
     except ImportError:
         return None
     return DeSmuME, {key: keymask(getattr(Keys, f"KEY_{key}")) for key in KEYS}
+
+
+def output_directory(paths: Paths, game: Game, route_name: str) -> Path:
+    return paths.root / "build" / game.id / "play" / route_name
+
+
+def checkpoint_is_current(directory: Path, save: str, rom_id: str) -> bool:
+    """Whether a route's savestate exists and was made on this ROM."""
+    stamp = directory / f"{save}{ROM_ID_SUFFIX}"
+    return (
+        (directory / f"{save}.dst").exists() and stamp.exists() and stamp.read_text(encoding="utf-8").strip() == rom_id
+    )
+
+
+def _checkpoint(paths: Paths, game: Game, route_name: str, source: str, save: str, rom_id: str) -> Path:
+    """The savestate a route starts from, running the route that makes it first when it's missing or stale."""
+    directory = output_directory(paths, game, source)
+    if not checkpoint_is_current(directory, save, rom_id):
+        chain = [name for name in os.environ.get(CHAIN_VARIABLE, "").split(",") if name] + [route_name]
+        if source in chain:
+            raise PlayError(f"start {source} {save}: the routes start from each other ({' -> '.join(chain)})")
+        print(f"{route_name}: {source}'s {save} is missing or from another build; running {source} first", flush=True)
+        result = subprocess.run(
+            [sys.executable, str(paths.root / "kaleido"), "play", game.id, source],
+            env={**os.environ, CHAIN_VARIABLE: ",".join(chain)},
+        )
+        if result.returncode != 0 or not checkpoint_is_current(directory, save, rom_id):
+            raise PlayError(f"start {source} {save}: {source} didn't pass, or doesn't save {save}")
+    return directory / f"{save}.dst"
 
 
 def main(paths: Paths, game: Game, route_name: str) -> int:
@@ -504,20 +575,27 @@ def main(paths: Paths, game: Game, route_name: str) -> int:
     try:
         steps = parse_route(route_file.read_text(encoding="utf-8"), read_names(tree))
         symbols, work_count = read_symbols(xmap), event_work_count(tree)
-        out = paths.root / "build" / game.id / "play" / route_name
+        rom_id = file_hash(rom, "sha1")
+        checkpoint = None
+        if steps and steps[0].kind == "start":
+            checkpoint = _checkpoint(paths, game, route_name, *steps[0].args, rom_id)
+            steps = steps[1:]
+        out = output_directory(paths, game, route_name)
         # A run starts clean, so that a screenshot of an earlier run's failure can't be taken for this one's
         if out.exists():
             shutil.rmtree(out)
         out.mkdir(parents=True)
         emulator = emulator_class()
         emulator.open(str(rom))
+        if checkpoint is not None:
+            emulator.savestate.load_file(str(checkpoint))
         memory = Memory(
             emulator.memory.unsigned.read_byte,
             emulator.memory.unsigned.read_short,
             emulator.memory.unsigned.read_long,
             emulator.memory.signed.read_short,
         )
-        player = Player(emulator, keys, GameState(memory, symbols, work_count), out)
+        player = Player(emulator, keys, GameState(memory, symbols, work_count), out, rom_id)
         start = time.monotonic()
         for step in steps:
             player.step(step)
