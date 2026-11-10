@@ -24,3 +24,15 @@ shot lab
 walk LEFT 4, walk UP 14
 check at 48 743
 shot north-exit
+
+# Into the lab, whose stand-in is Black 2's building with a door to Aspertia's Gym behind where Oak stands, (9, 1). The
+# Kanto region leaves the lab only its front door, so a step onto (9, 1) stays in the lab
+walk DOWN 13, walk RIGHT 4, hold UP 30
+until zone ZONE_ASPERTIA_CITY_9 timeout 600
+until field for 60 timeout 600
+walk UP 3, walk RIGHT 5, walk UP 19, walk LEFT 5, walk UP 1
+check at 9 2
+hold UP 30
+wait 120
+check zone ZONE_ASPERTIA_CITY_9
+shot lab-back-wall

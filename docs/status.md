@@ -644,6 +644,30 @@ Step C, the spike's grass and path (2026-11-09):
   `2a5f6d0d…`: `firered_spike/tour` stands on FireRed's (9, 7), the house's former wall at the spike's (45, 749);
   `tour` and `new_game` pass.
 
+The owner's first play of the step C spike (2026-11-10) found more to fix:
+- **Trees hid the player.** At full height a 3D tree's canopy covers about the two rows behind its base. FireRed's
+  trees fill exactly their own two rows. So the forest the converter adds beyond the map's south edge hid the player
+  on FireRed's walkable bottom row entirely. A tree with open ground right behind it is now half the template's
+  height, with open ground two rows behind three quarters (`tree_shape`, `mapgen.py`). The player there is now seen,
+  with the trees in front covering only their feet, as walking behind a bush does.
+- **Trees read as a grid.** Each tree turns up to 25°, grows or shrinks up to 6% and shifts up to 2 units. All of it
+  comes from a hash of its spot, so builds stay reproducible and collision doesn't change.
+- **The lab led to a gym.** The lab's stand-in is Black 2's building with a door behind where Oak stands, to
+  Aspertia's Gym. The Kanto region leaves it only its front door, and the gym's door leads back to that, so `validate`
+  still finds every warp's target. This applies to FireRed, Red and the spike. The door's frame is still drawn, as
+  part of Black 2's interior model, until step E replaces it.
+- **The mailbox stuck out of the house.** Black 2's house stands a column off FireRed's, over the mailbox's tile. A
+  sign or mailbox under a building's body is no longer drawn.
+- **The flower bed was patchy.** The single clump left grass between its copies. The bed now draws Aspertia's dense
+  bed texture (`C12_kadan02`), one each 2 by 2 tiles.
+
+**Verified** on the spike `bd56add0…`:
+- `firered_spike/tour` passes, now also stepping onto the lab's old gym door and staying in the lab;
+- its screenshots show the mailbox gone, the solid flower bed and the varied trees;
+- a probe shows the player at FireRed's (5, 19) beside the short trees.
+
+Still the owner's to judge: whether half-height trees look right where they stand; custom art stays out (D3, D4).
+
 Step C is done apart from the owner's play-through of the spike for D11.
 
 For the owner: entering Route 1 shows Black 2's place-name banner with "SPRING" at its right. FireRed builds with
