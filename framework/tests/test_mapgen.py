@@ -152,6 +152,25 @@ class RectanglesTest(unittest.TestCase):
         self.assertEqual(mapgen.tree_spots(trees), [(0.0, 0.0), (4.5, 0.0)])
 
 
+class TreeShapeTest(unittest.TestCase):
+    def test_a_tree_with_open_ground_behind_it_is_shorter(self) -> None:
+        # A tree whose base's top row is z = 10: open ground at z = 9, at z = 8, or neither
+        self.assertEqual(mapgen.tree_shape((4.0, 10.0), lambda x, z: z == 9).height, 0.5)
+        self.assertEqual(mapgen.tree_shape((4.0, 10.0), lambda x, z: z == 8).height, 0.75)
+        self.assertEqual(mapgen.tree_shape((4.0, 10.0), lambda x, z: False).height, 1.0)
+        # Ground behind another column doesn't count
+        self.assertEqual(mapgen.tree_shape((4.0, 10.0), lambda x, z: x == 7 and z == 9).height, 1.0)
+
+    def test_each_spot_varies_the_same_way_every_time(self) -> None:
+        shapes = [mapgen.tree_shape((float(x), 10.0), lambda x, z: False) for x in range(0, 40, 2)]
+        self.assertEqual(shapes, [mapgen.tree_shape((float(x), 10.0), lambda x, z: False) for x in range(0, 40, 2)])
+        self.assertGreater(len({shape.turn for shape in shapes}), 5)
+        for shape in shapes:
+            self.assertLessEqual(abs(shape.turn), mapgen.TREE_TURN)
+            self.assertLessEqual(abs(shape.size - 1), mapgen.TREE_SIZE_SPREAD + 1e-9)
+            self.assertTrue(all(abs(d) <= mapgen.TREE_OFFSET for d in shape.offset))
+
+
 class GenerateTest(unittest.TestCase):
     def test_keeps_the_templates_draw_calls_each_with_a_triangle(self) -> None:
         doc, _ = mapgen.read_glb(generate().glb)
@@ -202,6 +221,14 @@ class GenerateTest(unittest.TestCase):
         normals = mapgen.accessor_values(doc, binary, primitive["attributes"]["NORMAL"])
         self.assertEqual(set(normals), {(0.0, 0.0, 1.0)})
         self.assertEqual(len(normals), 6)
+
+    def test_no_mailbox_stands_under_a_buildings_body(self) -> None:
+        # A second mailbox at map (2, 1), under the building's body: only the first, at map (0, 2), is drawn
+        grid = [row[:] for row in GRID]
+        grid[1][2] = 10
+        doc, binary = mapgen.read_glb(generate(grid).glb)
+        primitive = doc["meshes"][0]["primitives"][MATERIALS.index("post")]
+        self.assertEqual(len(mapgen.accessor_values(doc, binary, primitive["attributes"]["NORMAL"])), 6)
 
     def test_places_buildings_at_their_doors_and_signs_on_their_tiles(self) -> None:
         doc, _ = mapgen.read_glb(generate().glb)

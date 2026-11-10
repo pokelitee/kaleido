@@ -1,11 +1,11 @@
 {
-    "notes": "Which of a Route 19 chunk's materials draws each kind of tile, for chunks generated from FireRed's maps (docs/research/generated-maps-spike.md). Its materials show textures of Aspertia City's set, some of them another than the template's (textures: material to texture). FireRed's towns are mostly a pale path with darker grass around the lots, so the path draws Aspertia's pale green ground (michi03b, its edge michi03a) rather than the template's sand. Heights are in units, 16 a tile; ground and water give the terrain's height index too. Repeats are textures a tile, along x and z. The tree is the template's at the box's tree, relative to the anchor, its corner on the ground. Props are res_ids of Aspertia City's bundle; a building prop's door is in tiles from its origin, and its footprint the x and z bounds of its model, in units from its origin.",
+    "notes": "Which of a Route 19 chunk's materials draws each kind of tile, for chunks generated from FireRed's maps (docs/research/generated-maps-spike.md). Its materials show textures of Aspertia City's set, some of them another than the template's (textures: material to texture). FireRed's towns are mostly a pale path with darker grass around the lots, so the path draws Aspertia's pale green ground (michi03b, its edge michi03a) rather than the template's sand. Flower beds draw Aspertia's dense bed (C12_kadan02, a texture each 2 by 2 tiles), since the single clump (c12_flower) left grass between its copies. Heights are in units, 16 a tile; ground and water give the terrain's height index too. Repeats are textures a tile, along x and z. The tree is the template's at the box's tree, relative to the anchor, its corner on the ground. Props are res_ids of Aspertia City's bundle; a building prop's door is in tiles from its origin, and its footprint the x and z bounds of its model, in units from its origin.",
     "template": "MAP_MODEL_OVERWORLD_2_MAP02_21",
     "texture_set": "MAP_TEXTURE_SET_ASPERTIA_CITY",
     "texture_directory": "aspertia_city",
     "textures": {
         "mizu_sita2": "sea_mizu1",
-        "hana01_1": "c12_flower",
+        "hana01_1": "C12_kadan02",
         "michi_hage": "C12_saku01",
         "michi_hage02": "c12_post01",
         "kaidan01a": "mori01a",
@@ -18,7 +18,7 @@
         "grass": { "material": "grass01ax", "repeat": 0.25 },
         "path": { "material": "michi01b", "repeat": 1 },
         "water": { "material": "mizu_sita2", "repeat": 0.5 },
-        "flowers": { "material": "hana01_1", "repeat": [0.5, 1], "lift": 1 }
+        "flowers": { "material": "hana01_1", "repeat": 0.5, "lift": 1 }
     },
     "edge": { "material": "michi01a", "repeat": 0.5, "lift": 0.25 },
     "bank": { "material": "gake1_1", "repeat": 1 },

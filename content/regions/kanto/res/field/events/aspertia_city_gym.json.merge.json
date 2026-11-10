@@ -1,0 +1,5 @@
+{
+    "warps": [
+        { "zone": "ZONE_ASPERTIA_CITY_9", "warp": 0, "unk4": 1, "transition": 4, "grid": { "x": 216, "y": 0, "z": 392, "width": 5, "height": 1, "unk0a": 0 } }
+    ]
+}
