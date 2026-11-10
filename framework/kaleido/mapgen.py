@@ -12,7 +12,10 @@ map's edge runs on to the chunk's."""
 
 import copy
 import json
+import math
 import struct
+import zlib
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -35,6 +38,13 @@ KINDS = {
     "building": ("path", "building"),
 }
 FOREST = "forest"
+# A tree's height, as a share of the template's, with open ground in the row right behind it and two rows behind; at
+# full height its canopy covers about the two rows behind its base (Pallet Town's spike, 2026-11-09)
+TREE_HEIGHT_OPEN_BEHIND = (0.5, 0.75)
+# How far each tree turns (degrees), grows or shrinks (a share) and shifts (units), at most
+TREE_TURN = 25
+TREE_SIZE_SPREAD = 0.06
+TREE_OFFSET = 2.0
 # How deep the trees stand in front of the forest, in tiles: a tree's base
 RING = 2
 SURFACES = ("grass", "path", "water", "flowers")
@@ -357,6 +367,41 @@ def template_tree(doc: dict, binary: bytes, kit: Kit) -> list[tuple[str, tuple]]
     return found
 
 
+@dataclass(frozen=True)
+class TreeShape:
+    # The tree's height, as a share of the template's
+    height: float
+    # A turn about its middle, in degrees, and its size and its offset in units: the same for the same spot every build
+    turn: float
+    size: float
+    offset: tuple[float, float]
+
+
+def tree_shape(spot: tuple[float, float], is_open: Callable[[int, int], bool]) -> TreeShape:
+    """How a tree stands at its spot. The camera looks down from the south, so a tree's canopy is drawn over the rows
+    north of it, as FireRed's two-tile trees never are: a tree with open ground right behind it is shorter, so it
+    doesn't hide the player walking there. Each tree also turns, grows and shifts a little, from its spot's hash, so
+    a forest doesn't read as a grid; none of that moves it off its tiles' collision."""
+    x, z = spot
+    columns = {math.floor(x), math.floor(x + 1)}
+    top = math.floor(z)
+
+    def row_open(row: int) -> bool:
+        return any(is_open(column, row) for column in columns)
+
+    if row_open(top - 1):
+        height = TREE_HEIGHT_OPEN_BEHIND[0]
+    elif row_open(top - 2):
+        height = TREE_HEIGHT_OPEN_BEHIND[1]
+    else:
+        height = 1.0
+    seed = zlib.crc32(f"{x:.1f},{z:.1f}".encode())
+    turn = (seed % (2 * TREE_TURN + 1)) - TREE_TURN
+    size = 1 + ((seed >> 8) % 101 - 50) / 50 * TREE_SIZE_SPREAD
+    offset = tuple(((seed >> shift) % 5 - 2) / 2 * TREE_OFFSET for shift in (16, 20))
+    return TreeShape(height, float(turn), size, offset)
+
+
 def tree_spots(trees: set[tuple[int, int]]) -> list[tuple[float, float]]:
     """Where trees stand, their base's top-left tile: 2x2 groups of tree tiles, and a pair in a line half a tile out."""
     left = set(trees)
@@ -498,18 +543,31 @@ def generate(
                 (0, 1),
             )
 
-    # Trees, the template's copied to each spot
+    # Trees, the template's copied to each spot, each shaped for what stands behind it (tree_shape)
     tree = template_tree(doc, binary, kit)
+    xs = [position[0] for _, vertices in tree for position, _, _ in vertices]
+    zs = [position[2] for _, vertices in tree for position, _, _ in vertices]
+    middle = ((min(xs) + max(xs)) / 2, (min(zs) + max(zs)) / 2)
+
+    def is_open(x: int, z: int) -> bool:
+        return (x, z) in kinds and not blocked[x, z] and (x, z) not in water
+
     for x, z in tree_spots({cell for cell, kind in kinds.items() if kind == "tree"}):
-        base = (tile_x(x), kit.ground_y, tile_x(z))
+        shape = tree_shape((x, z), is_open)
+        base = (tile_x(x) + shape.offset[0], kit.ground_y, tile_x(z) + shape.offset[1])
+        cos, sin = math.cos(math.radians(shape.turn)), math.sin(math.radians(shape.turn))
         for material, vertices in tree:
-            geometry.triangle(
-                material,
-                tuple(
-                    (tuple(b + p for b, p in zip(base, position, strict=True)), uv, normal)
-                    for position, uv, normal in vertices
-                ),
-            )
+            shaped = []
+            for (px, py, pz), uv, (nx, ny, nz) in vertices:
+                dx, dz = px - middle[0], pz - middle[1]
+                rx, rz = dx * cos - dz * sin, dx * sin + dz * cos
+                position = (
+                    base[0] + middle[0] + rx * shape.size,
+                    base[1] + py * shape.size * shape.height,
+                    base[2] + middle[1] + rz * shape.size,
+                )
+                shaped.append((position, uv, (nx * cos - nz * sin, ny, nx * sin + nz * cos)))
+            geometry.triangle(material, tuple(shaped))
 
     # Props: the buildings at their doors, and signs and the like on their tiles, as props or upright quads
     props: list[tuple[int, tuple[float, float, float]]] = []
@@ -545,6 +603,9 @@ def generate(
         if kind == "building" and cell not in bodies:
             blocked[cell] = False
     for (x, z), kind in sorted(kinds.items(), key=lambda item: (item[0][1], item[0][0])):
+        if (x, z) in bodies:
+            # Under a Black 2 building, which stands a column off FireRed's: a mailbox there would stick out of it
+            continue
         if kind in kit.props:
             props.append((kit.props[kind], (tile_x(x) + TILE / 2, kit.ground_y, tile_x(z) + TILE / 2)))
         elif kind in kit.billboards:

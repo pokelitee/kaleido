@@ -2,5 +2,8 @@
     "npcs": [],
     "triggers": [],
     "bg_events": [],
-    "init_scripts": []
+    "init_scripts": [],
+    "warps": [
+        { "zone": "ZONE_ASPERTIA_CITY", "warp": 4, "unk4": 1, "transition": 1, "grid": { "x": 136, "y": 0, "z": 408, "width": 3, "height": 1, "unk0a": 0 } }
+    ]
 }
