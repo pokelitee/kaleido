@@ -1,4 +1,4 @@
 # The checkers that CI installs (.github/workflows/ci.yml); Kaleido itself needs only Python's standard library.
-ruff==0.17.3
+ruff==0.17.4
 # pokebw2 formats C with this release only, as its docs/code-standards.md says; .github/dependabot.yml leaves it alone
 clang-format==23.1.1
